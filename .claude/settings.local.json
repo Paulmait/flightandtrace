@@ -5,7 +5,11 @@
       "Bash(touch:*)",
       "Bash(pip install flake8 mypy)",
       "Bash(mkdir:*)",
-      "Bash(ls:*)"
+      "Bash(ls:*)",
+      "Bash(git commit:*)",
+      "Bash(git push:*)",
+      "Bash(git config:*)",
+      "Bash(git remote add:*)"
     ],
     "deny": []
   }
