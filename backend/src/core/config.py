@@ -57,6 +57,29 @@ class Settings(BaseSettings):
     USER_DATA_RETENTION_DAYS: int = 365 * 2  # 2 years
     LOG_RETENTION_DAYS: int = 90
     
+    # Environment and Debug
+    ENVIRONMENT: str = os.getenv("ENVIRONMENT", "development")
+    DEBUG: bool = os.getenv("DEBUG", "False").lower() == "true"
+    LOG_LEVEL: str = os.getenv("LOG_LEVEL", "INFO")
+    
+    # Monitoring
+    SENTRY_DSN: Optional[str] = os.getenv("SENTRY_DSN", None)
+    
+    # Redis (for caching and advanced rate limiting)
+    REDIS_URL: Optional[str] = os.getenv("REDIS_URL", None)
+    
+    # Encryption
+    FIELD_ENCRYPTION_KEY: Optional[str] = os.getenv("FIELD_ENCRYPTION_KEY", None)
+    
+    # API Security
+    API_KEY_LENGTH: int = 32
+    WEBHOOK_TIMEOUT_SECONDS: int = 30
+    MAX_WEBHOOK_RETRIES: int = 3
+    
+    # Content Security
+    MAX_UPLOAD_SIZE_MB: int = 10
+    ALLOWED_FILE_EXTENSIONS: list = [".jpg", ".jpeg", ".png", ".pdf"]
+    
     @validator("SECRET_KEY", "JWT_SECRET_KEY")
     def validate_secrets(cls, v):
         if not v:

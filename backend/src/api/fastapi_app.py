@@ -4,6 +4,8 @@ from fastapi.middleware.trustedhost import TrustedHostMiddleware
 from fastapi.middleware.gzip import GZipMiddleware
 from fastapi.security import OAuth2PasswordRequestForm
 from fastapi.responses import JSONResponse
+from fastapi.exceptions import RequestValidationError
+from starlette.exceptions import HTTPException as StarletteHTTPException
 from backend.api_admin import router as admin_router
 from pydantic import BaseModel, EmailStr, Field, validator
 from src.core.user import register_user, add_tail_number, get_user_tail_numbers, authenticate_user, delete_user_data
@@ -14,6 +16,16 @@ from src.core.auth import (
 )
 from src.core.config import settings
 from src.db.database import init_db, cleanup_old_data
+from src.core.security import (
+    SecurityValidator, SecurityHeaders, SecurityAuditor,
+    InputValidator, CSRFProtection
+)
+from src.core.rate_limiter import rate_limiter, ddos_protection
+from src.core.error_handler import (
+    validation_exception_handler, http_exception_handler,
+    general_exception_handler, BusinessLogicError,
+    business_logic_exception_handler
+)
 from slowapi import Limiter, _rate_limit_exceeded_handler
 from slowapi.util import get_remote_address
 from slowapi.errors import RateLimitExceeded
@@ -81,6 +93,12 @@ app = FastAPI(
 app.state.limiter = limiter
 app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 
+# Add custom exception handlers
+app.add_exception_handler(RequestValidationError, validation_exception_handler)
+app.add_exception_handler(StarletteHTTPException, http_exception_handler)
+app.add_exception_handler(BusinessLogicError, business_logic_exception_handler)
+app.add_exception_handler(Exception, general_exception_handler)
+
 # Security middleware
 app.add_middleware(
     CORSMiddleware,
@@ -108,15 +126,35 @@ if settings.SENTRY_DSN:
 @app.middleware("http")
 async def add_security_headers(request: Request, call_next):
     response = await call_next(request)
-    response.headers["X-Content-Type-Options"] = "nosniff"
-    response.headers["X-Frame-Options"] = "DENY"
-    response.headers["X-XSS-Protection"] = "1; mode=block"
-    response.headers["Referrer-Policy"] = "strict-origin-when-cross-origin"
-    response.headers["Permissions-Policy"] = "geolocation=(), microphone=(), camera=()"
     
-    if settings.ENVIRONMENT == "production":
-        response.headers["Strict-Transport-Security"] = f"max-age={settings.HSTS_MAX_AGE}; includeSubDomains"
+    # Get comprehensive security headers
+    security_headers = SecurityHeaders.get_security_headers(request)
+    for header, value in security_headers.items():
+        response.headers[header] = value
     
+    return response
+
+# DDoS Protection middleware
+@app.middleware("http")
+async def ddos_protection_middleware(request: Request, call_next):
+    # Get client IP
+    client_ip = request.client.host if request.client else "unknown"
+    
+    # Check DDoS protection
+    allowed, reason = ddos_protection.check_request(
+        client_ip,
+        request.url.path,
+        dict(request.headers)
+    )
+    
+    if not allowed:
+        logger.warning(f"Request blocked from {client_ip}: {reason}")
+        return JSONResponse(
+            status_code=status.HTTP_429_TOO_MANY_REQUESTS,
+            content={"detail": "Too many requests"}
+        )
+    
+    response = await call_next(request)
     return response
 
 # Request ID middleware for tracking
@@ -127,6 +165,28 @@ async def add_request_id(request: Request, call_next):
     request.state.request_id = request_id
     response = await call_next(request)
     response.headers["X-Request-ID"] = request_id
+    return response
+
+# Enhanced rate limit middleware with headers
+@app.middleware("http")
+async def rate_limit_headers(request: Request, call_next):
+    # Get client identifier
+    client_ip = request.client.host if request.client else "unknown"
+    
+    # Check rate limit for informational headers
+    allowed, metadata = rate_limiter.check_rate_limit(
+        client_ip,
+        limit=settings.RATE_LIMIT_PER_HOUR,
+        window_seconds=3600
+    )
+    
+    response = await call_next(request)
+    
+    # Add rate limit headers
+    response.headers["X-RateLimit-Limit"] = str(metadata.get("limit", 0))
+    response.headers["X-RateLimit-Remaining"] = str(metadata.get("remaining", 0))
+    response.headers["X-RateLimit-Reset"] = str(metadata.get("reset", 0))
+    
     return response
 
 # Include routers
@@ -147,8 +207,21 @@ class UserCreate(BaseModel):
         return v
 
 class TailNumberAdd(BaseModel):
-    tail_number: str = Field(..., min_length=1, max_length=6, regex='^[A-Z0-9]+$')
+    tail_number: str = Field(..., min_length=1, max_length=10)
     notes: str = Field(None, max_length=500)
+    
+    @validator('tail_number')
+    def validate_tail_number(cls, v):
+        v = v.upper().strip()
+        if not SecurityValidator.validate_tail_number(v):
+            raise ValueError('Invalid tail number format')
+        return v
+    
+    @validator('notes')
+    def sanitize_notes(cls, v):
+        if v:
+            return SecurityValidator.sanitize_input(v, max_length=500)
+        return v
 
 class WebhookConfig(BaseModel):
     url: str = Field(..., regex='^https://.*')
@@ -172,6 +245,19 @@ class UserResponse(BaseModel):
 @limiter.limit("5/hour")
 async def register(request: Request, user: UserCreate):
     try:
+        # Enhanced input validation
+        if not InputValidator.validate_username(user.username):
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Invalid username format"
+            )
+        
+        if not SecurityValidator.validate_email(user.email):
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Invalid email address"
+            )
+        
         if not user.gdpr_consent:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
@@ -184,10 +270,28 @@ async def register(request: Request, user: UserCreate):
                 detail="Terms of service must be accepted"
             )
         
+        # Check for suspicious activity
+        if SecurityAuditor.check_suspicious_activity(request, None):
+            SecurityAuditor.log_security_event(
+                "suspicious_registration_attempt",
+                None,
+                {"username": user.username, "email": user.email},
+                request
+            )
+            raise HTTPException(
+                status_code=status.HTTP_429_TOO_MANY_REQUESTS,
+                detail="Suspicious activity detected"
+            )
+        
         user_id = register_user(user.username, user.email, user.password)
         
-        # Log registration
-        logger.info(f"New user registered: {user.username}")
+        # Log registration event
+        SecurityAuditor.log_security_event(
+            "user_registered",
+            user_id,
+            {"username": user.username, "email": user.email},
+            request
+        )
         
         # Return user info
         return UserResponse(
@@ -214,7 +318,28 @@ async def register(request: Request, user: UserCreate):
 @limiter.limit("10/minute")
 async def login(request: Request, form_data: OAuth2PasswordRequestForm = Depends()):
     try:
+        # Check for suspicious activity
+        if SecurityAuditor.check_suspicious_activity(request, None):
+            SecurityAuditor.log_security_event(
+                "suspicious_login_attempt",
+                None,
+                {"username": form_data.username},
+                request
+            )
+            raise HTTPException(
+                status_code=status.HTTP_429_TOO_MANY_REQUESTS,
+                detail="Suspicious activity detected"
+            )
+        
         user = authenticate_user(form_data.username, form_data.password)
+        
+        # Log successful login
+        SecurityAuditor.log_security_event(
+            "user_login",
+            user["user_id"],
+            {"username": user["username"]},
+            request
+        )
         
         # Create tokens
         access_token = create_access_token(data={"sub": str(user["user_id"])})
@@ -228,6 +353,13 @@ async def login(request: Request, form_data: OAuth2PasswordRequestForm = Depends
         )
         
     except ValueError as e:
+        # Log failed login
+        SecurityAuditor.log_security_event(
+            "failed_login",
+            None,
+            {"username": form_data.username, "error": str(e)},
+            request
+        )
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Invalid credentials",
@@ -312,14 +444,32 @@ async def set_user_webhook(
             detail="Cannot set webhook for other users"
         )
     
-    # Validate webhook URL is HTTPS
-    if not webhook.url.startswith("https://"):
+    # Enhanced webhook URL validation
+    if not SecurityValidator.validate_url(webhook.url, allowed_schemes=['https']):
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Webhook URL must use HTTPS"
+            detail="Invalid webhook URL. Must use HTTPS and not point to local/private addresses"
         )
     
+    # Validate events
+    valid_events = ['status_change', 'landing', 'takeoff', 'emergency']
+    for event in webhook.events:
+        if event not in valid_events:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=f"Invalid event type: {event}"
+            )
+    
     set_webhook(user_id, webhook.url)
+    
+    # Log webhook configuration
+    SecurityAuditor.log_security_event(
+        "webhook_configured",
+        user_id,
+        {"url": webhook.url, "events": webhook.events},
+        request
+    )
+    
     return {"status": "webhook set", "url": webhook.url}
 
 @app.delete("/users/{user_id}")

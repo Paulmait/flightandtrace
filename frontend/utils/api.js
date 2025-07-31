@@ -1,6 +1,27 @@
+import { API_URL } from '@env';
+import Constants from 'expo-constants';
+import * as Device from 'expo-device';
+
+// Get API URL based on environment
+const getApiUrl = () => {
+  if (__DEV__ && Device.isDevice) {
+    // When running on a physical device in development
+    // Replace with your computer's local IP address
+    return API_URL || 'http://192.168.1.100:8000';
+  } else if (__DEV__) {
+    // When running on simulator/emulator
+    return API_URL || 'http://localhost:8000';
+  } else {
+    // Production URL
+    return 'https://api.flighttrace.com';
+  }
+};
+
+const BASE_API_URL = getApiUrl();
+
 // Admin: Reset user password
 export async function resetUserPassword(username) {
-  const res = await fetch('http://localhost:8000/admin/reset_user', {
+  const res = await fetch(`${BASE_API_URL}/admin/reset_user`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ username })
@@ -11,7 +32,7 @@ export async function resetUserPassword(username) {
 
 // Admin: Reset admin password
 export async function resetAdminPassword(old_password, new_password) {
-  const res = await fetch('http://localhost:8000/admin/reset_admin', {
+  const res = await fetch(`${BASE_API_URL}/admin/reset_admin`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ old_password, new_password })
@@ -22,11 +43,11 @@ export async function resetAdminPassword(old_password, new_password) {
 
 // Admin: Fetch audit log
 export async function fetchAuditLog() {
-  const res = await fetch('http://localhost:8000/admin/audit_log');
+  const res = await fetch(`${BASE_API_URL}/admin/audit_log`);
   if (!res.ok) throw new Error('Failed to fetch audit log');
   return res.json();
 }
-const API_URL = 'http://localhost:8000';
+const API_URL = BASE_API_URL;
 
 async function apiRequest(endpoint, method = 'GET', body = null, token = null) {
   const headers = { 'Content-Type': 'application/json' };
@@ -63,7 +84,7 @@ export async function fetchFlightHistory(token) {
 }
 
 export async function createCheckoutSession(plan) {
-  const res = await fetch('http://localhost:8000/create-checkout-session', {
+  const res = await fetch(`${BASE_API_URL}/create-checkout-session`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ plan })
@@ -72,7 +93,7 @@ export async function createCheckoutSession(plan) {
   return res.json();
 }
 export async function fetchAnalytics(token) {
-  const res = await fetch('http://localhost:8000/analytics', {
+  const res = await fetch(`${BASE_API_URL}/analytics`, {
     method: 'GET',
     headers: { 'Authorization': `Bearer ${token}` }
   });
@@ -82,7 +103,7 @@ export async function fetchAnalytics(token) {
 
 export async function fetchUserProfile(token) {
   try {
-    const res = await fetch('http://localhost:8000/user/profile', {
+    const res = await fetch(`${BASE_API_URL}/user/profile`, {
       method: 'GET',
       headers: {
         'Authorization': `Bearer ${token}`,

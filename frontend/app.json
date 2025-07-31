@@ -2,24 +2,45 @@
   "expo": {
     "name": "FlightTrace",
     "slug": "flighttrace",
-    "version": "0.1.0",
+    "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/logo.png",
+    "icon": "./assets/flighttrace-logo.png",
     "userInterfaceStyle": "automatic",
+    "scheme": "flighttrace",
     "splash": {
-      "image": "./assets/logo.png",
+      "image": "./assets/flighttrace-logo.png",
       "resizeMode": "contain",
-      "backgroundColor": "#ffffff"
+      "backgroundColor": "#0066CC"
     },
     "assetBundlePatterns": ["**/*"],
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "com.flighttrace.app",
+      "buildNumber": "1",
+      "infoPlist": {
+        "NSLocationWhenInUseUsageDescription": "FlightTrace needs your location to show nearby airports and flights.",
+        "NSLocationAlwaysUsageDescription": "FlightTrace needs your location to track flights near you."
+      }
     },
     "android": {
       "adaptiveIcon": {
-        "foregroundImage": "./assets/logo.png",
-        "backgroundColor": "#ffffff"
+        "foregroundImage": "./assets/flighttrace-logo.png",
+        "backgroundColor": "#0066CC"
+      },
+      "package": "com.flighttrace.app",
+      "versionCode": 1,
+      "permissions": ["ACCESS_COARSE_LOCATION", "ACCESS_FINE_LOCATION"]
+    },
+    "web": {
+      "favicon": "./assets/flighttrace-logo.png"
+    },
+    "extra": {
+      "eas": {
+        "projectId": "your-project-id"
       }
-    }
+    },
+    "plugins": [
+      "expo-location"
+    ]
   }
 }
