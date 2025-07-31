@@ -1,0 +1,116 @@
+# AlertManager configuration for FlightTrace
+
+global:
+  resolve_timeout: 5m
+  smtp_from: 'alerts@flighttrace.com'
+  smtp_smarthost: 'smtp.sendgrid.net:587'
+  smtp_auth_username: 'apikey'
+  smtp_auth_password: '${SENDGRID_API_KEY}'
+  smtp_require_tls: true
+
+# Templates for alert messages
+templates:
+  - '/etc/alertmanager/templates/*.tmpl'
+
+# Route tree
+route:
+  group_by: ['alertname', 'cluster', 'service']
+  group_wait: 10s
+  group_interval: 10s
+  repeat_interval: 12h
+  receiver: 'default'
+  
+  routes:
+    # Critical alerts
+    - match:
+        severity: critical
+      receiver: 'critical-alerts'
+      group_wait: 0s
+      repeat_interval: 1h
+    
+    # Payment alerts
+    - match:
+        service: payments
+      receiver: 'payment-team'
+      group_wait: 30s
+      repeat_interval: 4h
+    
+    # Security alerts
+    - match:
+        service: security
+      receiver: 'security-team'
+      group_wait: 0s
+      repeat_interval: 30m
+    
+    # Database alerts
+    - match:
+        service: database
+      receiver: 'database-team'
+      group_wait: 1m
+      repeat_interval: 2h
+
+# Receivers
+receivers:
+  - name: 'default'
+    email_configs:
+      - to: 'ops@flighttrace.com'
+        headers:
+          Subject: '[FlightTrace Alert] {{ .GroupLabels.alertname }}'
+        html: |
+          <h2>FlightTrace Alert</h2>
+          <p><b>Alert:</b> {{ .GroupLabels.alertname }}</p>
+          <p><b>Service:</b> {{ .GroupLabels.service }}</p>
+          <p><b>Severity:</b> {{ .GroupLabels.severity }}</p>
+          {{ range .Alerts }}
+          <hr>
+          <p><b>Summary:</b> {{ .Annotations.summary }}</p>
+          <p><b>Description:</b> {{ .Annotations.description }}</p>
+          <p><b>Started:</b> {{ .StartsAt }}</p>
+          {{ end }}
+
+  - name: 'critical-alerts'
+    email_configs:
+      - to: 'oncall@flighttrace.com'
+        headers:
+          Subject: '[CRITICAL] FlightTrace: {{ .GroupLabels.alertname }}'
+    pagerduty_configs:
+      - service_key: '${PAGERDUTY_SERVICE_KEY}'
+        description: '{{ .GroupLabels.alertname }}: {{ .CommonAnnotations.summary }}'
+    slack_configs:
+      - api_url: '${SLACK_WEBHOOK_URL}'
+        channel: '#critical-alerts'
+        title: 'Critical Alert: {{ .GroupLabels.alertname }}'
+        text: '{{ .CommonAnnotations.description }}'
+        send_resolved: true
+
+  - name: 'payment-team'
+    email_configs:
+      - to: 'payments@flighttrace.com'
+    slack_configs:
+      - api_url: '${SLACK_WEBHOOK_URL}'
+        channel: '#payment-alerts'
+        title: 'Payment Alert: {{ .GroupLabels.alertname }}'
+
+  - name: 'security-team'
+    email_configs:
+      - to: 'security@flighttrace.com'
+    slack_configs:
+      - api_url: '${SLACK_WEBHOOK_URL}'
+        channel: '#security-alerts'
+        title: 'Security Alert: {{ .GroupLabels.alertname }}'
+        color: 'danger'
+
+  - name: 'database-team'
+    email_configs:
+      - to: 'dba@flighttrace.com'
+    slack_configs:
+      - api_url: '${SLACK_WEBHOOK_URL}'
+        channel: '#database-alerts'
+
+# Inhibit rules
+inhibit_rules:
+  - source_match:
+      severity: 'critical'
+    target_match:
+      severity: 'warning'
+    equal: ['alertname', 'service']

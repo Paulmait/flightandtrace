@@ -1,0 +1,191 @@
+groups:
+  - name: flighttrace_api_alerts
+    interval: 30s
+    rules:
+      # API Availability
+      - alert: APIDown
+        expr: up{job="flighttrace-api"} == 0
+        for: 2m
+        labels:
+          severity: critical
+          service: api
+        annotations:
+          summary: "FlightTrace API is down"
+          description: "The FlightTrace API has been down for more than 2 minutes."
+
+      # High Error Rate
+      - alert: HighErrorRate
+        expr: rate(http_requests_total{status=~"5.."}[5m]) > 0.05
+        for: 5m
+        labels:
+          severity: warning
+          service: api
+        annotations:
+          summary: "High API error rate"
+          description: "Error rate is above 5% for the last 5 minutes."
+
+      # Response Time
+      - alert: SlowAPIResponse
+        expr: histogram_quantile(0.95, rate(http_request_duration_seconds_bucket[5m])) > 1
+        for: 5m
+        labels:
+          severity: warning
+          service: api
+        annotations:
+          summary: "Slow API response times"
+          description: "95th percentile response time is above 1 second."
+
+      # Rate Limiting
+      - alert: HighRateLimitHits
+        expr: rate(rate_limit_exceeded_total[5m]) > 10
+        for: 5m
+        labels:
+          severity: warning
+          service: api
+        annotations:
+          summary: "High rate limit hits"
+          description: "More than 10 rate limit hits per second."
+
+  - name: flighttrace_system_alerts
+    interval: 30s
+    rules:
+      # CPU Usage
+      - alert: HighCPUUsage
+        expr: 100 - (avg(rate(node_cpu_seconds_total{mode="idle"}[5m])) * 100) > 80
+        for: 10m
+        labels:
+          severity: warning
+          service: system
+        annotations:
+          summary: "High CPU usage"
+          description: "CPU usage is above 80% for 10 minutes."
+
+      # Memory Usage
+      - alert: HighMemoryUsage
+        expr: (1 - (node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes)) * 100 > 85
+        for: 10m
+        labels:
+          severity: warning
+          service: system
+        annotations:
+          summary: "High memory usage"
+          description: "Memory usage is above 85% for 10 minutes."
+
+      # Disk Space
+      - alert: LowDiskSpace
+        expr: (node_filesystem_avail_bytes{mountpoint="/"} / node_filesystem_size_bytes{mountpoint="/"}) * 100 < 15
+        for: 5m
+        labels:
+          severity: critical
+          service: system
+        annotations:
+          summary: "Low disk space"
+          description: "Less than 15% disk space remaining on root partition."
+
+  - name: flighttrace_database_alerts
+    interval: 30s
+    rules:
+      # Database Connection Pool
+      - alert: DatabaseConnectionPoolExhausted
+        expr: database_connection_pool_exhausted > 0
+        for: 2m
+        labels:
+          severity: critical
+          service: database
+        annotations:
+          summary: "Database connection pool exhausted"
+          description: "No available database connections for more than 2 minutes."
+
+      # Slow Queries
+      - alert: SlowDatabaseQueries
+        expr: rate(database_query_duration_seconds{quantile="0.95"}[5m]) > 1
+        for: 5m
+        labels:
+          severity: warning
+          service: database
+        annotations:
+          summary: "Slow database queries"
+          description: "95th percentile query time is above 1 second."
+
+  - name: flighttrace_business_alerts
+    interval: 1m
+    rules:
+      # WebSocket Connections
+      - alert: HighWebSocketConnections
+        expr: websocket_active_connections > 10000
+        for: 5m
+        labels:
+          severity: warning
+          service: websocket
+        annotations:
+          summary: "High number of WebSocket connections"
+          description: "More than 10,000 active WebSocket connections."
+
+      # Failed Payments
+      - alert: HighPaymentFailureRate
+        expr: rate(payment_failures_total[1h]) / rate(payment_attempts_total[1h]) > 0.1
+        for: 15m
+        labels:
+          severity: critical
+          service: payments
+        annotations:
+          summary: "High payment failure rate"
+          description: "Payment failure rate is above 10% for the last hour."
+
+      # Flight Data Delay
+      - alert: FlightDataUpdateDelay
+        expr: time() - flight_data_last_update_timestamp > 300
+        for: 5m
+        labels:
+          severity: warning
+          service: flight_data
+        annotations:
+          summary: "Flight data update delay"
+          description: "Flight data hasn't been updated for more than 5 minutes."
+
+      # Prediction Service
+      - alert: PredictionServiceDown
+        expr: up{job="prediction-service"} == 0
+        for: 5m
+        labels:
+          severity: warning
+          service: predictions
+        annotations:
+          summary: "Prediction service is down"
+          description: "AI prediction service has been down for 5 minutes."
+
+  - name: flighttrace_security_alerts
+    interval: 30s
+    rules:
+      # Failed Login Attempts
+      - alert: HighFailedLoginRate
+        expr: rate(authentication_failures_total[5m]) > 10
+        for: 5m
+        labels:
+          severity: warning
+          service: security
+        annotations:
+          summary: "High failed login rate"
+          description: "More than 10 failed login attempts per minute."
+
+      # Suspicious Activity
+      - alert: SuspiciousAPIUsage
+        expr: rate(api_requests_suspicious_total[5m]) > 5
+        for: 5m
+        labels:
+          severity: critical
+          service: security
+        annotations:
+          summary: "Suspicious API usage detected"
+          description: "Detected suspicious API usage patterns."
+
+      # SSL Certificate Expiry
+      - alert: SSLCertificateExpiringSoon
+        expr: ssl_certificate_expiry_days < 30
+        for: 1h
+        labels:
+          severity: warning
+          service: security
+        annotations:
+          summary: "SSL certificate expiring soon"
+          description: "SSL certificate will expire in less than 30 days."
