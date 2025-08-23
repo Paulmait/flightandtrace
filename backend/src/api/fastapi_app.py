@@ -6,10 +6,17 @@ from fastapi.security import OAuth2PasswordRequestForm
 from fastapi.responses import JSONResponse
 from fastapi.exceptions import RequestValidationError
 from starlette.exceptions import HTTPException as StarletteHTTPException
-from backend.api_admin import router as admin_router
+import sys
+import os
+sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(__file__))))
+from api_admin import router as admin_router
 from pydantic import BaseModel, EmailStr, Field, validator
 from src.core.user import register_user, add_tail_number, get_user_tail_numbers, authenticate_user, delete_user_data
 from src.core.notification import set_webhook
+from src.core.fuel_estimation_v2 import EnhancedFuelEstimator, FuelEstimateV2, ConfidenceLevel
+from src.core.feature_flags import FeatureFlags
+from src.core.validation import validate_fuel_request, validate_get_params, ValidationError, create_error_response
+from src.core.enhanced_rate_limiter import check_fuel_api_limits, rate_limiter
 from src.core.auth import (
     get_current_active_user, create_access_token, create_refresh_token,
     verify_token, require_role, PasswordValidationError
@@ -36,6 +43,7 @@ from contextlib import asynccontextmanager
 import asyncio
 from datetime import datetime, timedelta
 import re
+from typing import List, Optional, Dict, Any
 
 # Configure logging
 logging.basicConfig(
@@ -99,14 +107,50 @@ app.add_exception_handler(StarletteHTTPException, http_exception_handler)
 app.add_exception_handler(BusinessLogicError, business_logic_exception_handler)
 app.add_exception_handler(Exception, general_exception_handler)
 
-# Security middleware
+# Security middleware with environment-specific CORS
+def get_cors_origins():
+    """Get CORS origins based on environment"""
+    if settings.ENVIRONMENT == "production":
+        return [
+            "https://flighttrace.com",
+            "https://www.flighttrace.com",
+            "https://app.flighttrace.com"
+        ]
+    elif settings.ENVIRONMENT == "staging":
+        return [
+            "https://staging.flighttrace.com",
+            "http://localhost:3000",
+            "http://localhost:8081"
+        ]
+    else:
+        # Development
+        return [
+            "http://localhost:3000",
+            "http://localhost:8080",
+            "http://localhost:8081",
+            "http://127.0.0.1:3000",
+            "http://192.168.1.100:8081"  # For mobile development
+        ]
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=settings.CORS_ORIGINS,
+    allow_origins=get_cors_origins(),
     allow_credentials=True,
-    allow_methods=["GET", "POST", "PUT", "DELETE"],
-    allow_headers=["*"],
-    expose_headers=["X-Rate-Limit-Limit", "X-Rate-Limit-Remaining", "X-Rate-Limit-Reset"]
+    allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    allow_headers=[
+        "Accept",
+        "Accept-Language",
+        "Content-Type", 
+        "Authorization",
+        "X-Requested-With",
+        "User-Agent"
+    ],
+    expose_headers=[
+        "X-Rate-Limit-Limit", 
+        "X-Rate-Limit-Remaining", 
+        "X-Rate-Limit-Reset",
+        "X-Rate-Limit-Retry-After"
+    ]
 )
 
 # Only allow specific hosts
@@ -240,6 +284,29 @@ class UserResponse(BaseModel):
     role: str
     email_verified: bool
     mfa_enabled: bool
+
+class FuelEstimateRequest(BaseModel):
+    flight_id: str = Field(..., description="Unique flight identifier")
+    aircraft_type: str = Field(..., description="ICAO aircraft type code (e.g., B738, A320)")
+    altitude_series: List[Dict[str, Any]] = Field(..., description="List of {timestamp, altitude} objects")
+    distance_nm: Optional[float] = Field(None, description="Total distance in nautical miles")
+    
+    @validator('aircraft_type')
+    def validate_aircraft_type(cls, v):
+        from src.core.aviation_utils import validate_icao_code
+        v = v.upper().strip()
+        if not validate_icao_code(v):
+            raise ValueError('Invalid ICAO aircraft type code')
+        return v
+
+class FuelEstimateResponse(BaseModel):
+    fuelKg: float
+    fuelL: float
+    fuelGal: float
+    co2Kg: float
+    confidence: str
+    assumptions: Dict[str, Any]
+    phases: Optional[List[Dict[str, Any]]] = None
 
 @app.post("/auth/register", response_model=UserResponse, status_code=status.HTTP_201_CREATED)
 @limiter.limit("5/hour")
@@ -499,6 +566,239 @@ async def delete_user(
 @app.get("/health")
 async def health_check():
     return {"status": "healthy", "timestamp": datetime.utcnow().isoformat()}
+
+# Initialize fuel estimator
+fuel_estimator = EnhancedFuelEstimator()
+
+@app.get("/api/fuel/estimate", response_model=FuelEstimateResponse)
+async def estimate_fuel_get(
+    request: Request,
+    flightId: str,
+    aircraftType: Optional[str] = "B738",
+    current_user: dict = Depends(get_current_active_user)
+):
+    """Get fuel estimate for a flight using query parameters"""
+    
+    # Get client IP for rate limiting
+    client_ip = request.client.host if request.client else "unknown"
+    user_id = str(current_user.get('user_id', '')) if current_user else None
+    
+    try:
+        # Enhanced rate limiting with IP + user tracking
+        rate_status = check_fuel_api_limits(client_ip, user_id)
+        if not rate_status.allowed:
+            # Add rate limit headers
+            headers = {
+                "X-Rate-Limit-Limit": str(rate_status.limit),
+                "X-Rate-Limit-Remaining": "0",
+                "X-Rate-Limit-Reset": rate_status.reset_time.isoformat()
+            }
+            if rate_status.retry_after:
+                headers["X-Rate-Limit-Retry-After"] = str(rate_status.retry_after)
+            
+            raise HTTPException(
+                status_code=status.HTTP_429_TOO_MANY_REQUESTS,
+                detail=f"Rate limit exceeded. Try again in {rate_status.retry_after} seconds.",
+                headers=headers
+            )
+        
+        # Input validation
+        params = validate_get_params({"flightId": flightId, "aircraftType": aircraftType})
+        
+        # Check feature flag
+        if not FeatureFlags.is_enabled("fuelEstimates", user_id):
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="Fuel estimation feature is not enabled for your account"
+            )
+        
+        # Log telemetry with sanitized data
+        logger.info(f"Fuel estimate requested for flight {params.flightId} by user {user_id}")
+        SecurityAuditor.log_security_event(
+            "fuel_estimate_requested",
+            user_id,
+            {"flight_id": params.flightId, "aircraft_type": params.aircraftType, "ip": client_ip},
+            request
+        )
+        
+        # For GET request, we need to fetch flight data from database
+        # This is a stub - replace with actual flight data retrieval
+        altitude_series = [
+            {"timestamp": datetime.utcnow().isoformat(), "altitude": 0},
+            {"timestamp": (datetime.utcnow() + timedelta(minutes=10)).isoformat(), "altitude": 5000},
+            {"timestamp": (datetime.utcnow() + timedelta(minutes=30)).isoformat(), "altitude": 35000},
+            {"timestamp": (datetime.utcnow() + timedelta(hours=2)).isoformat(), "altitude": 35000},
+            {"timestamp": (datetime.utcnow() + timedelta(hours=2, minutes=20)).isoformat(), "altitude": 5000},
+            {"timestamp": (datetime.utcnow() + timedelta(hours=2, minutes=30)).isoformat(), "altitude": 0},
+        ]
+        
+        # Convert altitude series to proper format for enhanced estimator
+        altitude_samples = [
+            (datetime.fromisoformat(point["timestamp"]), point["altitude"])
+            for point in altitude_series
+        ]
+        
+        estimate = fuel_estimator.estimate_fuel(
+            flight_id=params.flightId,
+            aircraft_type=params.aircraftType,
+            altitude_samples=altitude_samples,
+            distance_nm=500  # Example distance
+        )
+        
+        # Add rate limit headers to successful response
+        response_headers = {
+            "X-Rate-Limit-Limit": str(rate_status.limit),
+            "X-Rate-Limit-Remaining": str(rate_status.remaining),
+            "X-Rate-Limit-Reset": rate_status.reset_time.isoformat()
+        }
+        
+        # Format response
+        return FuelEstimateResponse(
+            fuelKg=estimate.fuel_kg,
+            fuelL=estimate.fuel_liters,
+            fuelGal=estimate.fuel_gallons,
+            co2Kg=estimate.co2_kg,
+            confidence=estimate.confidence.value,
+            assumptions=estimate.assumptions,
+            phases=[{
+                "phase": phase.phase.value,
+                "duration_minutes": phase.duration_minutes,
+                "fuel_burn_kg": phase.fuel_burn_kg,
+                "average_altitude_ft": phase.average_altitude_ft
+            } for phase in estimate.phases]
+        )
+        
+    except ValidationError as e:
+        logger.warning(f"Fuel estimate validation error from {client_ip}: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=str(e)
+        )
+    except HTTPException:
+        raise  # Re-raise HTTP exceptions
+    except Exception as e:
+        logger.error(f"Fuel estimate error from {client_ip}: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Internal server error during fuel estimation"
+        )
+
+@app.post("/api/fuel/estimate", response_model=FuelEstimateResponse)
+async def estimate_fuel_post(
+    request: Request,
+    fuel_request: Dict[str, Any],  # Accept raw dict for validation
+    current_user: dict = Depends(get_current_active_user)
+):
+    """Calculate fuel estimate for a flight with provided altitude data"""
+    
+    # Get client IP for rate limiting
+    client_ip = request.client.host if request.client else "unknown"
+    user_id = str(current_user.get('user_id', '')) if current_user else None
+    
+    try:
+        # Enhanced rate limiting with IP + user tracking
+        rate_status = check_fuel_api_limits(client_ip, user_id)
+        if not rate_status.allowed:
+            # Add rate limit headers
+            headers = {
+                "X-Rate-Limit-Limit": str(rate_status.limit),
+                "X-Rate-Limit-Remaining": "0",
+                "X-Rate-Limit-Reset": rate_status.reset_time.isoformat()
+            }
+            if rate_status.retry_after:
+                headers["X-Rate-Limit-Retry-After"] = str(rate_status.retry_after)
+            
+            raise HTTPException(
+                status_code=status.HTTP_429_TOO_MANY_REQUESTS,
+                detail=f"Rate limit exceeded. Try again in {rate_status.retry_after} seconds.",
+                headers=headers
+            )
+        
+        # Input validation and sanitization
+        validated_request = validate_fuel_request(fuel_request)
+        
+        # Check feature flag
+        if not FeatureFlags.is_enabled("fuelEstimates", user_id):
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="Fuel estimation feature is not enabled for your account"
+            )
+        
+        # Array size validation (additional check)
+        if len(validated_request.altitude_series) > 10000:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Altitude series too large (max 10,000 points)"
+            )
+        
+        # Log telemetry with sanitized data
+        logger.info(f"Fuel estimate calculated for flight {validated_request.flight_id} by user {user_id}")
+        SecurityAuditor.log_security_event(
+            "fuel_estimate_calculated",
+            user_id,
+            {
+                "flight_id": validated_request.flight_id, 
+                "aircraft_type": validated_request.aircraft_type,
+                "altitude_points": len(validated_request.altitude_series),
+                "ip": client_ip
+            },
+            request
+        )
+        
+        # Convert to format expected by fuel estimator
+        altitude_samples = [
+            (point.timestamp, point.altitude) 
+            for point in validated_request.altitude_series
+        ]
+        
+        # Calculate estimate using enhanced estimator
+        from src.core.fuel_estimation_v2 import EnhancedFuelEstimator
+        enhanced_estimator = EnhancedFuelEstimator()
+        
+        estimate = enhanced_estimator.estimate_fuel(
+            flight_id=validated_request.flight_id,
+            aircraft_type=validated_request.aircraft_type,
+            altitude_samples=altitude_samples,
+            distance_nm=validated_request.distance_nm
+        )
+        
+        # Add rate limit headers to successful response
+        response_headers = {
+            "X-Rate-Limit-Limit": str(rate_status.limit),
+            "X-Rate-Limit-Remaining": str(rate_status.remaining),
+            "X-Rate-Limit-Reset": rate_status.reset_time.isoformat()
+        }
+        
+        # Format response
+        return FuelEstimateResponse(
+            fuelKg=estimate.fuel_kg,
+            fuelL=estimate.fuel_liters,
+            fuelGal=estimate.fuel_gallons,
+            co2Kg=estimate.co2_kg,
+            confidence=estimate.confidence.value,
+            assumptions=estimate.assumptions,
+            phases=[{
+                "phase": phase.phase.value,
+                "duration_minutes": phase.duration_seconds / 60.0,
+                "fuel_burn_kg": estimate.phase_fuel.get(phase.phase, 0),
+                "average_altitude_ft": phase.avg_altitude_ft
+            } for phase in estimate.phases]
+        )
+        
+    except ValidationError as e:
+        logger.warning(f"Fuel estimate validation error from {client_ip}: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=str(e)
+        )
+    except HTTPException:
+        raise  # Re-raise HTTP exceptions
+    except Exception as e:
+        logger.error(f"Fuel estimate error from {client_ip}: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Internal server error during fuel estimation"
+        )
 
 @app.get("/")
 async def root():

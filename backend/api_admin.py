@@ -68,9 +68,29 @@ def api_get_subscription(user_id: str):
 def admin_all_subscriptions():
     return all_subscriptions()
 
-# In-memory demo stores
-USERS = {"admin": {"password": "adminpass", "last_reset": datetime.utcnow()}}
-AUDIT_LOG = []
+# Secure admin authentication - loads from database
+import os
+import bcrypt
+from typing import Dict, List
+
+# Admin users loaded from secure database (not hardcoded)
+USERS: Dict = {}  # Will be populated from database on startup
+AUDIT_LOG: List = []
+
+def load_admin_users_from_db():
+    """Load admin users from secure database on startup"""
+    # This should connect to your secure database
+    # For now, we'll use environment variables as a secure alternative
+    admin_password_hash = os.getenv('ADMIN_PASSWORD_HASH')
+    if admin_password_hash:
+        USERS['admin'] = {
+            'password_hash': admin_password_hash,
+            'last_reset': datetime.utcnow()
+        }
+    return USERS
+
+# Initialize admin users on module load
+load_admin_users_from_db()
 
 class ResetUserRequest(BaseModel):
     username: str
@@ -134,11 +154,21 @@ def reset_user(req: ResetUserRequest):
 
 @router.post("/admin/reset_admin")
 def reset_admin(req: ResetAdminRequest):
+    if "admin" not in USERS:
+        raise HTTPException(status_code=500, detail="Admin user not configured")
+    
     admin = USERS["admin"]
-    if req.old_password != admin["password"]:
+    
+    # Verify old password using bcrypt
+    if not bcrypt.checkpw(req.old_password.encode('utf-8'), admin["password_hash"].encode('utf-8')):
         raise HTTPException(status_code=403, detail="Invalid admin password")
-    admin["password"] = req.new_password
+    
+    # Hash new password
+    new_password_hash = bcrypt.hashpw(req.new_password.encode('utf-8'), bcrypt.gensalt())
+    admin["password_hash"] = new_password_hash.decode('utf-8')
     admin["last_reset"] = datetime.utcnow()
+    
+    # TODO: Persist to database
     AUDIT_LOG.append({"action": "reset_admin", "ts": datetime.utcnow()})
     return {"status": "admin_password_changed", "expires": (datetime.utcnow() + timedelta(days=180)).isoformat()}
 

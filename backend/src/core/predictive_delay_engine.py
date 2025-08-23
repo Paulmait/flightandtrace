@@ -1,13 +1,29 @@
 import requests
 import datetime
+import os
+from typing import Optional, Tuple
 
-def get_weather_for_airport(airport_code):
-    # Example OpenWeather API call (replace with real API key)
-    url = f"https://api.openweathermap.org/data/2.5/weather?q={airport_code}&appid=YOUR_API_KEY"
-    response = requests.get(url)
-    if response.ok:
-        data = response.json()
-        return data['weather'][0]['main'], data['wind']['speed']
+def get_weather_for_airport(airport_code: str) -> Tuple[Optional[str], Optional[float]]:
+    """Get weather conditions for an airport using OpenWeather API"""
+    api_key = os.getenv('OPENWEATHER_API_KEY')
+    
+    if not api_key:
+        # Return default values if API key not configured
+        print("Warning: OPENWEATHER_API_KEY not configured")
+        return None, None
+    
+    url = f"https://api.openweathermap.org/data/2.5/weather?q={airport_code}&appid={api_key}"
+    
+    try:
+        response = requests.get(url, timeout=5)
+        if response.ok:
+            data = response.json()
+            weather_main = data.get('weather', [{}])[0].get('main')
+            wind_speed = data.get('wind', {}).get('speed')
+            return weather_main, wind_speed
+    except (requests.RequestException, KeyError, IndexError) as e:
+        print(f"Error fetching weather for {airport_code}: {e}")
+    
     return None, None
 
 # Example previous delays lookup

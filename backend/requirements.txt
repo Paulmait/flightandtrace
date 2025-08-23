@@ -27,3 +27,5 @@ bleach==6.1.0
 python-dateutil==2.8.2
 limits==3.7.0
 secure==0.3.0
+numpy==1.26.2
+hypothesis==6.92.1

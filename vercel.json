@@ -1,0 +1,41 @@
+{
+  "version": 2,
+  "framework": null,
+  "functions": {
+    "api/**/*.py": {
+      "runtime": "python3.9"
+    }
+  },
+  "routes": [
+    {
+      "src": "/api/fuel/estimate",
+      "dest": "/api/fuel/estimate.py"
+    },
+    {
+      "src": "/api/admin/(.*)",
+      "dest": "/api/admin.py"
+    },
+    {
+      "src": "/api/health",
+      "dest": "/api/health.py"
+    },
+    {
+      "src": "/(.*)",
+      "dest": "/frontend/$1"
+    }
+  ],
+  "env": {
+    "FUEL_ESTIMATES_ENABLED": "true",
+    "API_RATE_LIMIT": "100",
+    "PYTHON_VERSION": "3.9"
+  },
+  "build": {
+    "env": {
+      "NODE_ENV": "production"
+    }
+  },
+  "regions": ["iad1"],
+  "github": {
+    "enabled": true
+  }
+}

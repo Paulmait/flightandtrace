@@ -1,0 +1,453 @@
+{
+  "_comment": "Editable aircraft fuel burn rates configuration. All rates in kg/hour.",
+  "_version": "1.0.0",
+  "_last_updated": "2025-08-23",
+  "_documentation": {
+    "description": "This file allows customization of fuel burn rates without redeploying",
+    "remote_override": "Set FUEL_RATES_CONFIG environment variable to point to remote URL",
+    "units": "All burn rates are in kilograms per hour (kg/hr)",
+    "phases": [
+      "taxi_out - Ground operations before takeoff",
+      "takeoff - Takeoff roll and initial climb",
+      "climb - Climbing to cruise altitude",
+      "cruise - Level flight at altitude",
+      "descent - Descending from cruise",
+      "approach - Final approach phase",
+      "taxi_in - Ground operations after landing",
+      "ground - Parked or very slow taxi"
+    ],
+    "confidence_levels": {
+      "high": "Exact aircraft subtype matched",
+      "medium": "ICAO family matched via mapping",
+      "low": "Generic category fallback used"
+    }
+  },
+  
+  "specific": {
+    "_comment": "Specific aircraft type burn rates - highest confidence",
+    
+    "B737-700": {
+      "taxi_out": 600,
+      "takeoff": 7800,
+      "climb": 4400,
+      "cruise": 2300,
+      "descent": 1200,
+      "approach": 1800,
+      "taxi_in": 600,
+      "ground": 300
+    },
+    
+    "B737-800": {
+      "taxi_out": 650,
+      "takeoff": 8500,
+      "climb": 4800,
+      "cruise": 2500,
+      "descent": 1300,
+      "approach": 1900,
+      "taxi_in": 650,
+      "ground": 350
+    },
+    
+    "B737-900": {
+      "taxi_out": 680,
+      "takeoff": 8800,
+      "climb": 5000,
+      "cruise": 2600,
+      "descent": 1350,
+      "approach": 2000,
+      "taxi_in": 680,
+      "ground": 380
+    },
+    
+    "B737-MAX8": {
+      "taxi_out": 600,
+      "takeoff": 8000,
+      "climb": 4500,
+      "cruise": 2200,
+      "descent": 1200,
+      "approach": 1800,
+      "taxi_in": 600,
+      "ground": 320
+    },
+    
+    "B737-MAX9": {
+      "taxi_out": 620,
+      "takeoff": 8200,
+      "climb": 4600,
+      "cruise": 2300,
+      "descent": 1250,
+      "approach": 1850,
+      "taxi_in": 620,
+      "ground": 340
+    },
+    
+    "A319": {
+      "taxi_out": 580,
+      "takeoff": 7500,
+      "climb": 4200,
+      "cruise": 2200,
+      "descent": 1150,
+      "approach": 1700,
+      "taxi_in": 580,
+      "ground": 300
+    },
+    
+    "A320": {
+      "taxi_out": 620,
+      "takeoff": 8200,
+      "climb": 4600,
+      "cruise": 2450,
+      "descent": 1250,
+      "approach": 1850,
+      "taxi_in": 620,
+      "ground": 340
+    },
+    
+    "A321": {
+      "taxi_out": 700,
+      "takeoff": 9000,
+      "climb": 5200,
+      "cruise": 2700,
+      "descent": 1400,
+      "approach": 2100,
+      "taxi_in": 700,
+      "ground": 400
+    },
+    
+    "A320neo": {
+      "taxi_out": 580,
+      "takeoff": 7800,
+      "climb": 4300,
+      "cruise": 2150,
+      "descent": 1150,
+      "approach": 1750,
+      "taxi_in": 580,
+      "ground": 300
+    },
+    
+    "A321neo": {
+      "taxi_out": 650,
+      "takeoff": 8500,
+      "climb": 4800,
+      "cruise": 2400,
+      "descent": 1300,
+      "approach": 1950,
+      "taxi_in": 650,
+      "ground": 360
+    },
+    
+    "B777-200ER": {
+      "taxi_out": 1100,
+      "takeoff": 16000,
+      "climb": 8500,
+      "cruise": 6200,
+      "descent": 2300,
+      "approach": 3200,
+      "taxi_in": 1100,
+      "ground": 550
+    },
+    
+    "B777-300ER": {
+      "taxi_out": 1200,
+      "takeoff": 18000,
+      "climb": 9500,
+      "cruise": 6800,
+      "descent": 2500,
+      "approach": 3500,
+      "taxi_in": 1200,
+      "ground": 600
+    },
+    
+    "B787-8": {
+      "taxi_out": 900,
+      "takeoff": 13000,
+      "climb": 7000,
+      "cruise": 4700,
+      "descent": 1800,
+      "approach": 2600,
+      "taxi_in": 900,
+      "ground": 450
+    },
+    
+    "B787-9": {
+      "taxi_out": 950,
+      "takeoff": 14000,
+      "climb": 7500,
+      "cruise": 5000,
+      "descent": 1900,
+      "approach": 2800,
+      "taxi_in": 950,
+      "ground": 480
+    },
+    
+    "B787-10": {
+      "taxi_out": 1000,
+      "takeoff": 15000,
+      "climb": 8000,
+      "cruise": 5300,
+      "descent": 2000,
+      "approach": 3000,
+      "taxi_in": 1000,
+      "ground": 500
+    },
+    
+    "A330-200": {
+      "taxi_out": 1050,
+      "takeoff": 15000,
+      "climb": 8000,
+      "cruise": 5500,
+      "descent": 2100,
+      "approach": 3000,
+      "taxi_in": 1050,
+      "ground": 520
+    },
+    
+    "A330-300": {
+      "taxi_out": 1100,
+      "takeoff": 16000,
+      "climb": 8500,
+      "cruise": 5800,
+      "descent": 2200,
+      "approach": 3200,
+      "taxi_in": 1100,
+      "ground": 550
+    },
+    
+    "A350-900": {
+      "taxi_out": 1000,
+      "takeoff": 15000,
+      "climb": 8000,
+      "cruise": 5200,
+      "descent": 2000,
+      "approach": 3000,
+      "taxi_in": 1000,
+      "ground": 500
+    },
+    
+    "A350-1000": {
+      "taxi_out": 1100,
+      "takeoff": 16500,
+      "climb": 8800,
+      "cruise": 5700,
+      "descent": 2200,
+      "approach": 3300,
+      "taxi_in": 1100,
+      "ground": 550
+    },
+    
+    "A380-800": {
+      "taxi_out": 1500,
+      "takeoff": 24000,
+      "climb": 13000,
+      "cruise": 9000,
+      "descent": 3500,
+      "approach": 5000,
+      "taxi_in": 1500,
+      "ground": 800
+    },
+    
+    "B747-400": {
+      "taxi_out": 1400,
+      "takeoff": 22000,
+      "climb": 12000,
+      "cruise": 8500,
+      "descent": 3200,
+      "approach": 4500,
+      "taxi_in": 1400,
+      "ground": 750
+    },
+    
+    "B747-8": {
+      "taxi_out": 1350,
+      "takeoff": 21000,
+      "climb": 11500,
+      "cruise": 8000,
+      "descent": 3000,
+      "approach": 4200,
+      "taxi_in": 1350,
+      "ground": 700
+    },
+    
+    "CRJ-700": {
+      "taxi_out": 350,
+      "takeoff": 3500,
+      "climb": 2200,
+      "cruise": 1200,
+      "descent": 700,
+      "approach": 1000,
+      "taxi_in": 350,
+      "ground": 180
+    },
+    
+    "CRJ-900": {
+      "taxi_out": 400,
+      "takeoff": 4000,
+      "climb": 2500,
+      "cruise": 1400,
+      "descent": 800,
+      "approach": 1200,
+      "taxi_in": 400,
+      "ground": 200
+    },
+    
+    "ERJ-145": {
+      "taxi_out": 300,
+      "takeoff": 3000,
+      "climb": 1900,
+      "cruise": 1000,
+      "descent": 600,
+      "approach": 900,
+      "taxi_in": 300,
+      "ground": 150
+    },
+    
+    "E175": {
+      "taxi_out": 380,
+      "takeoff": 3800,
+      "climb": 2400,
+      "cruise": 1300,
+      "descent": 750,
+      "approach": 1100,
+      "taxi_in": 380,
+      "ground": 190
+    },
+    
+    "E190": {
+      "taxi_out": 420,
+      "takeoff": 4200,
+      "climb": 2600,
+      "cruise": 1500,
+      "descent": 850,
+      "approach": 1300,
+      "taxi_in": 420,
+      "ground": 210
+    },
+    
+    "ATR-72": {
+      "taxi_out": 180,
+      "takeoff": 1400,
+      "climb": 900,
+      "cruise": 550,
+      "descent": 350,
+      "approach": 450,
+      "taxi_in": 180,
+      "ground": 90
+    },
+    
+    "Q400": {
+      "taxi_out": 220,
+      "takeoff": 1600,
+      "climb": 1100,
+      "cruise": 650,
+      "descent": 420,
+      "approach": 520,
+      "taxi_in": 220,
+      "ground": 110
+    }
+  },
+  
+  "icao_mapping": {
+    "_comment": "Map ICAO codes to specific aircraft types",
+    "B737": "B737-700",
+    "B738": "B737-800",
+    "B739": "B737-900",
+    "B37M": "B737-MAX8",
+    "B39M": "B737-MAX9",
+    "A319": "A319",
+    "A320": "A320",
+    "A321": "A321",
+    "A20N": "A320neo",
+    "A21N": "A321neo",
+    "B772": "B777-200ER",
+    "B77W": "B777-300ER",
+    "B788": "B787-8",
+    "B789": "B787-9",
+    "B78X": "B787-10",
+    "A332": "A330-200",
+    "A333": "A330-300",
+    "A359": "A350-900",
+    "A35K": "A350-1000",
+    "A388": "A380-800",
+    "B744": "B747-400",
+    "B748": "B747-8",
+    "CRJ7": "CRJ-700",
+    "CRJ9": "CRJ-900",
+    "E145": "ERJ-145",
+    "E75S": "E175",
+    "E75L": "E175",
+    "E190": "E190",
+    "AT72": "ATR-72",
+    "DH8D": "Q400"
+  },
+  
+  "category_defaults": {
+    "_comment": "Fallback rates when specific aircraft not found",
+    "narrow_body": {
+      "taxi_out": 600,
+      "takeoff": 8000,
+      "climb": 4500,
+      "cruise": 2400,
+      "descent": 1200,
+      "approach": 1800,
+      "taxi_in": 600,
+      "ground": 300
+    },
+    "wide_body": {
+      "taxi_out": 1000,
+      "takeoff": 15000,
+      "climb": 8000,
+      "cruise": 5500,
+      "descent": 2000,
+      "approach": 3000,
+      "taxi_in": 1000,
+      "ground": 500
+    },
+    "regional_jet": {
+      "taxi_out": 400,
+      "takeoff": 4000,
+      "climb": 2500,
+      "cruise": 1400,
+      "descent": 800,
+      "approach": 1200,
+      "taxi_in": 400,
+      "ground": 200
+    },
+    "turboprop": {
+      "taxi_out": 200,
+      "takeoff": 1500,
+      "climb": 1000,
+      "cruise": 600,
+      "descent": 400,
+      "approach": 500,
+      "taxi_in": 200,
+      "ground": 100
+    },
+    "general_aviation": {
+      "taxi_out": 50,
+      "takeoff": 400,
+      "climb": 250,
+      "cruise": 150,
+      "descent": 100,
+      "approach": 120,
+      "taxi_in": 50,
+      "ground": 25
+    }
+  },
+  
+  "adjustments": {
+    "_comment": "Future: Weather and operational adjustments",
+    "weather_multipliers": {
+      "headwind_strong": 1.15,
+      "headwind_moderate": 1.08,
+      "tailwind_strong": 0.92,
+      "tailwind_moderate": 0.95,
+      "turbulence_severe": 1.10,
+      "turbulence_moderate": 1.05
+    },
+    "altitude_adjustments": {
+      "below_optimal": 1.10,
+      "optimal": 1.00,
+      "above_optimal": 1.05
+    }
+  }
+}

@@ -1,0 +1,42 @@
+# Supabase Local Development Config
+
+[project]
+id = "flighttrace"
+name = "FlightTrace"
+
+[api]
+enabled = true
+port = 54321
+schemas = ["public", "storage", "graphql_public"]
+
+[db]
+port = 54322
+pool_size = 10
+max_connections = 100
+
+[studio]
+enabled = true
+port = 54323
+
+[storage]
+enabled = true
+
+[auth]
+enabled = true
+site_url = "http://localhost:3000"
+redirect_urls = ["http://localhost:3000/auth/callback"]
+
+[auth.email]
+enable_signup = true
+enable_confirmations = true
+
+[auth.sms]
+enable_signup = false
+
+[auth.external.google]
+enabled = false
+client_id = ""
+secret = ""
+
+[local]
+health_check_endpoint = "127.0.0.1:54321/health"

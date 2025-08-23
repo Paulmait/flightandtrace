@@ -100,20 +100,15 @@ class SecurityValidator:
     
     @staticmethod
     def validate_tail_number(tail_number: str) -> bool:
-        """Validate aircraft tail number format"""
-        if not tail_number or len(tail_number) > 10:
-            return False
+        """Validate aircraft tail number format using enhanced aviation validation"""
+        from .aviation_utils import validate_tail_number_enhanced
         
-        # Common patterns: N12345, G-ABCD, D-ABCD, etc.
-        patterns = [
-            r'^N[0-9]{1,5}[A-Z]{0,2}$',  # US
-            r'^[A-Z]-[A-Z]{4}$',          # UK, Germany, etc.
-            r'^[A-Z]{2}-[A-Z]{3}$',       # Other countries
-            r'^[A-Z]{1,2}[0-9]{1,4}$'     # Various formats
-        ]
+        is_valid, country_code = validate_tail_number_enhanced(tail_number)
         
-        tail_number = tail_number.upper().strip()
-        return any(re.match(pattern, tail_number) for pattern in patterns)
+        if is_valid and country_code:
+            logger.info(f"Valid tail number {tail_number} from country: {country_code}")
+        
+        return is_valid
 
 class RateLimiter:
     """Enhanced rate limiting with sliding window"""

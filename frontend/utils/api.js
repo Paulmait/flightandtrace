@@ -49,6 +49,105 @@ export async function fetchAuditLog() {
 }
 const API_URL = BASE_API_URL;
 
+// Fuel estimation API functions
+export async function getFuelEstimate(flightId, aircraftType) {
+  const token = await getAuthToken();
+  const params = new URLSearchParams({
+    flightId,
+    aircraftType: aircraftType || 'B738'
+  });
+  
+  const res = await fetch(`${BASE_API_URL}/api/fuel/estimate?${params}`, {
+    headers: {
+      'Authorization': `Bearer ${token}`,
+      'Content-Type': 'application/json'
+    }
+  });
+  
+  if (!res.ok) {
+    throw new Error(`Failed to get fuel estimate: ${res.status}`);
+  }
+  
+  return res.json();
+}
+
+export async function calculateFuelEstimate(flightData) {
+  const token = await getAuthToken();
+  
+  const res = await fetch(`${BASE_API_URL}/api/fuel/estimate`, {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${token}`,
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({
+      flight_id: flightData.flightId,
+      aircraft_type: flightData.aircraftType,
+      altitude_series: flightData.altitudeSeries,
+      distance_nm: flightData.distanceNm
+    })
+  });
+  
+  if (!res.ok) {
+    throw new Error(`Failed to calculate fuel estimate: ${res.status}`);
+  }
+  
+  return res.json();
+}
+
+export async function getFeatureFlags() {
+  const token = await getAuthToken();
+  
+  const res = await fetch(`${BASE_API_URL}/api/feature-flags`, {
+    headers: {
+      'Authorization': `Bearer ${token}`,
+      'Content-Type': 'application/json'
+    }
+  });
+  
+  if (!res.ok) {
+    // Return default flags if API fails
+    return {
+      fuelEstimates: false,
+      weatherOverlay: true,
+      socialSharing: true,
+      familySharing: true
+    };
+  }
+  
+  return res.json();
+}
+
+export async function updateUserSettings(settings) {
+  const token = await getAuthToken();
+  
+  const res = await fetch(`${BASE_API_URL}/api/user/settings`, {
+    method: 'PUT',
+    headers: {
+      'Authorization': `Bearer ${token}`,
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify(settings)
+  });
+  
+  if (!res.ok) {
+    throw new Error(`Failed to update settings: ${res.status}`);
+  }
+  
+  return res.json();
+}
+
+// Helper to get auth token from storage
+async function getAuthToken() {
+  try {
+    const AsyncStorage = await import('@react-native-async-storage/async-storage');
+    return await AsyncStorage.default.getItem('auth_token');
+  } catch (error) {
+    console.warn('Could not get auth token:', error);
+    return null;
+  }
+}
+
 async function apiRequest(endpoint, method = 'GET', body = null, token = null) {
   const headers = { 'Content-Type': 'application/json' };
   if (token) headers['Authorization'] = `Bearer ${token}`;
