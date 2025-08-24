@@ -19,7 +19,9 @@
       "Bash(python:*)",
       "Bash(node:*)",
       "Bash(npm install:*)",
-      "Bash(vercel:*)"
+      "Bash(vercel:*)",
+      "WebFetch(domain:www.flightradar24.com)",
+      "WebFetch(domain:www.flightaware.com)"
     ],
     "deny": [],
     "additionalDirectories": [

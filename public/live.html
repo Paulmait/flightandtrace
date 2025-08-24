@@ -1,0 +1,1139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>FlightTrace Live - Real-Time Flight Tracker</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            overflow: hidden;
+            height: 100vh;
+            background: #000;
+        }
+        
+        /* Header */
+        .header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 50px;
+            background: rgba(0, 0, 0, 0.9);
+            backdrop-filter: blur(10px);
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            padding: 0 15px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .logo {
+            font-size: 20px;
+            font-weight: bold;
+            color: #00c6ff;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .logo i {
+            font-size: 24px;
+        }
+        
+        .search-bar {
+            flex: 1;
+            max-width: 400px;
+            margin: 0 20px;
+            position: relative;
+        }
+        
+        .search-input {
+            width: 100%;
+            padding: 8px 35px 8px 12px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 20px;
+            color: white;
+            font-size: 14px;
+        }
+        
+        .search-input::placeholder {
+            color: rgba(255, 255, 255, 0.5);
+        }
+        
+        .search-btn {
+            position: absolute;
+            right: 5px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: #00c6ff;
+            border: none;
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            color: white;
+            cursor: pointer;
+        }
+        
+        .header-controls {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+        }
+        
+        .header-btn {
+            background: none;
+            border: none;
+            color: rgba(255, 255, 255, 0.8);
+            font-size: 18px;
+            cursor: pointer;
+            padding: 8px;
+            transition: color 0.3s;
+        }
+        
+        .header-btn:hover {
+            color: white;
+        }
+        
+        /* Map Container */
+        #map {
+            position: absolute;
+            top: 50px;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: #1a1a1a;
+        }
+        
+        /* Left Sidebar */
+        .sidebar-left {
+            position: fixed;
+            top: 50px;
+            left: 0;
+            width: 320px;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.85);
+            backdrop-filter: blur(10px);
+            z-index: 500;
+            transform: translateX(-100%);
+            transition: transform 0.3s;
+            overflow-y: auto;
+            border-right: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .sidebar-left.active {
+            transform: translateX(0);
+        }
+        
+        .sidebar-header {
+            padding: 15px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .sidebar-title {
+            color: white;
+            font-size: 16px;
+            font-weight: 600;
+        }
+        
+        .close-sidebar {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 20px;
+            cursor: pointer;
+        }
+        
+        /* Filter Section */
+        .filter-section {
+            padding: 15px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .filter-title {
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 12px;
+            text-transform: uppercase;
+            margin-bottom: 10px;
+            letter-spacing: 1px;
+        }
+        
+        .filter-options {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        
+        .filter-option {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: rgba(255, 255, 255, 0.8);
+            font-size: 14px;
+            cursor: pointer;
+        }
+        
+        .filter-option input[type="checkbox"] {
+            width: 16px;
+            height: 16px;
+        }
+        
+        .altitude-slider {
+            margin-top: 10px;
+        }
+        
+        .slider {
+            width: 100%;
+            -webkit-appearance: none;
+            height: 4px;
+            background: rgba(255, 255, 255, 0.2);
+            outline: none;
+            border-radius: 2px;
+        }
+        
+        .slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 16px;
+            height: 16px;
+            background: #00c6ff;
+            cursor: pointer;
+            border-radius: 50%;
+        }
+        
+        .slider-labels {
+            display: flex;
+            justify-content: space-between;
+            color: rgba(255, 255, 255, 0.5);
+            font-size: 11px;
+            margin-top: 5px;
+        }
+        
+        /* Flight List */
+        .flight-list {
+            padding: 15px;
+        }
+        
+        .flight-item {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 8px;
+            padding: 12px;
+            margin-bottom: 10px;
+            cursor: pointer;
+            transition: all 0.3s;
+            border: 1px solid transparent;
+        }
+        
+        .flight-item:hover {
+            background: rgba(255, 255, 255, 0.1);
+            border-color: #00c6ff;
+        }
+        
+        .flight-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+        
+        .flight-number {
+            color: #00c6ff;
+            font-weight: bold;
+            font-size: 16px;
+        }
+        
+        .flight-airline {
+            color: rgba(255, 255, 255, 0.6);
+            font-size: 12px;
+        }
+        
+        .flight-route {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: white;
+            font-size: 14px;
+        }
+        
+        .flight-details {
+            display: flex;
+            gap: 15px;
+            margin-top: 8px;
+            font-size: 12px;
+            color: rgba(255, 255, 255, 0.5);
+        }
+        
+        .flight-detail {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+        
+        /* Right Panel - Flight Details */
+        .flight-panel {
+            position: fixed;
+            top: 50px;
+            right: 0;
+            width: 380px;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.9);
+            backdrop-filter: blur(10px);
+            z-index: 500;
+            transform: translateX(100%);
+            transition: transform 0.3s;
+            overflow-y: auto;
+            border-left: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .flight-panel.active {
+            transform: translateX(0);
+        }
+        
+        .panel-header {
+            background: linear-gradient(135deg, #0099ff 0%, #00c6ff 100%);
+            padding: 20px;
+            position: relative;
+        }
+        
+        .panel-close {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background: none;
+            border: none;
+            color: white;
+            font-size: 24px;
+            cursor: pointer;
+        }
+        
+        .panel-flight-number {
+            font-size: 28px;
+            font-weight: bold;
+            color: white;
+            margin-bottom: 5px;
+        }
+        
+        .panel-airline {
+            color: rgba(255, 255, 255, 0.9);
+            font-size: 16px;
+        }
+        
+        .panel-section {
+            padding: 20px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .section-title {
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 15px;
+        }
+        
+        .info-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+        
+        .info-item {
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .info-label {
+            color: rgba(255, 255, 255, 0.5);
+            font-size: 11px;
+            text-transform: uppercase;
+            margin-bottom: 4px;
+        }
+        
+        .info-value {
+            color: white;
+            font-size: 16px;
+            font-weight: 500;
+        }
+        
+        .info-value.large {
+            font-size: 20px;
+            color: #00c6ff;
+        }
+        
+        /* Map Controls */
+        .map-controls {
+            position: fixed;
+            top: 70px;
+            right: 20px;
+            z-index: 400;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        
+        .map-control-btn {
+            width: 40px;
+            height: 40px;
+            background: rgba(0, 0, 0, 0.8);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 8px;
+            color: white;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s;
+        }
+        
+        .map-control-btn:hover {
+            background: rgba(0, 0, 0, 0.9);
+            border-color: #00c6ff;
+        }
+        
+        .map-control-btn.active {
+            background: #00c6ff;
+            border-color: #00c6ff;
+        }
+        
+        /* Statistics Bar */
+        .stats-bar {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 60px;
+            background: rgba(0, 0, 0, 0.9);
+            backdrop-filter: blur(10px);
+            z-index: 400;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 40px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .stat-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        
+        .stat-value {
+            color: #00c6ff;
+            font-size: 24px;
+            font-weight: bold;
+        }
+        
+        .stat-label {
+            color: rgba(255, 255, 255, 0.6);
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        /* Aircraft Markers */
+        .aircraft-icon {
+            width: 24px;
+            height: 24px;
+            background: #00c6ff;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 14px;
+            border: 2px solid white;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+        }
+        
+        .aircraft-label {
+            background: rgba(0, 0, 0, 0.8);
+            color: white;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-size: 11px;
+            margin-top: 2px;
+            white-space: nowrap;
+        }
+        
+        /* Loading Spinner */
+        .loading {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 2000;
+        }
+        
+        .spinner {
+            width: 50px;
+            height: 50px;
+            border: 3px solid rgba(255, 255, 255, 0.1);
+            border-top-color: #00c6ff;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        /* Mobile Responsive */
+        @media (max-width: 768px) {
+            .sidebar-left, .flight-panel {
+                width: 100%;
+            }
+            
+            .stats-bar {
+                gap: 20px;
+                padding: 0 10px;
+            }
+            
+            .stat-value {
+                font-size: 18px;
+            }
+            
+            .search-bar {
+                display: none;
+            }
+        }
+        
+        /* Tooltip */
+        .tooltip {
+            position: absolute;
+            background: rgba(0, 0, 0, 0.9);
+            color: white;
+            padding: 8px 12px;
+            border-radius: 6px;
+            font-size: 12px;
+            pointer-events: none;
+            z-index: 1500;
+            display: none;
+        }
+        
+        .tooltip.active {
+            display: block;
+        }
+        
+        /* Weather Layer Toggle */
+        .layer-controls {
+            position: fixed;
+            bottom: 80px;
+            right: 20px;
+            z-index: 400;
+            background: rgba(0, 0, 0, 0.8);
+            border-radius: 8px;
+            padding: 10px;
+            display: none;
+        }
+        
+        .layer-controls.active {
+            display: block;
+        }
+        
+        .layer-option {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: white;
+            font-size: 13px;
+            padding: 5px;
+            cursor: pointer;
+        }
+        
+        .layer-option:hover {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="logo">
+            <i class="fas fa-plane"></i>
+            <span>FlightTrace LIVE</span>
+        </div>
+        
+        <div class="search-bar">
+            <input type="text" class="search-input" placeholder="Search flight, route, airport..." id="mainSearch">
+            <button class="search-btn" onclick="performSearch()">
+                <i class="fas fa-search"></i>
+            </button>
+        </div>
+        
+        <div class="header-controls">
+            <button class="header-btn" onclick="toggleSidebar()" title="Filters">
+                <i class="fas fa-filter"></i>
+            </button>
+            <button class="header-btn" onclick="toggleFullscreen()" title="Fullscreen">
+                <i class="fas fa-expand"></i>
+            </button>
+            <button class="header-btn" onclick="refreshData()" title="Refresh">
+                <i class="fas fa-sync-alt"></i>
+            </button>
+            <button class="header-btn" onclick="showSettings()" title="Settings">
+                <i class="fas fa-cog"></i>
+            </button>
+        </div>
+    </header>
+    
+    <!-- Map -->
+    <div id="map"></div>
+    
+    <!-- Left Sidebar -->
+    <div class="sidebar-left" id="leftSidebar">
+        <div class="sidebar-header">
+            <h3 class="sidebar-title">Filters & Flights</h3>
+            <button class="close-sidebar" onclick="toggleSidebar()">×</button>
+        </div>
+        
+        <!-- Altitude Filter -->
+        <div class="filter-section">
+            <div class="filter-title">Altitude Range</div>
+            <div class="altitude-slider">
+                <input type="range" class="slider" id="altitudeSlider" min="0" max="50000" value="50000" step="1000">
+                <div class="slider-labels">
+                    <span>Ground</span>
+                    <span id="altitudeValue">50,000 ft</span>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Aircraft Type Filter -->
+        <div class="filter-section">
+            <div class="filter-title">Aircraft Type</div>
+            <div class="filter-options">
+                <label class="filter-option">
+                    <input type="checkbox" checked> Commercial Jets
+                </label>
+                <label class="filter-option">
+                    <input type="checkbox" checked> Cargo Aircraft
+                </label>
+                <label class="filter-option">
+                    <input type="checkbox"> General Aviation
+                </label>
+                <label class="filter-option">
+                    <input type="checkbox"> Helicopters
+                </label>
+                <label class="filter-option">
+                    <input type="checkbox"> Military
+                </label>
+            </div>
+        </div>
+        
+        <!-- Speed Filter -->
+        <div class="filter-section">
+            <div class="filter-title">Speed Range</div>
+            <div class="filter-options">
+                <label class="filter-option">
+                    <input type="checkbox" checked> > 400 mph
+                </label>
+                <label class="filter-option">
+                    <input type="checkbox" checked> 200-400 mph
+                </label>
+                <label class="filter-option">
+                    <input type="checkbox"> < 200 mph
+                </label>
+            </div>
+        </div>
+        
+        <!-- Live Flight List -->
+        <div class="filter-section">
+            <div class="filter-title">Visible Flights (12)</div>
+        </div>
+        <div class="flight-list" id="flightList">
+            <!-- Flights will be dynamically added here -->
+        </div>
+    </div>
+    
+    <!-- Flight Details Panel -->
+    <div class="flight-panel" id="flightPanel">
+        <button class="panel-close" onclick="closeFlightPanel()">×</button>
+        
+        <div class="panel-header">
+            <div class="panel-flight-number" id="panelFlightNumber">AA2351</div>
+            <div class="panel-airline" id="panelAirline">American Airlines</div>
+        </div>
+        
+        <div class="panel-section">
+            <div class="section-title">Route Information</div>
+            <div class="info-grid">
+                <div class="info-item">
+                    <span class="info-label">Origin</span>
+                    <span class="info-value" id="panelOrigin">JFK</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Destination</span>
+                    <span class="info-value" id="panelDestination">LAX</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Departure</span>
+                    <span class="info-value" id="panelDeparture">08:15</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Arrival</span>
+                    <span class="info-value" id="panelArrival">11:45</span>
+                </div>
+            </div>
+        </div>
+        
+        <div class="panel-section">
+            <div class="section-title">Current Status</div>
+            <div class="info-grid">
+                <div class="info-item">
+                    <span class="info-label">Altitude</span>
+                    <span class="info-value large" id="panelAltitude">35,000 ft</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Speed</span>
+                    <span class="info-value large" id="panelSpeed">485 mph</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Heading</span>
+                    <span class="info-value" id="panelHeading">270°</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Distance</span>
+                    <span class="info-value" id="panelDistance">1,245 mi</span>
+                </div>
+            </div>
+        </div>
+        
+        <div class="panel-section">
+            <div class="section-title">Aircraft Information</div>
+            <div class="info-grid">
+                <div class="info-item">
+                    <span class="info-label">Type</span>
+                    <span class="info-value" id="panelAircraft">Boeing 737-800</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Registration</span>
+                    <span class="info-value" id="panelRegistration">N12345</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Age</span>
+                    <span class="info-value" id="panelAge">8.5 years</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Squawk</span>
+                    <span class="info-value" id="panelSquawk">1234</span>
+                </div>
+            </div>
+        </div>
+        
+        <div class="panel-section">
+            <div class="section-title">Environmental Impact</div>
+            <div class="info-grid">
+                <div class="info-item">
+                    <span class="info-label">Fuel Burn</span>
+                    <span class="info-value" id="panelFuel">12,450 kg</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">CO2 Emissions</span>
+                    <span class="info-value" id="panelCO2">39.2 tons</span>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Map Controls -->
+    <div class="map-controls">
+        <button class="map-control-btn" onclick="zoomIn()" title="Zoom In">
+            <i class="fas fa-plus"></i>
+        </button>
+        <button class="map-control-btn" onclick="zoomOut()" title="Zoom Out">
+            <i class="fas fa-minus"></i>
+        </button>
+        <button class="map-control-btn" onclick="toggleLayers()" title="Layers">
+            <i class="fas fa-layer-group"></i>
+        </button>
+        <button class="map-control-btn" onclick="toggle3D()" title="3D View">
+            <i class="fas fa-cube"></i>
+        </button>
+        <button class="map-control-btn" onclick="toggleWeather()" title="Weather">
+            <i class="fas fa-cloud"></i>
+        </button>
+        <button class="map-control-btn" onclick="centerOnLocation()" title="My Location">
+            <i class="fas fa-crosshairs"></i>
+        </button>
+    </div>
+    
+    <!-- Layer Controls -->
+    <div class="layer-controls" id="layerControls">
+        <label class="layer-option">
+            <input type="checkbox" checked> Airports
+        </label>
+        <label class="layer-option">
+            <input type="checkbox" checked> Flight Paths
+        </label>
+        <label class="layer-option">
+            <input type="checkbox"> Weather Radar
+        </label>
+        <label class="layer-option">
+            <input type="checkbox"> Airspace
+        </label>
+        <label class="layer-option">
+            <input type="checkbox"> Navigation Aids
+        </label>
+    </div>
+    
+    <!-- Statistics Bar -->
+    <div class="stats-bar">
+        <div class="stat-item">
+            <span class="stat-value" id="totalFlights">2,847</span>
+            <span class="stat-label">Total Flights</span>
+        </div>
+        <div class="stat-item">
+            <span class="stat-value" id="inAir">1,523</span>
+            <span class="stat-label">In Air</span>
+        </div>
+        <div class="stat-item">
+            <span class="stat-value" id="onGround">1,324</span>
+            <span class="stat-label">On Ground</span>
+        </div>
+        <div class="stat-item">
+            <span class="stat-value" id="delayed">142</span>
+            <span class="stat-label">Delayed</span>
+        </div>
+        <div class="stat-item">
+            <span class="stat-value" id="dataAge">Live</span>
+            <span class="stat-label">Data Status</span>
+        </div>
+    </div>
+    
+    <!-- Loading Spinner -->
+    <div class="loading" id="loading" style="display: none;">
+        <div class="spinner"></div>
+    </div>
+    
+    <!-- Tooltip -->
+    <div class="tooltip" id="tooltip"></div>
+    
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script>
+        // Initialize map with dark theme
+        const map = L.map('map', {
+            center: [39.8283, -98.5795],
+            zoom: 5,
+            zoomControl: false,
+            preferCanvas: true
+        });
+        
+        // Dark map tiles
+        L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+            attribution: '© OpenStreetMap contributors © CARTO',
+            subdomains: 'abcd',
+            maxZoom: 19
+        }).addTo(map);
+        
+        // Flight data storage
+        let flights = new Map();
+        let markers = new Map();
+        let flightPaths = new Map();
+        let selectedFlight = null;
+        let updateInterval = null;
+        
+        // Custom aircraft icon
+        function createAircraftIcon(heading = 0, altitude = 0) {
+            const color = altitude > 30000 ? '#00c6ff' : altitude > 10000 ? '#ffaa00' : '#ff6b6b';
+            return L.divIcon({
+                html: `<div style="transform: rotate(${heading}deg); color: ${color};">✈</div>`,
+                iconSize: [24, 24],
+                className: 'aircraft-marker'
+            });
+        }
+        
+        // Generate realistic flight data
+        function generateFlightData() {
+            const airlines = ['AA', 'DL', 'UA', 'WN', 'B6', 'NK', 'F9', 'AS', 'G4', 'SY'];
+            const aircraft = ['B738', 'A320', 'B77W', 'A321', 'B739', 'A319', 'B752', 'A333', 'B763', 'E175'];
+            const airports = [
+                {code: 'JFK', lat: 40.6413, lng: -73.7781},
+                {code: 'LAX', lat: 33.9425, lng: -118.4081},
+                {code: 'ORD', lat: 41.9742, lng: -87.9073},
+                {code: 'ATL', lat: 33.6407, lng: -84.4277},
+                {code: 'DFW', lat: 32.8998, lng: -97.0403},
+                {code: 'DEN', lat: 39.8561, lng: -104.6737},
+                {code: 'SFO', lat: 37.6213, lng: -122.3790},
+                {code: 'SEA', lat: 47.4502, lng: -122.3088},
+                {code: 'MIA', lat: 25.7959, lng: -80.2870},
+                {code: 'BOS', lat: 42.3656, lng: -71.0096}
+            ];
+            
+            const generatedFlights = [];
+            
+            // Generate 50 random flights
+            for (let i = 0; i < 50; i++) {
+                const airline = airlines[Math.floor(Math.random() * airlines.length)];
+                const flightNum = Math.floor(Math.random() * 9000) + 1000;
+                const origin = airports[Math.floor(Math.random() * airports.length)];
+                const dest = airports[Math.floor(Math.random() * airports.length)];
+                
+                if (origin.code === dest.code) continue;
+                
+                // Calculate position along route
+                const progress = Math.random();
+                const lat = origin.lat + (dest.lat - origin.lat) * progress;
+                const lng = origin.lng + (dest.lng - origin.lng) * progress;
+                
+                // Calculate heading
+                const deltaY = dest.lng - origin.lng;
+                const deltaX = dest.lat - origin.lat;
+                const heading = Math.atan2(deltaY, deltaX) * 180 / Math.PI;
+                
+                generatedFlights.push({
+                    id: `${airline}${flightNum}`,
+                    airline: airline,
+                    flightNumber: `${airline}${flightNum}`,
+                    aircraft: aircraft[Math.floor(Math.random() * aircraft.length)],
+                    origin: origin.code,
+                    destination: dest.code,
+                    position: {lat, lng},
+                    altitude: Math.floor(Math.random() * 35000) + 10000,
+                    speed: Math.floor(Math.random() * 200) + 400,
+                    heading: heading,
+                    progress: Math.floor(progress * 100),
+                    status: progress === 0 ? 'Scheduled' : progress === 1 ? 'Landed' : 'En Route'
+                });
+            }
+            
+            return generatedFlights;
+        }
+        
+        // Update flight positions
+        function updateFlights() {
+            const flightData = generateFlightData();
+            
+            flightData.forEach(flight => {
+                if (flight.status === 'En Route') {
+                    // Add or update marker
+                    if (markers.has(flight.id)) {
+                        const marker = markers.get(flight.id);
+                        marker.setLatLng([flight.position.lat, flight.position.lng]);
+                        marker.setIcon(createAircraftIcon(flight.heading, flight.altitude));
+                    } else {
+                        const marker = L.marker([flight.position.lat, flight.position.lng], {
+                            icon: createAircraftIcon(flight.heading, flight.altitude),
+                            title: flight.flightNumber
+                        }).addTo(map);
+                        
+                        marker.on('click', () => showFlightDetails(flight));
+                        
+                        // Add popup
+                        marker.bindPopup(`
+                            <strong>${flight.flightNumber}</strong><br>
+                            ${flight.origin} → ${flight.destination}<br>
+                            Alt: ${flight.altitude.toLocaleString()} ft<br>
+                            Speed: ${flight.speed} mph
+                        `);
+                        
+                        markers.set(flight.id, marker);
+                    }
+                    
+                    flights.set(flight.id, flight);
+                }
+            });
+            
+            updateFlightList(flightData.filter(f => f.status === 'En Route'));
+            updateStatistics(flightData);
+        }
+        
+        // Update flight list in sidebar
+        function updateFlightList(flightData) {
+            const listContainer = document.getElementById('flightList');
+            listContainer.innerHTML = '';
+            
+            flightData.slice(0, 10).forEach(flight => {
+                const item = document.createElement('div');
+                item.className = 'flight-item';
+                item.onclick = () => showFlightDetails(flight);
+                
+                item.innerHTML = `
+                    <div class="flight-header">
+                        <div>
+                            <div class="flight-number">${flight.flightNumber}</div>
+                            <div class="flight-airline">${flight.aircraft}</div>
+                        </div>
+                    </div>
+                    <div class="flight-route">
+                        <span>${flight.origin}</span>
+                        <i class="fas fa-plane" style="font-size: 10px;"></i>
+                        <span>${flight.destination}</span>
+                    </div>
+                    <div class="flight-details">
+                        <div class="flight-detail">
+                            <i class="fas fa-ruler-vertical"></i>
+                            ${flight.altitude.toLocaleString()} ft
+                        </div>
+                        <div class="flight-detail">
+                            <i class="fas fa-tachometer-alt"></i>
+                            ${flight.speed} mph
+                        </div>
+                        <div class="flight-detail">
+                            <i class="fas fa-compass"></i>
+                            ${Math.round(flight.heading)}°
+                        </div>
+                    </div>
+                `;
+                
+                listContainer.appendChild(item);
+            });
+            
+            // Update count
+            document.querySelector('.filter-title').textContent = `Visible Flights (${flightData.length})`;
+        }
+        
+        // Show flight details panel
+        function showFlightDetails(flight) {
+            selectedFlight = flight;
+            
+            document.getElementById('panelFlightNumber').textContent = flight.flightNumber;
+            document.getElementById('panelAirline').textContent = `${flight.airline} - ${flight.aircraft}`;
+            document.getElementById('panelOrigin').textContent = flight.origin;
+            document.getElementById('panelDestination').textContent = flight.destination;
+            document.getElementById('panelAltitude').textContent = `${flight.altitude.toLocaleString()} ft`;
+            document.getElementById('panelSpeed').textContent = `${flight.speed} mph`;
+            document.getElementById('panelHeading').textContent = `${Math.round(flight.heading)}°`;
+            document.getElementById('panelAircraft').textContent = flight.aircraft;
+            
+            // Calculate estimated fuel burn (simplified)
+            const fuelBurn = Math.round(flight.altitude * 0.35);
+            document.getElementById('panelFuel').textContent = `${fuelBurn.toLocaleString()} kg`;
+            document.getElementById('panelCO2').textContent = `${(fuelBurn * 3.15 / 1000).toFixed(1)} tons`;
+            
+            document.getElementById('flightPanel').classList.add('active');
+            
+            // Center map on flight
+            map.setView([flight.position.lat, flight.position.lng], 7);
+        }
+        
+        // Close flight panel
+        function closeFlightPanel() {
+            document.getElementById('flightPanel').classList.remove('active');
+            selectedFlight = null;
+        }
+        
+        // Update statistics
+        function updateStatistics(flightData) {
+            const inAir = flightData.filter(f => f.status === 'En Route').length;
+            const onGround = flightData.filter(f => f.status !== 'En Route').length;
+            const delayed = Math.floor(Math.random() * 200) + 100;
+            
+            document.getElementById('totalFlights').textContent = flightData.length.toLocaleString();
+            document.getElementById('inAir').textContent = inAir.toLocaleString();
+            document.getElementById('onGround').textContent = onGround.toLocaleString();
+            document.getElementById('delayed').textContent = delayed;
+        }
+        
+        // Control functions
+        function toggleSidebar() {
+            document.getElementById('leftSidebar').classList.toggle('active');
+        }
+        
+        function toggleFullscreen() {
+            if (!document.fullscreenElement) {
+                document.documentElement.requestFullscreen();
+            } else {
+                document.exitFullscreen();
+            }
+        }
+        
+        function refreshData() {
+            const icon = document.querySelector('.fa-sync-alt');
+            icon.style.animation = 'spin 1s';
+            updateFlights();
+            setTimeout(() => {
+                icon.style.animation = '';
+            }, 1000);
+        }
+        
+        function zoomIn() {
+            map.zoomIn();
+        }
+        
+        function zoomOut() {
+            map.zoomOut();
+        }
+        
+        function toggleLayers() {
+            document.getElementById('layerControls').classList.toggle('active');
+        }
+        
+        function toggle3D() {
+            // Placeholder for 3D view
+            alert('3D view would show aircraft altitude visualization');
+        }
+        
+        function toggleWeather() {
+            // Placeholder for weather overlay
+            alert('Weather overlay would show precipitation and cloud cover');
+        }
+        
+        function centerOnLocation() {
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(position => {
+                    map.setView([position.coords.latitude, position.coords.longitude], 10);
+                });
+            }
+        }
+        
+        function performSearch() {
+            const query = document.getElementById('mainSearch').value.toUpperCase();
+            if (query) {
+                const flight = Array.from(flights.values()).find(f => f.flightNumber.includes(query));
+                if (flight) {
+                    showFlightDetails(flight);
+                } else {
+                    alert(`No flight found for: ${query}`);
+                }
+            }
+        }
+        
+        function showSettings() {
+            alert('Settings: Map style, units, refresh rate, notifications');
+        }
+        
+        // Altitude slider
+        document.getElementById('altitudeSlider').addEventListener('input', function(e) {
+            document.getElementById('altitudeValue').textContent = `${parseInt(e.target.value).toLocaleString()} ft`;
+            // Filter flights by altitude
+        });
+        
+        // Keyboard shortcuts
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                closeFlightPanel();
+            } else if (e.key === 'f' && !e.target.matches('input')) {
+                document.getElementById('mainSearch').focus();
+            } else if (e.key === 'r' && !e.target.matches('input')) {
+                refreshData();
+            }
+        });
+        
+        // Initialize
+        updateFlights();
+        
+        // Auto-update every 5 seconds
+        updateInterval = setInterval(updateFlights, 5000);
+        
+        // Clean up on page unload
+        window.addEventListener('beforeunload', () => {
+            if (updateInterval) {
+                clearInterval(updateInterval);
+            }
+        });
+    </script>
+</body>
+</html>
