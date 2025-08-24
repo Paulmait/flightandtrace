@@ -21,7 +21,8 @@
       "Bash(npm install:*)",
       "Bash(vercel:*)",
       "WebFetch(domain:www.flightradar24.com)",
-      "WebFetch(domain:www.flightaware.com)"
+      "WebFetch(domain:www.flightaware.com)",
+      "Bash(dir:*)"
     ],
     "deny": [],
     "additionalDirectories": [
