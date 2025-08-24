@@ -1,0 +1,423 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Google Authentication Test - FlightTrace</title>
+    <link rel="icon" type="image/svg+xml" href="/logo.svg">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #4285F4 0%, #34A853 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        
+        .test-container {
+            background: white;
+            border-radius: 16px;
+            padding: 40px;
+            max-width: 500px;
+            width: 100%;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+        }
+        
+        h1 {
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 28px;
+        }
+        
+        .subtitle {
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 16px;
+        }
+        
+        .google-btn {
+            width: 100%;
+            padding: 14px;
+            background: white;
+            border: 2px solid #dadce0;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 500;
+            color: #3c4043;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            transition: all 0.3s;
+            margin-bottom: 20px;
+        }
+        
+        .google-btn:hover {
+            background: #f8f9fa;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+        
+        .status-box {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 20px;
+            margin-top: 20px;
+            min-height: 100px;
+        }
+        
+        .status-title {
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 10px;
+        }
+        
+        .status-message {
+            color: #666;
+            font-size: 14px;
+            line-height: 1.5;
+        }
+        
+        .success {
+            background: #d4edda;
+            color: #155724;
+        }
+        
+        .error {
+            background: #f8d7da;
+            color: #721c24;
+        }
+        
+        .warning {
+            background: #fff3cd;
+            color: #856404;
+        }
+        
+        .user-info {
+            background: #e8f5e9;
+            border-radius: 8px;
+            padding: 15px;
+            margin-top: 20px;
+        }
+        
+        .user-info h3 {
+            color: #2e7d32;
+            margin-bottom: 10px;
+        }
+        
+        .user-info p {
+            color: #1b5e20;
+            margin: 5px 0;
+            font-size: 14px;
+        }
+        
+        .step-list {
+            list-style: none;
+            margin: 20px 0;
+        }
+        
+        .step-list li {
+            padding: 10px 0;
+            border-bottom: 1px solid #e0e0e0;
+            font-size: 14px;
+            color: #666;
+        }
+        
+        .step-list li.completed {
+            color: #2e7d32;
+        }
+        
+        .step-list li.active {
+            color: #1976d2;
+            font-weight: 600;
+        }
+        
+        .step-list li.error {
+            color: #d32f2f;
+        }
+        
+        code {
+            background: #f5f5f5;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-family: 'Courier New', monospace;
+            font-size: 13px;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <h1>🔐 Google Authentication Test</h1>
+        <p class="subtitle">Test the complete Google OAuth flow</p>
+        
+        <button class="google-btn" onclick="testGoogleAuth()">
+            <svg width="20" height="20" viewBox="0 0 24 24">
+                <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+                <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+                <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
+                <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+            </svg>
+            Sign in with Google
+        </button>
+        
+        <button class="google-btn" onclick="checkCurrentUser()">
+            Check Current User Status
+        </button>
+        
+        <button class="google-btn" onclick="signOutUser()">
+            Sign Out
+        </button>
+        
+        <ul class="step-list" id="step-list">
+            <li id="step-1">1. Click "Sign in with Google"</li>
+            <li id="step-2">2. Google popup opens</li>
+            <li id="step-3">3. Select your Google account</li>
+            <li id="step-4">4. Grant permissions (if asked)</li>
+            <li id="step-5">5. Return to FlightTrace authenticated</li>
+        </ul>
+        
+        <div class="status-box">
+            <div class="status-title">Status</div>
+            <div class="status-message" id="status-message">
+                Ready to test Google authentication
+            </div>
+        </div>
+        
+        <div id="user-info" style="display: none;"></div>
+    </div>
+    
+    <!-- Firebase SDK -->
+    <script type="module">
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.0/firebase-app.js';
+        import { 
+            getAuth, 
+            signInWithPopup,
+            signInWithRedirect,
+            getRedirectResult,
+            GoogleAuthProvider,
+            onAuthStateChanged,
+            signOut
+        } from 'https://www.gstatic.com/firebasejs/10.7.0/firebase-auth.js';
+        
+        // Firebase configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyDMJkPbOjp4oQNxb-EVK-Yh1pVSrOuDJgQ",
+            authDomain: "flighttrace-749f1.firebaseapp.com",
+            projectId: "flighttrace-749f1",
+            storageBucket: "flighttrace-749f1.firebasestorage.app",
+            messagingSenderId: "994719406353",
+            appId: "1:994719406353:web:01523b9811eeefad5094b0",
+            measurementId: "G-HS9H3GM0V1"
+        };
+        
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const googleProvider = new GoogleAuthProvider();
+        
+        // Add scopes
+        googleProvider.addScope('profile');
+        googleProvider.addScope('email');
+        
+        // Force account selection
+        googleProvider.setCustomParameters({
+            prompt: 'select_account'
+        });
+        
+        console.log('Firebase initialized:', app);
+        console.log('Auth instance:', auth);
+        console.log('Google provider:', googleProvider);
+        
+        // Check for redirect result on page load
+        getRedirectResult(auth)
+            .then((result) => {
+                if (result) {
+                    console.log('Redirect result:', result);
+                    updateStatus('success', `Signed in via redirect: ${result.user.email}`);
+                    displayUserInfo(result.user);
+                }
+            })
+            .catch((error) => {
+                console.error('Redirect error:', error);
+                if (error.code !== 'auth/popup-blocked') {
+                    updateStatus('error', `Redirect error: ${error.message}`);
+                }
+            });
+        
+        // Monitor auth state
+        onAuthStateChanged(auth, (user) => {
+            console.log('Auth state changed:', user);
+            if (user) {
+                displayUserInfo(user);
+            }
+        });
+        
+        // Make functions available globally
+        window.firebaseAuth = {
+            auth,
+            googleProvider,
+            signInWithPopup,
+            signInWithRedirect,
+            signOut
+        };
+        
+        function updateStatus(type, message) {
+            const statusEl = document.getElementById('status-message');
+            const statusBox = statusEl.parentElement;
+            
+            statusBox.className = `status-box ${type}`;
+            statusEl.textContent = message;
+            console.log(`[${type.toUpperCase()}]`, message);
+        }
+        
+        function displayUserInfo(user) {
+            const userInfoEl = document.getElementById('user-info');
+            userInfoEl.style.display = 'block';
+            userInfoEl.className = 'user-info';
+            userInfoEl.innerHTML = `
+                <h3>✅ Authenticated Successfully!</h3>
+                <p><strong>Email:</strong> ${user.email}</p>
+                <p><strong>Name:</strong> ${user.displayName}</p>
+                <p><strong>UID:</strong> ${user.uid}</p>
+                <p><strong>Photo:</strong> <img src="${user.photoURL}" style="width: 30px; height: 30px; border-radius: 50%; vertical-align: middle;"></p>
+                <p><strong>Provider:</strong> ${user.providerData[0]?.providerId}</p>
+            `;
+            
+            // Mark steps as completed
+            for (let i = 1; i <= 5; i++) {
+                document.getElementById(`step-${i}`).className = 'completed';
+            }
+        }
+        
+        window.updateStatus = updateStatus;
+        window.displayUserInfo = displayUserInfo;
+    </script>
+    
+    <script>
+        async function testGoogleAuth() {
+            const steps = {
+                1: 'Initializing...',
+                2: 'Opening Google popup...',
+                3: 'Waiting for user selection...',
+                4: 'Processing authentication...',
+                5: 'Completing sign-in...'
+            };
+            
+            // Reset steps
+            for (let i = 1; i <= 5; i++) {
+                document.getElementById(`step-${i}`).className = '';
+            }
+            
+            document.getElementById('step-1').className = 'active';
+            window.updateStatus('', 'Initiating Google sign-in...');
+            
+            try {
+                // Check if Firebase is loaded
+                if (!window.firebaseAuth) {
+                    throw new Error('Firebase not initialized');
+                }
+                
+                document.getElementById('step-2').className = 'active';
+                window.updateStatus('', 'Opening Google authentication window...');
+                
+                console.log('Starting Google sign-in with popup...');
+                
+                // Try popup first
+                try {
+                    const result = await window.firebaseAuth.signInWithPopup(
+                        window.firebaseAuth.auth,
+                        window.firebaseAuth.googleProvider
+                    );
+                    
+                    document.getElementById('step-5').className = 'completed';
+                    window.updateStatus('success', `Successfully signed in as ${result.user.email}`);
+                    window.displayUserInfo(result.user);
+                    
+                    // Redirect after 2 seconds
+                    setTimeout(() => {
+                        window.updateStatus('success', 'Redirecting to live tracking...');
+                        setTimeout(() => {
+                            window.location.href = '/live.html';
+                        }, 1000);
+                    }, 2000);
+                    
+                } catch (popupError) {
+                    if (popupError.code === 'auth/popup-blocked') {
+                        console.log('Popup blocked, trying redirect...');
+                        window.updateStatus('warning', 'Popup blocked. Using redirect method...');
+                        
+                        // Fallback to redirect
+                        await window.firebaseAuth.signInWithRedirect(
+                            window.firebaseAuth.auth,
+                            window.firebaseAuth.googleProvider
+                        );
+                    } else {
+                        throw popupError;
+                    }
+                }
+                
+            } catch (error) {
+                console.error('Google sign-in error:', error);
+                
+                for (let i = 1; i <= 5; i++) {
+                    const step = document.getElementById(`step-${i}`);
+                    if (step.className === 'active') {
+                        step.className = 'error';
+                    }
+                }
+                
+                let errorMessage = 'Google sign-in failed: ';
+                
+                if (error.code === 'auth/popup-closed-by-user') {
+                    errorMessage += 'Sign-in cancelled by user';
+                } else if (error.code === 'auth/operation-not-allowed') {
+                    errorMessage += 'Google sign-in is not enabled in Firebase Console';
+                } else if (error.code === 'auth/cancelled-popup-request') {
+                    errorMessage += 'Another popup is already open';
+                } else {
+                    errorMessage += error.message;
+                }
+                
+                window.updateStatus('error', errorMessage);
+            }
+        }
+        
+        function checkCurrentUser() {
+            const user = window.firebaseAuth.auth.currentUser;
+            if (user) {
+                window.updateStatus('success', `Currently signed in as ${user.email}`);
+                window.displayUserInfo(user);
+            } else {
+                window.updateStatus('warning', 'No user currently signed in');
+                document.getElementById('user-info').style.display = 'none';
+            }
+        }
+        
+        async function signOutUser() {
+            try {
+                await window.firebaseAuth.signOut(window.firebaseAuth.auth);
+                window.updateStatus('success', 'Successfully signed out');
+                document.getElementById('user-info').style.display = 'none';
+                
+                // Reset steps
+                for (let i = 1; i <= 5; i++) {
+                    document.getElementById(`step-${i}`).className = '';
+                }
+            } catch (error) {
+                window.updateStatus('error', `Sign out failed: ${error.message}`);
+            }
+        }
+        
+        // Check authentication on page load
+        setTimeout(checkCurrentUser, 1000);
+    </script>
+</body>
+</html>
