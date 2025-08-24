@@ -1,11 +1,16 @@
 {
   "version": 2,
   "framework": null,
-  "functions": {
-    "api/**/*.py": {
-      "runtime": "python3.9"
+  "builds": [
+    {
+      "src": "api/**/*.py",
+      "use": "@vercel/python"
+    },
+    {
+      "src": "public/**",
+      "use": "@vercel/static"
     }
-  },
+  ],
   "routes": [
     {
       "src": "/api/fuel/estimate",
@@ -21,7 +26,7 @@
     },
     {
       "src": "/(.*)",
-      "dest": "/frontend/$1"
+      "dest": "/public/$1"
     }
   ],
   "env": {

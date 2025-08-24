@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FlightTrace - Real-Time Flight Tracking</title>
+    <meta name="description" content="Track flights in real-time with fuel estimation and carbon footprint analysis">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+            background: linear-gradient(135deg, #0099ff 0%, #00c6ff 100%);
+            color: white;
+            min-height: 100vh;
+        }
+        header {
+            display: flex;
+            align-items: center;
+            padding: 2rem 4rem;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        .logo {
+            width: 80px;
+            height: 80px;
+            background: white;
+            border-radius: 20px;
+            margin-right: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 36px;
+        }
+        h1 {
+            font-size: 48px;
+            margin: 0;
+        }
+        .tagline {
+            font-size: 20px;
+            opacity: 0.9;
+        }
+        main {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+        .hero {
+            text-align: center;
+            padding: 3rem 0;
+        }
+        .hero h2 {
+            font-size: 36px;
+            margin-bottom: 1.5rem;
+        }
+        .hero p {
+            font-size: 20px;
+            margin-bottom: 2rem;
+            opacity: 0.95;
+        }
+        .features {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            margin: 3rem 0;
+        }
+        .feature {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            padding: 2rem;
+            border-radius: 16px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        .feature h3 {
+            font-size: 24px;
+            margin-bottom: 1rem;
+        }
+        .feature p {
+            opacity: 0.9;
+            line-height: 1.6;
+        }
+        .cta {
+            text-align: center;
+            padding: 3rem 0;
+        }
+        .btn {
+            display: inline-block;
+            padding: 1rem 2.5rem;
+            background: white;
+            color: #0099ff;
+            text-decoration: none;
+            border-radius: 30px;
+            font-size: 18px;
+            font-weight: 600;
+            transition: transform 0.2s, box-shadow 0.2s;
+            margin: 0.5rem;
+        }
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+        }
+        .btn-secondary {
+            background: transparent;
+            color: white;
+            border: 2px solid white;
+        }
+        footer {
+            text-align: center;
+            padding: 2rem;
+            opacity: 0.8;
+        }
+        @media (max-width: 768px) {
+            header {
+                padding: 1.5rem;
+                flex-direction: column;
+                text-align: center;
+            }
+            h1 {
+                font-size: 36px;
+            }
+            .hero h2 {
+                font-size: 28px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="logo">✈️</div>
+        <div>
+            <h1>FlightTrace</h1>
+            <p class="tagline">Real-Time Flight Tracking & Analytics</p>
+        </div>
+    </header>
+
+    <main>
+        <section class="hero">
+            <h2>Track Every Flight, Every Detail</h2>
+            <p>Professional-grade flight tracking with fuel estimation, carbon footprint analysis, and real-time updates</p>
+        </section>
+
+        <section class="features">
+            <div class="feature">
+                <h3>🛫 Real-Time Tracking</h3>
+                <p>Track flights worldwide with live updates, departure/arrival times, and current position on interactive maps.</p>
+            </div>
+            <div class="feature">
+                <h3>⛽ Fuel Estimation</h3>
+                <p>Advanced algorithms calculate fuel consumption based on aircraft type, distance, and flight conditions.</p>
+            </div>
+            <div class="feature">
+                <h3>🌍 Carbon Footprint</h3>
+                <p>Monitor environmental impact with detailed carbon emission calculations for every tracked flight.</p>
+            </div>
+            <div class="feature">
+                <h3>📊 Analytics Dashboard</h3>
+                <p>Comprehensive analytics with flight history, patterns, and detailed performance metrics.</p>
+            </div>
+            <div class="feature">
+                <h3>🔔 Smart Notifications</h3>
+                <p>Get instant alerts for flight status changes, delays, and important updates.</p>
+            </div>
+            <div class="feature">
+                <h3>👥 Family Sharing</h3>
+                <p>Share flight tracking with family and friends. Keep everyone informed about your travels.</p>
+            </div>
+        </section>
+
+        <section class="cta">
+            <h2>Ready to Start Tracking?</h2>
+            <p style="margin: 1.5rem 0;">Join thousands of aviation enthusiasts and professionals</p>
+            <a href="/api/health" class="btn">Check API Status</a>
+            <a href="mailto:support@flightandtrace.com" class="btn btn-secondary">Contact Us</a>
+        </section>
+    </main>
+
+    <footer>
+        <p>&copy; 2025 FlightTrace. All rights reserved.</p>
+        <p style="margin-top: 0.5rem; font-size: 14px;">
+            <a href="/terms" style="color: white; margin: 0 1rem;">Terms</a>
+            <a href="/privacy" style="color: white; margin: 0 1rem;">Privacy</a>
+            <a href="/security" style="color: white; margin: 0 1rem;">Security</a>
+        </p>
+    </footer>
+</body>
+</html>
