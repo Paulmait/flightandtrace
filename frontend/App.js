@@ -8,6 +8,8 @@ import { createStackNavigator } from '@react-navigation/stack';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import * as SplashScreen from 'expo-splash-screen';
 import HomeScreen from './screens/HomeScreen';
+import MFASetupScreen from './screens/MFASetupScreen';
+import OAuth2LoginScreen from './screens/OAuth2LoginScreen';
 import MapScreen from './screens/MapScreen';
 import HistoryScreen from './screens/HistoryScreen';
 import SettingsScreen from './screens/SettingsScreen';
@@ -27,6 +29,8 @@ import AdminDashboard from './screens/AdminDashboard';
 import { isDesktop, isTablet } from './styles/responsive';
 import FlightStatusWidget from './components/FlightStatusWidget';
 import NotificationCenterWidget from './components/NotificationCenterWidget';
+import LiveMapADSB from './components/LiveMapADSB';
+import AviationAlerts from './components/AviationAlerts';
 
 const Drawer = createDrawerNavigator();
 const Stack = createStackNavigator();
@@ -64,6 +68,9 @@ function MainDrawer({ token, setToken, userPlan }) {
     },
   });
 
+  // Example ICAO for alerts (could be dynamic/user-selected)
+  const defaultICAO = 'JFK';
+
   return (
     <View style={{ flex: 1, flexDirection: desktop ? 'row' : 'column' }}>
       <DragDropZone onFileDrop={(files) => console.log('Files dropped:', files)} />
@@ -81,7 +88,17 @@ function MainDrawer({ token, setToken, userPlan }) {
         }}
       >
         <Drawer.Screen name="Home">
-          {props => <HomeScreen {...props} token={token} />}
+          {props => (
+            <View style={{ flex: 1 }}>
+              <HomeScreen {...props} token={token} />
+              <View style={{ height: 300 }}>
+                <LiveMapADSB />
+              </View>
+              <View style={{ height: 250 }}>
+                <AviationAlerts icao={defaultICAO} />
+              </View>
+            </View>
+          )}
         </Drawer.Screen>
         <Drawer.Screen name="Map">
           {props => <MapScreen {...props} token={token} />}
@@ -172,6 +189,8 @@ export default function App() {
                 <Stack.Screen name="Payment" component={require('./screens/PaymentScreen').default} />
                 <Stack.Screen name="Analytics" component={require('./screens/AnalyticsScreen').default} />
                 <Stack.Screen name="ProFeatures" component={require('./screens/ProFeaturesScreen').default} />
+                <Stack.Screen name="MFASetup" component={MFASetupScreen} />
+                <Stack.Screen name="OAuth2Login" component={OAuth2LoginScreen} />
                 <Stack.Screen name="FlightReplay">
                   {props => userPlan === 'Free' ? (
                     <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', padding: 24 }}>

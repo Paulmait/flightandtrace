@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, ScrollView } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, Button } from 'react-native';
 import AdminAuditLog from '../components/AdminAuditLog';
 import { LineChart } from 'react-native-chart-kit';
 import { responsiveSize, responsivePadding } from '../styles/responsive';
@@ -7,12 +7,18 @@ import AdminLogin from '../components/AdminLogin';
 import AdminTimeout from '../components/AdminTimeout';
 import AdminUserManagement from '../components/AdminUserManagement';
 import { fetchAnalytics } from '../utils/api';
+import AdminAnalyticsCharts from '../components/AdminAnalyticsCharts';
+import AdminAnalyticsExtraCharts from '../components/AdminAnalyticsExtraCharts';
+import AdminFeatureUsageChart from '../components/AdminFeatureUsageChart';
+import AdminLoginEventsChart from '../components/AdminLoginEventsChart';
+import AdminEnhancedAnalyticsCharts from '../components/AdminEnhancedAnalyticsCharts';
 
 export default function AdminDashboard() {
   const [admin, setAdmin] = useState(null);
   const [timedOut, setTimedOut] = useState(false);
   const [analytics, setAnalytics] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [dateRange, setDateRange] = useState(30);
 
   useEffect(() => {
     if (admin) {
@@ -35,6 +41,12 @@ export default function AdminDashboard() {
           setLoading(true);
           fetchAnalytics('admin-token').then(data => { setAnalytics(data); setLoading(false); });
         }} />
+        <View style={{flexDirection: 'row', alignItems: 'center', marginVertical: 8}}>
+          <Text style={{marginRight: 8}}>Date Range:</Text>
+          {[7, 30, 90].map(d => (
+            <Button key={d} title={`${d}d`} onPress={() => setDateRange(d)} color={dateRange === d ? '#0099ff' : '#ccc'} />
+          ))}
+        </View>
         <AdminUserManagement
           onResetUser={username => {/* wire to backend */}}
           onResetAdmin={(oldPass, newPass) => {/* wire to backend */}}
@@ -101,6 +113,23 @@ export default function AdminDashboard() {
           <Text>Burn Rate: ${analytics?.burnRate ?? '...'}</Text>
           <Text>Runway: {analytics?.runway ?? '...'} months</Text>
           <Text>Conversion Rate: {analytics?.conversionRate ?? '...'}%</Text>
+        </View>
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>Feature Usage</Text>
+          <AdminFeatureUsageChart days={dateRange} />
+        </View>
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>Login Events</Text>
+          <AdminLoginEventsChart days={dateRange} />
+        </View>
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>Advanced Analytics</Text>
+          <AdminAnalyticsCharts />
+          <AdminAnalyticsExtraCharts />
+        </View>
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>Enhanced Analytics</Text>
+          <AdminEnhancedAnalyticsCharts />
         </View>
         <AdminAuditLog />
       </ScrollView>
