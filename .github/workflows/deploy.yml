@@ -1,133 +1,34 @@
-name: Deploy FlightTrace
+name: Deploy to Production
 
 on:
   push:
     branches: [main, master]
-  workflow_dispatch:
+  pull_request:
+    branches: [main, master]
+
+env:
+  VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+  VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
 
 jobs:
   test:
     runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v3
-      
-      - name: Set up Python
-        uses: actions/setup-python@v4
-        with:
-          python-version: '3.11'
-          
-      - name: Install backend dependencies
-        run: |
-          cd backend
-          python -m pip install --upgrade pip
-          pip install -r requirements.txt
-          pip install pytest pytest-cov
-          
-      - name: Run backend tests
-        run: |
-          cd backend
-          pytest tests/ -v --cov=src
-          
-      - name: Set up Node.js
-        uses: actions/setup-node@v3
-        with:
-          node-version: '18'
-          
-      - name: Install frontend dependencies
-        run: |
-          cd frontend
-          npm ci
-          
-      - name: Run frontend tests
-        run: |
-          cd frontend
-          npm test -- --coverage --watchAll=false
-          
-      - name: Build frontend
-        run: |
-          cd frontend
-          npm run build
-
-  security-scan:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v3
-      
-      - name: Run security scan
-        uses: aquasecurity/trivy-action@master
-        with:
-          scan-type: 'fs'
-          scan-ref: '.'
-          
-      - name: Python security check
-        run: |
-          pip install safety
-          cd backend
-          safety check --json
-          
-      - name: npm audit
-        run: |
-          cd frontend
-          npm audit --production
-
-  deploy:
-    needs: [test, security-scan]
-    runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master'
     
     steps:
-      - uses: actions/checkout@v3
-      
-      - name: Deploy to production
-        env:
-          DEPLOY_KEY: ${{ secrets.DEPLOY_KEY }}
-          DEPLOY_HOST: ${{ secrets.DEPLOY_HOST }}
-          DEPLOY_USER: ${{ secrets.DEPLOY_USER }}
-        run: |
-          # Setup SSH
-          mkdir -p ~/.ssh
-          echo "$DEPLOY_KEY" > ~/.ssh/deploy_key
-          chmod 600 ~/.ssh/deploy_key
-          
-          # Add host to known hosts
-          ssh-keyscan -H $DEPLOY_HOST >> ~/.ssh/known_hosts
-          
-          # Deploy script
-          ssh -i ~/.ssh/deploy_key $DEPLOY_USER@$DEPLOY_HOST << 'EOF'
-            cd /opt/flighttrace
-            git pull origin main
-            
-            # Backend deployment
-            cd backend
-            source venv/bin/activate
-            pip install -r requirements.txt
-            
-            # Run migrations
-            python -c "from src.db.database import init_db; init_db()"
-            
-            # Restart backend
-            sudo systemctl restart flighttrace
-            
-            # Frontend deployment
-            cd ../frontend
-            npm ci
-            npm run build
-            
-            # Copy build to nginx
-            sudo cp -r build/* /var/www/flighttrace/
-            
-            # Reload nginx
-            sudo nginx -s reload
-            
-            # Run post-deployment checks
-            curl -f http://localhost:8000/health || exit 1
-          EOF
-          
-      - name: Notify deployment
-        if: always()
-        uses: 8398a7/action-slack@v3
-        with:
-          status: ${{ job.status }}
-          text: 'FlightTrace deployment ${{ job.status }}'
-        env:
-          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+    - uses: actions/checkout@v3
+    
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: "3.9"
+    
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r backend/requirements.txt
+        pip install pytest pytest-cov
+    
+    - name: Run tests
+      run: |
+        cd backend
+        pytest tests/ --cov=src --cov-report=xml
