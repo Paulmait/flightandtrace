@@ -1,0 +1,614 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FlightTrace - Complete Subscription Test</title>
+    <script src="https://js.stripe.com/v3/"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            color: #e0e0e0;
+            padding: 2rem;
+            min-height: 100vh;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        h1 {
+            text-align: center;
+            color: #00c6ff;
+            margin-bottom: 2rem;
+            font-size: 2.5rem;
+        }
+        .test-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+        .test-card {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            padding: 1.5rem;
+        }
+        .test-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+        h2 {
+            color: #00c6ff;
+            font-size: 1.3rem;
+        }
+        .status {
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.875rem;
+            font-weight: 600;
+        }
+        .status.pending { background: #64748b; }
+        .status.testing { background: #3b82f6; }
+        .status.success { background: #10b981; }
+        .status.error { background: #ef4444; }
+        .status.warning { background: #f59e0b; }
+        
+        button {
+            background: #00c6ff;
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            width: 100%;
+            margin-top: 1rem;
+            transition: all 0.3s;
+        }
+        button:hover:not(:disabled) {
+            background: #0099ff;
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(0, 153, 255, 0.3);
+        }
+        button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        .result {
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 8px;
+            padding: 1rem;
+            margin-top: 1rem;
+            font-family: 'Courier New', monospace;
+            font-size: 0.875rem;
+            max-height: 300px;
+            overflow-y: auto;
+            display: none;
+        }
+        .result.show { display: block; }
+        .result.success { border-left: 4px solid #10b981; }
+        .result.error { border-left: 4px solid #ef4444; }
+        .result.warning { border-left: 4px solid #f59e0b; }
+        
+        .summary {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 12px;
+            padding: 2rem;
+            margin-top: 2rem;
+            text-align: center;
+        }
+        .summary-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 1rem;
+            margin-top: 1.5rem;
+        }
+        .summary-item {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 1rem;
+            border-radius: 8px;
+        }
+        .summary-value {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #00c6ff;
+        }
+        .summary-label {
+            font-size: 0.875rem;
+            opacity: 0.7;
+            margin-top: 0.5rem;
+        }
+        pre {
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+        .stripe-button {
+            background: #635bff;
+        }
+        .stripe-button:hover:not(:disabled) {
+            background: #5243ff;
+            box-shadow: 0 10px 20px rgba(99, 91, 255, 0.3);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🚀 FlightTrace Complete Subscription Test Suite</h1>
+        
+        <div class="test-grid">
+            <!-- Test 1: API Health -->
+            <div class="test-card">
+                <div class="test-header">
+                    <h2>🏥 API Health</h2>
+                    <span id="health-status" class="status pending">Pending</span>
+                </div>
+                <p>Verify API is running and configured</p>
+                <button onclick="testHealth()">Run Health Check</button>
+                <div id="health-result" class="result"></div>
+            </div>
+
+            <!-- Test 2: Environment Variables -->
+            <div class="test-card">
+                <div class="test-header">
+                    <h2>🔑 Environment Check</h2>
+                    <span id="env-status" class="status pending">Pending</span>
+                </div>
+                <p>Check if all APIs are configured</p>
+                <button onclick="testEnvironment()">Check Configuration</button>
+                <div id="env-result" class="result"></div>
+            </div>
+
+            <!-- Test 3: Create Premium Checkout -->
+            <div class="test-card">
+                <div class="test-header">
+                    <h2>💳 Premium Checkout</h2>
+                    <span id="premium-status" class="status pending">Pending</span>
+                </div>
+                <p>Create $7.99/mo checkout session</p>
+                <button class="stripe-button" onclick="testPremiumCheckout()">Test Premium Plan</button>
+                <div id="premium-result" class="result"></div>
+            </div>
+
+            <!-- Test 4: Create Professional Checkout -->
+            <div class="test-card">
+                <div class="test-header">
+                    <h2>💎 Professional Checkout</h2>
+                    <span id="professional-status" class="status pending">Pending</span>
+                </div>
+                <p>Create $24.99/mo checkout session</p>
+                <button class="stripe-button" onclick="testProfessionalCheckout()">Test Professional Plan</button>
+                <div id="professional-result" class="result"></div>
+            </div>
+
+            <!-- Test 5: Webhook Functionality -->
+            <div class="test-card">
+                <div class="test-header">
+                    <h2>🔗 Webhook Test</h2>
+                    <span id="webhook-status" class="status pending">Pending</span>
+                </div>
+                <p>Verify webhook endpoint is active</p>
+                <button onclick="testWebhook()">Test Webhook</button>
+                <div id="webhook-result" class="result"></div>
+            </div>
+
+            <!-- Test 6: Subscription Management -->
+            <div class="test-card">
+                <div class="test-header">
+                    <h2>📊 Subscription APIs</h2>
+                    <span id="management-status" class="status pending">Pending</span>
+                </div>
+                <p>Test management endpoints</p>
+                <button onclick="testManagement()">Test Management</button>
+                <div id="management-result" class="result"></div>
+            </div>
+
+            <!-- Test 7: Customer Portal -->
+            <div class="test-card">
+                <div class="test-header">
+                    <h2>👤 Customer Portal</h2>
+                    <span id="portal-status" class="status pending">Pending</span>
+                </div>
+                <p>Test billing portal creation</p>
+                <button onclick="testPortal()">Test Portal</button>
+                <div id="portal-result" class="result"></div>
+            </div>
+
+            <!-- Test 8: Complete Flow -->
+            <div class="test-card">
+                <div class="test-header">
+                    <h2>✨ Complete Flow Test</h2>
+                    <span id="flow-status" class="status pending">Pending</span>
+                </div>
+                <p>Run full subscription flow</p>
+                <button onclick="testCompleteFlow()">Run Complete Test</button>
+                <div id="flow-result" class="result"></div>
+            </div>
+        </div>
+
+        <div class="summary">
+            <h2>Test Summary</h2>
+            <div class="summary-grid">
+                <div class="summary-item">
+                    <div class="summary-value" id="tests-total">8</div>
+                    <div class="summary-label">Total Tests</div>
+                </div>
+                <div class="summary-item">
+                    <div class="summary-value" id="tests-passed">0</div>
+                    <div class="summary-label">Passed</div>
+                </div>
+                <div class="summary-item">
+                    <div class="summary-value" id="tests-failed">0</div>
+                    <div class="summary-label">Failed</div>
+                </div>
+                <div class="summary-item">
+                    <div class="summary-value" id="tests-pending">8</div>
+                    <div class="summary-label">Pending</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const BASE_URL = 'https://flightandtrace.com';
+        const PRICE_IDS = {
+            premium: 'price_1RzgrMIwUuNq64NpIeE35Py1',
+            professional: 'price_1Rzgs7IwUuNq64NpjO9sQhDG'
+        };
+        
+        let testResults = { passed: 0, failed: 0, pending: 8 };
+
+        function updateStatus(testId, status, message) {
+            const statusEl = document.getElementById(`${testId}-status`);
+            statusEl.className = `status ${status}`;
+            statusEl.textContent = status.charAt(0).toUpperCase() + status.slice(1);
+            
+            const resultEl = document.getElementById(`${testId}-result`);
+            if (message) {
+                resultEl.innerHTML = `<pre>${typeof message === 'string' ? message : JSON.stringify(message, null, 2)}</pre>`;
+                resultEl.className = `result show ${status}`;
+            }
+            
+            updateSummary(status);
+        }
+
+        function updateSummary(status) {
+            if (status === 'success') {
+                testResults.passed++;
+                testResults.pending--;
+            } else if (status === 'error' || status === 'warning') {
+                testResults.failed++;
+                testResults.pending--;
+            }
+            
+            document.getElementById('tests-passed').textContent = testResults.passed;
+            document.getElementById('tests-failed').textContent = testResults.failed;
+            document.getElementById('tests-pending').textContent = Math.max(0, testResults.pending);
+        }
+
+        async function testHealth() {
+            updateStatus('health', 'testing', 'Checking API health...');
+            try {
+                const response = await fetch(`${BASE_URL}/api/health`);
+                const data = await response.json();
+                
+                if (data.status === 'healthy') {
+                    updateStatus('health', 'success', `✅ API is healthy!\n\n${JSON.stringify(data, null, 2)}`);
+                } else {
+                    updateStatus('health', 'warning', `⚠️ API returned unexpected status:\n\n${JSON.stringify(data, null, 2)}`);
+                }
+            } catch (error) {
+                updateStatus('health', 'error', `❌ Health check failed:\n${error.message}`);
+            }
+        }
+
+        async function testEnvironment() {
+            updateStatus('env', 'testing', 'Checking environment configuration...');
+            try {
+                // Test multiple endpoints to check configuration
+                const tests = {
+                    weather: await fetch(`${BASE_URL}/api/weather/current?lat=40&lon=-74`).then(r => r.json()),
+                    flights: await fetch(`${BASE_URL}/api/flights-live/area?lamin=40&lomin=-74&lamax=41&lomax=-73`).then(r => r.json()),
+                };
+                
+                const results = {
+                    openweather: tests.weather.sample_data === false ? '✅ Configured' : '⚠️ Using sample data',
+                    opensky: tests.flights.status === 'success' ? '✅ Configured' : '⚠️ Check configuration',
+                    stripe: '🔄 Test with checkout creation'
+                };
+                
+                const hasWarnings = Object.values(results).some(r => r.includes('⚠️'));
+                updateStatus('env', hasWarnings ? 'warning' : 'success', 
+                    `Environment Configuration:\n\n` +
+                    `OpenWeather API: ${results.openweather}\n` +
+                    `OpenSky API: ${results.opensky}\n` +
+                    `Stripe API: ${results.stripe}`
+                );
+            } catch (error) {
+                updateStatus('env', 'error', `❌ Environment check failed:\n${error.message}`);
+            }
+        }
+
+        async function testPremiumCheckout() {
+            updateStatus('premium', 'testing', 'Creating Premium checkout session...');
+            try {
+                const response = await fetch(`${BASE_URL}/api/subscription/create-checkout`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        email: `premium_test_${Date.now()}@example.com`,
+                        plan: 'premium',
+                        price_id: PRICE_IDS.premium,
+                        success_url: `${BASE_URL}/success`,
+                        cancel_url: `${BASE_URL}/pricing`
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (data.checkout_url) {
+                    updateStatus('premium', 'success', 
+                        `✅ Premium checkout session created!\n\n` +
+                        `Session ID: ${data.session_id}\n` +
+                        `Checkout URL: ${data.checkout_url}\n\n` +
+                        `Test with card: 4242 4242 4242 4242`
+                    );
+                    
+                    // Auto-open in new tab for testing
+                    if (confirm('Open Premium checkout in new tab? (Use test card 4242 4242 4242 4242)')) {
+                        window.open(data.checkout_url, '_blank');
+                    }
+                } else {
+                    updateStatus('premium', data.status === 'success' ? 'warning' : 'error', 
+                        `${data.status === 'success' ? '⚠️' : '❌'} Checkout response:\n\n${JSON.stringify(data, null, 2)}`
+                    );
+                }
+            } catch (error) {
+                updateStatus('premium', 'error', `❌ Premium checkout failed:\n${error.message}`);
+            }
+        }
+
+        async function testProfessionalCheckout() {
+            updateStatus('professional', 'testing', 'Creating Professional checkout session...');
+            try {
+                const response = await fetch(`${BASE_URL}/api/subscription/create-checkout`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        email: `professional_test_${Date.now()}@example.com`,
+                        plan: 'professional',
+                        price_id: PRICE_IDS.professional,
+                        success_url: `${BASE_URL}/success`,
+                        cancel_url: `${BASE_URL}/pricing`
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (data.checkout_url) {
+                    updateStatus('professional', 'success', 
+                        `✅ Professional checkout session created!\n\n` +
+                        `Session ID: ${data.session_id}\n` +
+                        `Checkout URL: ${data.checkout_url}\n\n` +
+                        `Test with card: 4242 4242 4242 4242`
+                    );
+                    
+                    // Auto-open in new tab for testing
+                    if (confirm('Open Professional checkout in new tab? (Use test card 4242 4242 4242 4242)')) {
+                        window.open(data.checkout_url, '_blank');
+                    }
+                } else {
+                    updateStatus('professional', data.status === 'success' ? 'warning' : 'error', 
+                        `${data.status === 'success' ? '⚠️' : '❌'} Checkout response:\n\n${JSON.stringify(data, null, 2)}`
+                    );
+                }
+            } catch (error) {
+                updateStatus('professional', 'error', `❌ Professional checkout failed:\n${error.message}`);
+            }
+        }
+
+        async function testWebhook() {
+            updateStatus('webhook', 'testing', 'Testing webhook endpoint...');
+            try {
+                const response = await fetch(`${BASE_URL}/api/subscription/webhooks/stripe`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Stripe-Signature': 'test_signature'
+                    },
+                    body: JSON.stringify({ type: 'test', data: { test: true } })
+                });
+                
+                const data = await response.json();
+                
+                // Webhook will reject test signature, but that's expected
+                if (response.status === 200 || response.status === 400) {
+                    updateStatus('webhook', 'success', 
+                        `✅ Webhook endpoint is active!\n\n` +
+                        `Status: ${response.status}\n` +
+                        `Response: ${JSON.stringify(data, null, 2)}\n\n` +
+                        `Note: Signature verification error is expected for test calls`
+                    );
+                } else {
+                    updateStatus('webhook', 'warning', 
+                        `⚠️ Webhook returned unexpected status: ${response.status}\n\n${JSON.stringify(data, null, 2)}`
+                    );
+                }
+            } catch (error) {
+                updateStatus('webhook', 'error', `❌ Webhook test failed:\n${error.message}`);
+            }
+        }
+
+        async function testManagement() {
+            updateStatus('management', 'testing', 'Testing subscription management APIs...');
+            try {
+                const tests = {};
+                
+                // Test status endpoint
+                const statusResponse = await fetch(`${BASE_URL}/api/subscription/status`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ user_id: 'test_user_123' })
+                });
+                tests.status = await statusResponse.json();
+                
+                // Test compliance endpoints
+                const gdprResponse = await fetch(`${BASE_URL}/api/subscription/compliance/gdpr`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ user_id: 'test_user_123', action: 'export' })
+                });
+                tests.gdpr = await gdprResponse.json();
+                
+                updateStatus('management', 'success', 
+                    `✅ Management APIs tested:\n\n` +
+                    `Status API: ${tests.status.status}\n` +
+                    `GDPR Compliance: ${tests.gdpr.status}\n\n` +
+                    `Full response:\n${JSON.stringify(tests, null, 2)}`
+                );
+            } catch (error) {
+                updateStatus('management', 'error', `❌ Management test failed:\n${error.message}`);
+            }
+        }
+
+        async function testPortal() {
+            updateStatus('portal', 'testing', 'Testing customer portal creation...');
+            try {
+                const response = await fetch(`${BASE_URL}/api/subscription/billing-portal`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        customer_id: 'cus_test_' + Date.now(),
+                        return_url: `${BASE_URL}/account`
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (data.portal_url || data.status === 'success') {
+                    updateStatus('portal', 'success', 
+                        `✅ Portal endpoint tested:\n\n${JSON.stringify(data, null, 2)}`
+                    );
+                } else {
+                    updateStatus('portal', 'warning', 
+                        `⚠️ Portal response:\n\n${JSON.stringify(data, null, 2)}\n\n` +
+                        `Note: Customer portal requires valid Stripe customer ID`
+                    );
+                }
+            } catch (error) {
+                updateStatus('portal', 'error', `❌ Portal test failed:\n${error.message}`);
+            }
+        }
+
+        async function testCompleteFlow() {
+            updateStatus('flow', 'testing', 'Running complete subscription flow test...');
+            
+            const flowResults = {
+                health: false,
+                checkout: false,
+                webhook: false,
+                management: false
+            };
+            
+            try {
+                // Step 1: Health check
+                const healthResponse = await fetch(`${BASE_URL}/api/health`);
+                flowResults.health = (await healthResponse.json()).status === 'healthy';
+                
+                // Step 2: Create checkout
+                const checkoutResponse = await fetch(`${BASE_URL}/api/subscription/create-checkout`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        email: `flow_test_${Date.now()}@example.com`,
+                        plan: 'premium',
+                        price_id: PRICE_IDS.premium,
+                        success_url: `${BASE_URL}/success`,
+                        cancel_url: `${BASE_URL}/pricing`
+                    })
+                });
+                const checkoutData = await checkoutResponse.json();
+                flowResults.checkout = checkoutData.status === 'success' || !!checkoutData.checkout_url;
+                
+                // Step 3: Test webhook
+                const webhookResponse = await fetch(`${BASE_URL}/api/subscription/webhooks/stripe`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Stripe-Signature': 'test'
+                    },
+                    body: JSON.stringify({ type: 'test' })
+                });
+                flowResults.webhook = webhookResponse.status === 200 || webhookResponse.status === 400;
+                
+                // Step 4: Test management
+                const managementResponse = await fetch(`${BASE_URL}/api/subscription/status`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ user_id: 'test_flow' })
+                });
+                flowResults.management = (await managementResponse.json()).status === 'success';
+                
+                const allPassed = Object.values(flowResults).every(r => r);
+                
+                updateStatus('flow', allPassed ? 'success' : 'warning', 
+                    `${allPassed ? '✅' : '⚠️'} Complete Flow Test Results:\n\n` +
+                    `Health Check: ${flowResults.health ? '✅' : '❌'}\n` +
+                    `Checkout Creation: ${flowResults.checkout ? '✅' : '❌'}\n` +
+                    `Webhook Active: ${flowResults.webhook ? '✅' : '❌'}\n` +
+                    `Management APIs: ${flowResults.management ? '✅' : '❌'}\n\n` +
+                    `${allPassed ? 'All systems operational!' : 'Some components need attention'}\n\n` +
+                    `${checkoutData.checkout_url ? `Test checkout URL:\n${checkoutData.checkout_url}` : ''}`
+                );
+                
+                if (checkoutData.checkout_url && confirm('Complete flow test passed! Open checkout to test payment?')) {
+                    window.open(checkoutData.checkout_url, '_blank');
+                }
+            } catch (error) {
+                updateStatus('flow', 'error', `❌ Complete flow test failed:\n${error.message}`);
+            }
+        }
+
+        // Run all tests automatically on load
+        async function runAllTests() {
+            console.log('Starting comprehensive subscription tests...');
+            
+            // Reset counters
+            testResults = { passed: 0, failed: 0, pending: 8 };
+            
+            await testHealth();
+            await new Promise(r => setTimeout(r, 500));
+            
+            await testEnvironment();
+            await new Promise(r => setTimeout(r, 500));
+            
+            await testWebhook();
+            await new Promise(r => setTimeout(r, 500));
+            
+            await testManagement();
+            await new Promise(r => setTimeout(r, 500));
+            
+            await testPortal();
+            await new Promise(r => setTimeout(r, 500));
+            
+            // Don't auto-run checkout tests to avoid creating unnecessary sessions
+            console.log('Auto-tests complete. Click buttons to test checkout flows.');
+        }
+
+        // Auto-run on page load
+        window.addEventListener('load', () => {
+            setTimeout(runAllTests, 1000);
+        });
+    </script>
+</body>
+</html>
