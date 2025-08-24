@@ -138,7 +138,8 @@
     <!-- Navigation Bar -->
     <nav class="ft-nav" id="navbar">
         <a href="/" class="ft-nav-logo">
-            <span>✈️</span> FlightTrace
+            <img src="/logo.svg" alt="FlightTrace" style="width: 32px; height: 32px;">
+            FlightTrace
         </a>
         <div class="ft-nav-links" id="navLinks">
             <a href="/" class="ft-nav-link active">Home</a>
@@ -154,7 +155,7 @@
     </nav>
     
     <header>
-        <div class="logo">✈️</div>
+        <img src="/logo.svg" alt="FlightTrace Logo" class="logo" style="padding: 10px;">
         <div>
             <h1>FlightTrace</h1>
             <p class="tagline">Real-Time Flight Tracking & Analytics</p>
@@ -165,6 +166,27 @@
         <section class="hero">
             <h2>Track Every Flight, Every Detail</h2>
             <p>Professional-grade flight tracking with fuel estimation, carbon footprint analysis, and real-time updates</p>
+            
+            <!-- App Store Buttons -->
+            <div class="app-buttons" style="margin-top: 2rem; display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap;">
+                <a href="#" class="app-store-btn" onclick="showComingSoon('iOS'); return false;" style="display: inline-block; transition: transform 0.3s;" onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">
+                    <img src="/app-store-badge.svg" alt="Download on App Store" style="height: 50px;">
+                </a>
+                <a href="#" class="play-store-btn" onclick="showComingSoon('Android'); return false;" style="display: inline-block; transition: transform 0.3s;" onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">
+                    <img src="/google-play-badge.svg" alt="Get it on Google Play" style="height: 50px;">
+                </a>
+            </div>
+            
+            <!-- Coming Soon Modal -->
+            <div id="comingSoonModal" style="display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.7); z-index: 10000; align-items: center; justify-content: center;">
+                <div style="background: white; padding: 2rem; border-radius: 16px; max-width: 400px; text-align: center; color: #333;">
+                    <h3 style="color: #0099ff; margin-bottom: 1rem;">Coming Soon! 🚀</h3>
+                    <p id="modalMessage" style="margin-bottom: 1.5rem;"></p>
+                    <input type="email" id="notifyEmail" placeholder="Enter your email for updates" style="width: 100%; padding: 0.75rem; border: 2px solid #e0e0e0; border-radius: 8px; margin-bottom: 1rem;">
+                    <button onclick="subscribeForUpdates()" style="background: linear-gradient(135deg, #0099ff 0%, #00c6ff 100%); color: white; border: none; padding: 0.75rem 2rem; border-radius: 8px; cursor: pointer; font-weight: 600; margin-right: 0.5rem;">Notify Me</button>
+                    <button onclick="closeModal()" style="background: #f0f0f0; color: #666; border: none; padding: 0.75rem 2rem; border-radius: 8px; cursor: pointer;">Close</button>
+                </div>
+            </div>
         </section>
 
         <section class="features">
@@ -216,6 +238,44 @@
         function toggleMobileMenu() {
             document.getElementById('navLinks').classList.toggle('active');
         }
+        
+        // App Store Coming Soon functionality
+        function showComingSoon(platform) {
+            const modal = document.getElementById('comingSoonModal');
+            const message = document.getElementById('modalMessage');
+            
+            if (platform === 'iOS') {
+                message.textContent = 'FlightTrace for iOS is coming soon! Get notified when we launch on the App Store.';
+            } else {
+                message.textContent = 'FlightTrace for Android is coming soon! Get notified when we launch on Google Play.';
+            }
+            
+            modal.style.display = 'flex';
+        }
+        
+        function closeModal() {
+            document.getElementById('comingSoonModal').style.display = 'none';
+            document.getElementById('notifyEmail').value = '';
+        }
+        
+        function subscribeForUpdates() {
+            const email = document.getElementById('notifyEmail').value;
+            if (email && email.includes('@')) {
+                // Here you would normally send this to your backend
+                localStorage.setItem('flighttrace_notify', email);
+                alert('Thank you! We\'ll notify you when the mobile app launches.');
+                closeModal();
+            } else {
+                alert('Please enter a valid email address.');
+            }
+        }
+        
+        // Close modal on outside click
+        document.getElementById('comingSoonModal')?.addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeModal();
+            }
+        });
         
         // Change nav background on scroll
         window.addEventListener('scroll', function() {

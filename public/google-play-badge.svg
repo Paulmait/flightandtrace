@@ -1,0 +1,41 @@
+<svg viewBox="0 0 135 40" xmlns="http://www.w3.org/2000/svg">
+  <rect width="135" height="40" rx="8" fill="black"/>
+  
+  <!-- Google Play Triangle Logo -->
+  <g transform="translate(10, 10)">
+    <defs>
+      <linearGradient id="playGradient1" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" style="stop-color:#00a0ff;stop-opacity:1" />
+        <stop offset="100%" style="stop-color:#00d7ff;stop-opacity:1" />
+      </linearGradient>
+      <linearGradient id="playGradient2" x1="0%" y1="0%" x2="100%" y2="0%">
+        <stop offset="0%" style="stop-color:#ffe000;stop-opacity:1" />
+        <stop offset="100%" style="stop-color:#ffaa00;stop-opacity:1" />
+      </linearGradient>
+      <linearGradient id="playGradient3" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" style="stop-color:#00e676;stop-opacity:1" />
+        <stop offset="100%" style="stop-color:#00c853;stop-opacity:1" />
+      </linearGradient>
+      <linearGradient id="playGradient4" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" style="stop-color:#ff5252;stop-opacity:1" />
+        <stop offset="100%" style="stop-color:#ff1744;stop-opacity:1" />
+      </linearGradient>
+    </defs>
+    
+    <!-- Play button triangle -->
+    <path d="M 2 2 L 2 18 L 15 10 Z" fill="url(#playGradient1)" opacity="0.9"/>
+    <path d="M 2 2 L 10 10 L 2 10 Z" fill="url(#playGradient2)" opacity="0.9"/>
+    <path d="M 2 18 L 10 10 L 2 10 Z" fill="url(#playGradient3)" opacity="0.9"/>
+    <path d="M 2 2 L 15 10 L 10 10 Z" fill="url(#playGradient4)" opacity="0.9"/>
+  </g>
+  
+  <!-- Text -->
+  <g fill="white">
+    <text x="38" y="14" font-family="Arial, sans-serif" font-size="9" font-weight="300">GET IT ON</text>
+    <text x="38" y="28" font-family="Arial, sans-serif" font-size="14" font-weight="600">Google Play</text>
+  </g>
+  
+  <!-- Coming Soon Badge -->
+  <rect x="95" y="5" width="35" height="12" rx="6" fill="#ea4335"/>
+  <text x="112.5" y="13" font-family="Arial, sans-serif" font-size="7" font-weight="600" fill="white" text-anchor="middle">SOON</text>
+</svg>

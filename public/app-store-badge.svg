@@ -1,0 +1,19 @@
+<svg viewBox="0 0 120 40" xmlns="http://www.w3.org/2000/svg">
+  <rect width="120" height="40" rx="8" fill="black"/>
+  
+  <!-- Apple Logo -->
+  <g transform="translate(10, 8)">
+    <path d="M 15 3 C 15 3 15 1 13 1 C 11 1 10 3 10 3 C 10 3 8 3 6 5 C 4 7 4 10 6 13 C 8 16 10 18 12 18 C 14 18 14 17 15 17 C 16 17 16 18 18 18 C 20 18 22 16 24 13 C 26 10 26 7 24 5 C 22 3 20 3 20 3 C 20 3 19 1 17 1 C 15 1 15 3 15 3 Z M 13 0 C 13 0 13 -2 14 -2 C 15 -2 15 0 15 0 C 15 0 14 0 13 0 Z" 
+        fill="white" scale="0.8"/>
+  </g>
+  
+  <!-- Text -->
+  <g fill="white">
+    <text x="36" y="14" font-family="Arial, sans-serif" font-size="9" font-weight="300">Download on the</text>
+    <text x="36" y="28" font-family="Arial, sans-serif" font-size="14" font-weight="600">App Store</text>
+  </g>
+  
+  <!-- Coming Soon Badge -->
+  <rect x="85" y="5" width="30" height="12" rx="6" fill="#ff3b30"/>
+  <text x="100" y="13" font-family="Arial, sans-serif" font-size="7" font-weight="600" fill="white" text-anchor="middle">SOON</text>
+</svg>
