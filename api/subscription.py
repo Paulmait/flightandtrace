@@ -19,11 +19,17 @@ stripe_key = (
     os.environ.get('STRIPE_SECRET_KEY') or
     os.environ.get('STRIPE_API_KEY') or
     os.environ.get('STRIPE_SECRET') or
+    os.getenv('FLIGHTTRACE_STRIPE_SECRET_KEY') or
+    os.getenv('STRIPE_SECRET_KEY') or
     None
 )
 
+# Also check for price IDs
+PREMIUM_PRICE_ID = os.environ.get('STRIPE_PREMIUM_PRICE_ID', 'price_1RzgrMIwUuNq64NpIeE35Py1')
+PROFESSIONAL_PRICE_ID = os.environ.get('STRIPE_PROFESSIONAL_PRICE_ID', 'price_1Rzgs7IwUuNq64NpjO9sQhDG')
+
 # Only set if we have a real key, otherwise Stripe operations will return mock data
-if stripe_key and stripe_key != 'sk_test_placeholder':
+if stripe_key and stripe_key != 'sk_test_placeholder' and not stripe_key.startswith('•'):
     stripe.api_key = stripe_key
     STRIPE_CONFIGURED = True
 else:
@@ -172,12 +178,12 @@ class handler(BaseHTTPRequestHandler):
         email = data.get('email')
         price_id = data.get('price_id')
         
-        # Use provided price_id or default ones
+        # Use provided price_id or environment variable prices
         if not price_id:
             if plan == 'premium':
-                price_id = 'price_1RzgrMIwUuNq64NpIeE35Py1'
+                price_id = PREMIUM_PRICE_ID
             elif plan == 'professional':
-                price_id = 'price_1Rzgs7IwUuNq64NpjO9sQhDG'
+                price_id = PROFESSIONAL_PRICE_ID
             else:
                 return {
                     'status': 'error',
@@ -756,19 +762,27 @@ class handler(BaseHTTPRequestHandler):
     
     def check_environment(self) -> Dict:
         """Check environment configuration"""
+        # Get all env vars that start with STRIPE or FLIGHTTRACE
+        stripe_vars = {k: ('***' + v[-4:] if len(v) > 4 else '***') 
+                      for k, v in os.environ.items() 
+                      if 'STRIPE' in k or 'FLIGHTTRACE' in k}
+        
         return {
             'status': 'success',
             'stripe_configured': STRIPE_CONFIGURED,
             'stripe_key_exists': bool(stripe_key),
-            'stripe_key_placeholder': stripe_key == 'sk_test_placeholder' if stripe_key else False,
+            'stripe_key_first_chars': stripe_key[:10] + '...' if stripe_key and len(stripe_key) > 10 else str(stripe_key),
+            'premium_price_id': PREMIUM_PRICE_ID,
+            'professional_price_id': PROFESSIONAL_PRICE_ID,
             'env_variables': {
                 'FLIGHTTRACE_STRIPE_SECRET_KEY': bool(os.environ.get('FLIGHTTRACE_STRIPE_SECRET_KEY')),
                 'STRIPE_SECRET_KEY': bool(os.environ.get('STRIPE_SECRET_KEY')),
                 'STRIPE_API_KEY': bool(os.environ.get('STRIPE_API_KEY')),
                 'STRIPE_SECRET': bool(os.environ.get('STRIPE_SECRET')),
-                'FLIGHTTRACE_STRIPE_WEBHOOK_SECRET': bool(os.environ.get('FLIGHTTRACE_STRIPE_WEBHOOK_SECRET')),
-                'STRIPE_WEBHOOK_SECRET': bool(os.environ.get('STRIPE_WEBHOOK_SECRET'))
-            }
+                'STRIPE_PREMIUM_PRICE_ID': bool(os.environ.get('STRIPE_PREMIUM_PRICE_ID')),
+                'STRIPE_PROFESSIONAL_PRICE_ID': bool(os.environ.get('STRIPE_PROFESSIONAL_PRICE_ID'))
+            },
+            'found_stripe_vars': stripe_vars
         }
     
     def do_OPTIONS(self):
