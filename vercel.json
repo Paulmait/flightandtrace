@@ -21,8 +21,20 @@
       "dest": "/api/flights.py"
     },
     {
+      "src": "/api/flights-live/(.*)",
+      "dest": "/api/flights_live.py"
+    },
+    {
       "src": "/api/subscription/(.*)",
       "dest": "/api/subscription.py"
+    },
+    {
+      "src": "/api/email/(.*)",
+      "dest": "/api/email_service.py"
+    },
+    {
+      "src": "/api/weather/(.*)",
+      "dest": "/api/weather.py"
     },
     {
       "src": "/api/admin/(.*)",
