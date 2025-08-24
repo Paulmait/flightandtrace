@@ -1,0 +1,654 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FlightTrace - Live Flight Tracker</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #f5f7fa;
+            color: #2c3e50;
+        }
+        .header {
+            background: linear-gradient(135deg, #0099ff 0%, #00c6ff 100%);
+            color: white;
+            padding: 1rem 2rem;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .header-content {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .logo {
+            display: flex;
+            align-items: center;
+            font-size: 24px;
+            font-weight: bold;
+        }
+        .logo span {
+            margin-right: 10px;
+            font-size: 30px;
+        }
+        .nav-links {
+            display: flex;
+            gap: 2rem;
+        }
+        .nav-links a {
+            color: white;
+            text-decoration: none;
+            font-weight: 500;
+            transition: opacity 0.3s;
+        }
+        .nav-links a:hover {
+            opacity: 0.8;
+        }
+        .main-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+        .search-section {
+            background: white;
+            padding: 2rem;
+            border-radius: 12px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            margin-bottom: 2rem;
+        }
+        .search-tabs {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+            border-bottom: 2px solid #e0e0e0;
+        }
+        .tab {
+            padding: 0.75rem 1.5rem;
+            background: none;
+            border: none;
+            font-size: 16px;
+            cursor: pointer;
+            color: #666;
+            border-bottom: 3px solid transparent;
+            margin-bottom: -2px;
+            transition: all 0.3s;
+        }
+        .tab.active {
+            color: #0099ff;
+            border-bottom-color: #0099ff;
+        }
+        .search-form {
+            display: none;
+        }
+        .search-form.active {
+            display: block;
+        }
+        .search-row {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+        .input-group {
+            flex: 1;
+        }
+        .input-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+            color: #555;
+        }
+        .input-group input, .input-group select {
+            width: 100%;
+            padding: 0.75rem;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+        .input-group input:focus, .input-group select:focus {
+            outline: none;
+            border-color: #0099ff;
+        }
+        .btn {
+            background: linear-gradient(135deg, #0099ff 0%, #00c6ff 100%);
+            color: white;
+            border: none;
+            padding: 0.75rem 2rem;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,153,255,0.3);
+        }
+        .content-area {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 2rem;
+        }
+        #map {
+            height: 600px;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+        .flight-list {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            padding: 1.5rem;
+            max-height: 600px;
+            overflow-y: auto;
+        }
+        .flight-list h2 {
+            margin-bottom: 1rem;
+            color: #2c3e50;
+        }
+        .flight-card {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 1rem;
+            margin-bottom: 1rem;
+            cursor: pointer;
+            transition: all 0.3s;
+            border-left: 4px solid #0099ff;
+        }
+        .flight-card:hover {
+            background: #e8f4ff;
+            transform: translateX(5px);
+        }
+        .flight-number {
+            font-weight: bold;
+            font-size: 18px;
+            color: #0099ff;
+            margin-bottom: 0.5rem;
+        }
+        .flight-route {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: #666;
+            margin-bottom: 0.5rem;
+        }
+        .flight-status {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+        .status-enroute {
+            background: #e8f5e9;
+            color: #2e7d32;
+        }
+        .status-scheduled {
+            background: #fff3e0;
+            color: #e65100;
+        }
+        .status-landed {
+            background: #e3f2fd;
+            color: #1565c0;
+        }
+        .stats-row {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+        .stat-card {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 12px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            text-align: center;
+        }
+        .stat-value {
+            font-size: 32px;
+            font-weight: bold;
+            color: #0099ff;
+        }
+        .stat-label {
+            color: #666;
+            margin-top: 0.5rem;
+        }
+        .airport-input-wrapper {
+            position: relative;
+        }
+        .suggestions {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            background: white;
+            border: 2px solid #e0e0e0;
+            border-top: none;
+            border-radius: 0 0 8px 8px;
+            max-height: 200px;
+            overflow-y: auto;
+            z-index: 1000;
+            display: none;
+        }
+        .suggestions.active {
+            display: block;
+        }
+        .suggestion-item {
+            padding: 0.75rem;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        .suggestion-item:hover {
+            background: #f0f0f0;
+        }
+        @media (max-width: 1024px) {
+            .content-area {
+                grid-template-columns: 1fr;
+            }
+            .flight-list {
+                max-height: 400px;
+            }
+        }
+        @media (max-width: 768px) {
+            .search-row {
+                flex-direction: column;
+            }
+            .stats-row {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            .nav-links {
+                display: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <div class="header-content">
+            <div class="logo">
+                <span>✈️</span> FlightTrace
+            </div>
+            <nav class="nav-links">
+                <a href="/">Home</a>
+                <a href="/track.html">Track Flights</a>
+                <a href="#airports">Airports</a>
+                <a href="#statistics">Statistics</a>
+                <a href="/api/health">API Status</a>
+            </nav>
+        </div>
+    </header>
+
+    <div class="main-container">
+        <!-- Statistics -->
+        <div class="stats-row">
+            <div class="stat-card">
+                <div class="stat-value" id="totalFlights">1,247</div>
+                <div class="stat-label">Flights Tracked Today</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="activeFlights">342</div>
+                <div class="stat-label">Currently In Air</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="totalAirports">158</div>
+                <div class="stat-label">Airports Covered</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="avgDelay">12m</div>
+                <div class="stat-label">Avg Delay Today</div>
+            </div>
+        </div>
+
+        <!-- Search Section -->
+        <div class="search-section">
+            <div class="search-tabs">
+                <button class="tab active" onclick="switchTab('flight')">Flight Number</button>
+                <button class="tab" onclick="switchTab('route')">Route</button>
+                <button class="tab" onclick="switchTab('airport')">Airport</button>
+                <button class="tab" onclick="switchTab('aircraft')">Aircraft</button>
+            </div>
+
+            <!-- Flight Number Search -->
+            <form id="flightSearch" class="search-form active">
+                <div class="search-row">
+                    <div class="input-group">
+                        <label for="flightNumber">Flight Number (e.g., AA100, DL1234)</label>
+                        <input type="text" id="flightNumber" placeholder="Enter flight number" autocomplete="off">
+                    </div>
+                    <div class="input-group" style="max-width: 200px;">
+                        <label>&nbsp;</label>
+                        <button type="submit" class="btn">Track Flight</button>
+                    </div>
+                </div>
+            </form>
+
+            <!-- Route Search -->
+            <form id="routeSearch" class="search-form">
+                <div class="search-row">
+                    <div class="input-group">
+                        <label for="origin">Origin Airport</label>
+                        <div class="airport-input-wrapper">
+                            <input type="text" id="origin" placeholder="City or airport code" autocomplete="off">
+                            <div class="suggestions" id="originSuggestions"></div>
+                        </div>
+                    </div>
+                    <div class="input-group">
+                        <label for="destination">Destination Airport</label>
+                        <div class="airport-input-wrapper">
+                            <input type="text" id="destination" placeholder="City or airport code" autocomplete="off">
+                            <div class="suggestions" id="destSuggestions"></div>
+                        </div>
+                    </div>
+                    <div class="input-group" style="max-width: 200px;">
+                        <label>&nbsp;</label>
+                        <button type="submit" class="btn">Search Routes</button>
+                    </div>
+                </div>
+            </form>
+
+            <!-- Airport Search -->
+            <form id="airportSearch" class="search-form">
+                <div class="search-row">
+                    <div class="input-group">
+                        <label for="airport">Airport Code or City</label>
+                        <input type="text" id="airport" placeholder="e.g., JFK, LAX, London" autocomplete="off">
+                    </div>
+                    <div class="input-group" style="max-width: 300px;">
+                        <label for="flightType">Flight Type</label>
+                        <select id="flightType">
+                            <option value="all">All Flights</option>
+                            <option value="arrivals">Arrivals Only</option>
+                            <option value="departures">Departures Only</option>
+                        </select>
+                    </div>
+                    <div class="input-group" style="max-width: 200px;">
+                        <label>&nbsp;</label>
+                        <button type="submit" class="btn">View Airport</button>
+                    </div>
+                </div>
+            </form>
+
+            <!-- Aircraft Search -->
+            <form id="aircraftSearch" class="search-form">
+                <div class="search-row">
+                    <div class="input-group">
+                        <label for="registration">Aircraft Registration</label>
+                        <input type="text" id="registration" placeholder="e.g., N12345" autocomplete="off">
+                    </div>
+                    <div class="input-group" style="max-width: 200px;">
+                        <label>&nbsp;</label>
+                        <button type="submit" class="btn">Track Aircraft</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+
+        <!-- Map and Flight List -->
+        <div class="content-area">
+            <div id="map"></div>
+            <div class="flight-list">
+                <h2>Recent Flights</h2>
+                <div id="flightListContent">
+                    <!-- Sample flights - will be replaced with real data -->
+                    <div class="flight-card" onclick="trackFlight('AA2351')">
+                        <div class="flight-number">AA2351</div>
+                        <div class="flight-route">
+                            <span>JFK</span> → <span>LAX</span>
+                        </div>
+                        <div class="flight-route" style="font-size: 14px;">
+                            Boeing 737-800 • 35,000 ft • 485 mph
+                        </div>
+                        <span class="flight-status status-enroute">En Route</span>
+                    </div>
+                    <div class="flight-card" onclick="trackFlight('DL1847')">
+                        <div class="flight-number">DL1847</div>
+                        <div class="flight-route">
+                            <span>ATL</span> → <span>ORD</span>
+                        </div>
+                        <div class="flight-route" style="font-size: 14px;">
+                            Airbus A320 • 38,000 ft • 510 mph
+                        </div>
+                        <span class="flight-status status-enroute">En Route</span>
+                    </div>
+                    <div class="flight-card" onclick="trackFlight('UA523')">
+                        <div class="flight-number">UA523</div>
+                        <div class="flight-route">
+                            <span>SFO</span> → <span>EWR</span>
+                        </div>
+                        <div class="flight-route" style="font-size: 14px;">
+                            Boeing 777-200 • Scheduled 14:30
+                        </div>
+                        <span class="flight-status status-scheduled">Scheduled</span>
+                    </div>
+                    <div class="flight-card" onclick="trackFlight('SW4521')">
+                        <div class="flight-number">SW4521</div>
+                        <div class="flight-route">
+                            <span>DEN</span> → <span>PHX</span>
+                        </div>
+                        <div class="flight-route" style="font-size: 14px;">
+                            Boeing 737-700 • Landed 10:45
+                        </div>
+                        <span class="flight-status status-landed">Landed</span>
+                    </div>
+                    <div class="flight-card" onclick="trackFlight('B61923')">
+                        <div class="flight-number">B61923</div>
+                        <div class="flight-route">
+                            <span>BOS</span> → <span>FLL</span>
+                        </div>
+                        <div class="flight-route" style="font-size: 14px;">
+                            Airbus A321 • 41,000 ft • 520 mph
+                        </div>
+                        <span class="flight-status status-enroute">En Route</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script>
+        // Initialize map
+        const map = L.map('map').setView([39.8283, -98.5795], 4); // Center on USA
+        
+        // Add OpenStreetMap tiles
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '© OpenStreetMap contributors'
+        }).addTo(map);
+
+        // Aircraft icon
+        const aircraftIcon = L.divIcon({
+            html: '<div style="transform: rotate(45deg);">✈️</div>',
+            iconSize: [30, 30],
+            className: 'aircraft-marker'
+        });
+
+        // Sample flight data with realistic positions
+        const sampleFlights = [
+            { id: 'AA2351', lat: 39.5, lng: -105.2, heading: 270, alt: 35000, speed: 485, from: 'JFK', to: 'LAX' },
+            { id: 'DL1847', lat: 35.8, lng: -89.5, heading: 315, alt: 38000, speed: 510, from: 'ATL', to: 'ORD' },
+            { id: 'UA523', lat: 37.6, lng: -122.3, heading: 90, alt: 0, speed: 0, from: 'SFO', to: 'EWR' },
+            { id: 'B61923', lat: 38.2, lng: -78.4, heading: 195, alt: 41000, speed: 520, from: 'BOS', to: 'FLL' }
+        ];
+
+        // Add aircraft markers to map
+        sampleFlights.forEach(flight => {
+            if (flight.alt > 0) { // Only show flights in air
+                const marker = L.marker([flight.lat, flight.lng], { icon: aircraftIcon })
+                    .addTo(map)
+                    .bindPopup(`
+                        <strong>${flight.id}</strong><br>
+                        ${flight.from} → ${flight.to}<br>
+                        Altitude: ${flight.alt.toLocaleString()} ft<br>
+                        Speed: ${flight.speed} mph
+                    `);
+            }
+        });
+
+        // Tab switching
+        function switchTab(tabName) {
+            // Update tabs
+            document.querySelectorAll('.tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            event.target.classList.add('active');
+            
+            // Update forms
+            document.querySelectorAll('.search-form').forEach(form => {
+                form.classList.remove('active');
+            });
+            
+            const formMap = {
+                'flight': 'flightSearch',
+                'route': 'routeSearch',
+                'airport': 'airportSearch',
+                'aircraft': 'aircraftSearch'
+            };
+            
+            document.getElementById(formMap[tabName]).classList.add('active');
+        }
+
+        // Track specific flight
+        function trackFlight(flightNumber) {
+            document.getElementById('flightNumber').value = flightNumber;
+            
+            // Find flight data
+            const flight = sampleFlights.find(f => f.id === flightNumber);
+            if (flight && flight.alt > 0) {
+                // Center map on flight
+                map.setView([flight.lat, flight.lng], 6);
+                
+                // Show flight path (simplified)
+                const flightPath = L.polyline([
+                    [40.6413, -73.7781], // JFK coordinates
+                    [flight.lat, flight.lng],
+                    [33.9425, -118.4081] // LAX coordinates
+                ], { color: '#0099ff', weight: 3, opacity: 0.7 }).addTo(map);
+            }
+            
+            // Show alert for demo
+            alert(`Tracking flight ${flightNumber}\n\nIn a production environment, this would fetch real-time data from aviation APIs.`);
+        }
+
+        // Handle form submissions
+        document.getElementById('flightSearch').addEventListener('submit', (e) => {
+            e.preventDefault();
+            const flightNumber = document.getElementById('flightNumber').value;
+            if (flightNumber) {
+                trackFlight(flightNumber.toUpperCase());
+            }
+        });
+
+        document.getElementById('routeSearch').addEventListener('submit', (e) => {
+            e.preventDefault();
+            const origin = document.getElementById('origin').value;
+            const destination = document.getElementById('destination').value;
+            alert(`Searching flights from ${origin} to ${destination}\n\nThis would show all flights on this route.`);
+        });
+
+        document.getElementById('airportSearch').addEventListener('submit', (e) => {
+            e.preventDefault();
+            const airport = document.getElementById('airport').value;
+            const type = document.getElementById('flightType').value;
+            alert(`Viewing ${type} at ${airport}\n\nThis would show airport activity and flight boards.`);
+        });
+
+        document.getElementById('aircraftSearch').addEventListener('submit', (e) => {
+            e.preventDefault();
+            const registration = document.getElementById('registration').value;
+            alert(`Tracking aircraft ${registration}\n\nThis would show the aircraft's current position and flight history.`);
+        });
+
+        // Simulate real-time updates
+        function updateStats() {
+            // Randomize stats slightly for realism
+            document.getElementById('totalFlights').textContent = 
+                (1200 + Math.floor(Math.random() * 100)).toLocaleString();
+            document.getElementById('activeFlights').textContent = 
+                (320 + Math.floor(Math.random() * 50));
+            document.getElementById('avgDelay').textContent = 
+                (8 + Math.floor(Math.random() * 10)) + 'm';
+        }
+
+        // Update stats every 30 seconds
+        setInterval(updateStats, 30000);
+
+        // Airport suggestions (simplified)
+        const airports = [
+            { code: 'JFK', name: 'John F Kennedy Intl', city: 'New York' },
+            { code: 'LAX', name: 'Los Angeles Intl', city: 'Los Angeles' },
+            { code: 'ORD', name: "O'Hare Intl", city: 'Chicago' },
+            { code: 'ATL', name: 'Hartsfield-Jackson', city: 'Atlanta' },
+            { code: 'DFW', name: 'Dallas/Fort Worth', city: 'Dallas' },
+            { code: 'DEN', name: 'Denver Intl', city: 'Denver' },
+            { code: 'SFO', name: 'San Francisco Intl', city: 'San Francisco' },
+            { code: 'SEA', name: 'Seattle-Tacoma', city: 'Seattle' },
+            { code: 'LAS', name: 'McCarran Intl', city: 'Las Vegas' },
+            { code: 'MCO', name: 'Orlando Intl', city: 'Orlando' }
+        ];
+
+        // Airport input autocomplete
+        function setupAirportAutocomplete(inputId, suggestionsId) {
+            const input = document.getElementById(inputId);
+            const suggestions = document.getElementById(suggestionsId);
+            
+            input.addEventListener('input', (e) => {
+                const value = e.target.value.toLowerCase();
+                if (value.length < 2) {
+                    suggestions.classList.remove('active');
+                    return;
+                }
+                
+                const matches = airports.filter(airport => 
+                    airport.code.toLowerCase().includes(value) ||
+                    airport.city.toLowerCase().includes(value)
+                );
+                
+                if (matches.length > 0) {
+                    suggestions.innerHTML = matches.map(airport => 
+                        `<div class="suggestion-item" onclick="selectAirport('${inputId}', '${airport.code}')">
+                            <strong>${airport.code}</strong> - ${airport.name}, ${airport.city}
+                        </div>`
+                    ).join('');
+                    suggestions.classList.add('active');
+                } else {
+                    suggestions.classList.remove('active');
+                }
+            });
+            
+            // Hide suggestions when clicking outside
+            document.addEventListener('click', (e) => {
+                if (!input.contains(e.target) && !suggestions.contains(e.target)) {
+                    suggestions.classList.remove('active');
+                }
+            });
+        }
+
+        function selectAirport(inputId, code) {
+            document.getElementById(inputId).value = code;
+            document.querySelectorAll('.suggestions').forEach(s => s.classList.remove('active'));
+        }
+
+        // Initialize autocomplete
+        setupAirportAutocomplete('origin', 'originSuggestions');
+        setupAirportAutocomplete('destination', 'destSuggestions');
+
+        // Add keyboard shortcuts
+        document.addEventListener('keydown', (e) => {
+            if (e.key === '/' && !e.target.matches('input, textarea')) {
+                e.preventDefault();
+                document.getElementById('flightNumber').focus();
+            }
+        });
+    </script>
+</body>
+</html>

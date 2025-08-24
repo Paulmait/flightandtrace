@@ -17,6 +17,10 @@
       "dest": "/api/fuel/estimate.py"
     },
     {
+      "src": "/api/flights/(.*)",
+      "dest": "/api/flights.py"
+    },
+    {
       "src": "/api/admin/(.*)",
       "dest": "/api/admin.py"
     },
