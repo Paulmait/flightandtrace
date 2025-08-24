@@ -21,6 +21,10 @@
       "dest": "/api/flights.py"
     },
     {
+      "src": "/api/subscription/(.*)",
+      "dest": "/api/subscription.py"
+    },
+    {
       "src": "/api/admin/(.*)",
       "dest": "/api/admin.py"
     },
