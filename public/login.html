@@ -426,6 +426,48 @@
         </div>
     </div>
     
+    <!-- Firebase SDK -->
+    <script type="module">
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.0/firebase-app.js';
+        import { 
+            getAuth, 
+            createUserWithEmailAndPassword,
+            signInWithEmailAndPassword,
+            signInWithPopup,
+            GoogleAuthProvider,
+            GithubAuthProvider,
+            sendPasswordResetEmail
+        } from 'https://www.gstatic.com/firebasejs/10.7.0/firebase-auth.js';
+        
+        // Firebase configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyDMJkPbOjp4oQNxb-EVK-Yh1pVSrOuDJgQ",
+            authDomain: "flighttrace-749f1.firebaseapp.com",
+            projectId: "flighttrace-749f1",
+            storageBucket: "flighttrace-749f1.firebasestorage.app",
+            messagingSenderId: "994719406353",
+            appId: "1:994719406353:web:01523b9811eeefad5094b0",
+            measurementId: "G-HS9H3GM0V1"
+        };
+        
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const googleProvider = new GoogleAuthProvider();
+        const githubProvider = new GithubAuthProvider();
+        
+        // Make functions available globally
+        window.firebaseAuth = {
+            auth,
+            googleProvider,
+            githubProvider,
+            signInWithEmailAndPassword,
+            createUserWithEmailAndPassword,
+            signInWithPopup,
+            sendPasswordResetEmail
+        };
+    </script>
+    
     <script>
         // Toggle mobile menu
         function toggleMobileMenu() {
@@ -457,57 +499,149 @@
         }
         
         // Handle login
-        function handleLogin(event) {
+        async function handleLogin(event) {
             event.preventDefault();
             
-            // Show loading
+            const email = event.target.querySelector('input[type="email"]').value;
+            const password = event.target.querySelector('input[type="password"]').value;
             const btn = event.target.querySelector('.btn-submit');
             const originalText = btn.textContent;
+            
             btn.textContent = 'Logging in...';
             btn.disabled = true;
             
-            // Simulate API call
-            setTimeout(() => {
-                // For demo, show success then redirect
+            try {
+                const userCredential = await window.firebaseAuth.signInWithEmailAndPassword(
+                    window.firebaseAuth.auth, 
+                    email, 
+                    password
+                );
+                
+                document.getElementById('success-message').textContent = 'Login successful! Redirecting...';
+                document.getElementById('success-message').style.display = 'block';
+                document.getElementById('error-message').style.display = 'none';
+                
+                setTimeout(() => {
+                    window.location.href = '/live.html';
+                }, 1000);
+            } catch (error) {
+                btn.textContent = originalText;
+                btn.disabled = false;
+                
+                let errorMsg = 'Login failed. ';
+                if (error.code === 'auth/user-not-found') {
+                    errorMsg += 'No account found with this email.';
+                } else if (error.code === 'auth/wrong-password') {
+                    errorMsg += 'Incorrect password.';
+                } else if (error.code === 'auth/invalid-email') {
+                    errorMsg += 'Invalid email address.';
+                } else {
+                    errorMsg += error.message;
+                }
+                
+                document.getElementById('error-message').textContent = errorMsg;
+                document.getElementById('error-message').style.display = 'block';
+            }
+        }
+        
+        // Handle signup
+        async function handleSignup(event) {
+            event.preventDefault();
+            
+            const name = event.target.querySelector('input[placeholder*="Full Name"]').value;
+            const email = event.target.querySelector('input[type="email"]').value;
+            const password = event.target.querySelector('input[type="password"]').value;
+            const btn = event.target.querySelector('.btn-submit');
+            const originalText = btn.textContent;
+            
+            btn.textContent = 'Creating account...';
+            btn.disabled = true;
+            
+            try {
+                const userCredential = await window.firebaseAuth.createUserWithEmailAndPassword(
+                    window.firebaseAuth.auth, 
+                    email, 
+                    password
+                );
+                
+                // Update user profile with name
+                if (name && userCredential.user) {
+                    await userCredential.user.updateProfile({ displayName: name });
+                }
+                
+                document.getElementById('success-message').textContent = 'Account created! Starting your 14-day free trial...';
+                document.getElementById('success-message').style.display = 'block';
+                document.getElementById('error-message').style.display = 'none';
+                
+                setTimeout(() => {
+                    window.location.href = '/live.html';
+                }, 1000);
+            } catch (error) {
+                btn.textContent = originalText;
+                btn.disabled = false;
+                
+                let errorMsg = 'Signup failed. ';
+                if (error.code === 'auth/email-already-in-use') {
+                    errorMsg += 'This email is already registered.';
+                } else if (error.code === 'auth/weak-password') {
+                    errorMsg += 'Password should be at least 6 characters.';
+                } else if (error.code === 'auth/invalid-email') {
+                    errorMsg += 'Invalid email address.';
+                } else {
+                    errorMsg += error.message;
+                }
+                
+                document.getElementById('error-message').textContent = errorMsg;
+                document.getElementById('error-message').style.display = 'block';
+            }
+        }
+        
+        // Handle social login
+        async function socialLogin(provider) {
+            document.getElementById('success-message').textContent = `Connecting to ${provider}...`;
+            document.getElementById('success-message').style.display = 'block';
+            document.getElementById('error-message').style.display = 'none';
+            
+            try {
+                let authProvider;
+                if (provider === 'google') {
+                    authProvider = window.firebaseAuth.googleProvider;
+                } else if (provider === 'github') {
+                    authProvider = window.firebaseAuth.githubProvider;
+                } else {
+                    throw new Error('Unknown provider');
+                }
+                
+                const result = await window.firebaseAuth.signInWithPopup(
+                    window.firebaseAuth.auth,
+                    authProvider
+                );
+                
                 document.getElementById('success-message').textContent = 'Login successful! Redirecting...';
                 document.getElementById('success-message').style.display = 'block';
                 
                 setTimeout(() => {
                     window.location.href = '/live.html';
-                }, 1500);
-            }, 1000);
-        }
-        
-        // Handle signup
-        function handleSignup(event) {
-            event.preventDefault();
-            
-            // Show loading
-            const btn = event.target.querySelector('.btn-submit');
-            const originalText = btn.textContent;
-            btn.textContent = 'Creating account...';
-            btn.disabled = true;
-            
-            // Simulate API call
-            setTimeout(() => {
-                document.getElementById('success-message').textContent = 'Account created! Starting your 14-day free trial...';
-                document.getElementById('success-message').style.display = 'block';
+                }, 1000);
+            } catch (error) {
+                let errorMsg = `${provider} login failed. `;
                 
-                setTimeout(() => {
-                    window.location.href = '/live.html';
-                }, 1500);
-            }, 1000);
-        }
-        
-        // Handle social login
-        function socialLogin(provider) {
-            document.getElementById('success-message').textContent = `Connecting to ${provider}...`;
-            document.getElementById('success-message').style.display = 'block';
-            
-            // In production, this would redirect to OAuth provider
-            setTimeout(() => {
-                window.location.href = '/live.html';
-            }, 1500);
+                if (error.code === 'auth/popup-closed-by-user') {
+                    errorMsg += 'Login cancelled.';
+                } else if (error.code === 'auth/popup-blocked') {
+                    errorMsg += 'Please allow popups for this site.';
+                } else if (error.code === 'auth/account-exists-with-different-credential') {
+                    errorMsg += 'An account already exists with this email using a different sign-in method.';
+                } else if (error.code === 'auth/operation-not-allowed') {
+                    errorMsg += `${provider} sign-in is not enabled. Please contact support.`;
+                } else {
+                    errorMsg += error.message;
+                }
+                
+                document.getElementById('error-message').textContent = errorMsg;
+                document.getElementById('error-message').style.display = 'block';
+                document.getElementById('success-message').style.display = 'none';
+            }
         }
         
         // Check for signup hash

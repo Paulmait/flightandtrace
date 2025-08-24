@@ -15,6 +15,7 @@ import base64
 OPENSKY_BASE_URL = "https://opensky-network.org/api"
 OPENSKY_USERNAME = os.environ.get('OPENSKY_USERNAME', '')
 OPENSKY_PASSWORD = os.environ.get('OPENSKY_PASSWORD', '')
+OPENSKY_API_KEY = os.environ.get('OPENSKY_API_KEY', '')  # Alternative API key method
 
 # Cache configuration
 cache_data = {}
@@ -180,22 +181,61 @@ def get_airline_name(code: str) -> str:
     return airlines.get(code, code)
 
 def get_sample_flights() -> List[Dict]:
-    """Return sample flights as fallback when API is unavailable"""
-    return [
-        {
-            'id': 'sample1',
-            'flight_number': 'AA2351',
-            'airline': 'American Airlines',
-            'aircraft': 'Boeing 737-800',
-            'origin': {'code': 'JFK', 'name': 'John F Kennedy Intl'},
-            'destination': {'code': 'LAX', 'name': 'Los Angeles Intl'},
-            'position': {'lat': 39.5, 'lng': -105.2},
-            'altitude': 35000,
-            'speed': 485,
-            'heading': 270,
-            'status': 'En Route'
-        }
+    """Return realistic sample flights as fallback when API is unavailable"""
+    import random
+    
+    airlines = ['American', 'Delta', 'United', 'Southwest', 'JetBlue', 'Alaska', 'Spirit', 'Frontier']
+    aircraft_types = ['Boeing 737-800', 'Airbus A320', 'Boeing 787-9', 'Airbus A350', 'Boeing 777-300ER']
+    airports = [
+        {'code': 'JFK', 'name': 'New York JFK', 'lat': 40.6413, 'lng': -73.7781},
+        {'code': 'LAX', 'name': 'Los Angeles', 'lat': 33.9425, 'lng': -118.4081},
+        {'code': 'ORD', 'name': 'Chicago O\'Hare', 'lat': 41.9742, 'lng': -87.9073},
+        {'code': 'DFW', 'name': 'Dallas/Fort Worth', 'lat': 32.8998, 'lng': -97.0403},
+        {'code': 'ATL', 'name': 'Atlanta', 'lat': 33.6407, 'lng': -84.4277},
+        {'code': 'DEN', 'name': 'Denver', 'lat': 39.8561, 'lng': -104.6737},
+        {'code': 'SFO', 'name': 'San Francisco', 'lat': 37.6213, 'lng': -122.3790},
+        {'code': 'SEA', 'name': 'Seattle-Tacoma', 'lat': 47.4502, 'lng': -122.3088},
+        {'code': 'MIA', 'name': 'Miami', 'lat': 25.7959, 'lng': -80.2870},
+        {'code': 'BOS', 'name': 'Boston Logan', 'lat': 42.3656, 'lng': -71.0096}
     ]
+    
+    flights = []
+    for i in range(50):  # Generate 50 sample flights
+        origin = random.choice(airports)
+        destination = random.choice([a for a in airports if a != origin])
+        
+        # Calculate position somewhere between origin and destination
+        progress = random.random()  # 0 to 1
+        lat = origin['lat'] + (destination['lat'] - origin['lat']) * progress
+        lng = origin['lng'] + (destination['lng'] - origin['lng']) * progress
+        
+        # Determine status based on progress
+        if progress < 0.1:
+            status = 'Departing'
+            altitude = int(progress * 350000)  # Climbing
+        elif progress > 0.9:
+            status = 'Approaching'
+            altitude = int((1 - progress) * 350000)  # Descending
+        else:
+            status = 'En Route'
+            altitude = random.randint(30000, 41000)
+        
+        flights.append({
+            'id': f'SAMPLE{i:03d}',
+            'flight_number': f'{random.choice(["AA", "DL", "UA", "WN", "B6", "AS", "NK", "F9"])}{random.randint(100, 9999)}',
+            'airline': random.choice(airlines),
+            'aircraft': random.choice(aircraft_types),
+            'origin': {'code': origin['code'], 'name': origin['name']},
+            'destination': {'code': destination['code'], 'name': destination['name']},
+            'position': {'lat': round(lat, 4), 'lng': round(lng, 4)},
+            'altitude': altitude,
+            'speed': random.randint(400, 550) if altitude > 10000 else random.randint(150, 250),
+            'heading': random.randint(0, 359),
+            'status': status,
+            'on_ground': altitude < 1000
+        })
+    
+    return flights
 
 class handler(BaseHTTPRequestHandler):
     def do_GET(self):
