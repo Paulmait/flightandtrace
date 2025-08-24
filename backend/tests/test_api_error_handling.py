@@ -8,6 +8,8 @@ import json
 from datetime import datetime, timedelta
 from unittest.mock import Mock, patch, MagicMock
 import httpx
+import sys
+import os
 from fastapi.testclient import TestClient
 import asyncio
 
@@ -15,7 +17,11 @@ import sys
 import os
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from src.api.fastapi_app import app
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+try:
+    from src.api.fastapi_app import app
+except ImportError:
+    from main import app
 from src.core.enhanced_rate_limiter import RateLimitStatus, EnhancedRateLimiter
 from src.core.validation import ValidationError
 

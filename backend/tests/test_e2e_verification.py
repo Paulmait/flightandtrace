@@ -15,7 +15,10 @@ import sys
 import os
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from src.api.fastapi_app import app
+try:
+    from src.api.fastapi_app import app
+except ImportError:
+    from main import app
 from src.core.fuel_estimation_v2 import EnhancedFuelEstimator, FuelEstimateV2, ConfidenceLevel
 from src.core.phase_detection_v2 import FlightPhase, PhaseSlice
 from src.core.feature_flags import FeatureFlags
