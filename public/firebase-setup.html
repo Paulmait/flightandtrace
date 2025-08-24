@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Firebase Setup - FlightTrace</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 2rem;
+            min-height: 100vh;
+        }
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+        h1 {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+        .setup-card {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 12px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+        }
+        .code-block {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 1rem;
+            border-radius: 8px;
+            font-family: monospace;
+            overflow-x: auto;
+            margin: 1rem 0;
+            color: #34d399;
+        }
+        button {
+            background: #635bff;
+            color: white;
+            border: none;
+            padding: 0.75rem 2rem;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1rem;
+            margin: 0.5rem;
+        }
+        button:hover {
+            background: #5243ff;
+        }
+        .status {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.875rem;
+            margin-left: 1rem;
+        }
+        .status.success {
+            background: #34d399;
+            color: #1f2937;
+        }
+        .status.error {
+            background: #f87171;
+            color: white;
+        }
+        .status.pending {
+            background: #fbbf24;
+            color: #1f2937;
+        }
+        input[type="text"], input[type="email"], input[type="password"] {
+            width: 100%;
+            padding: 0.75rem;
+            margin: 0.5rem 0;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 6px;
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+        }
+        .test-results {
+            background: rgba(0, 0, 0, 0.2);
+            padding: 1rem;
+            border-radius: 8px;
+            margin-top: 1rem;
+            display: none;
+        }
+        .test-results.show {
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔥 Firebase Setup & Configuration</h1>
+
+        <!-- Step 1: Configuration -->
+        <div class="setup-card">
+            <h2>Step 1: Add Your Firebase Config <span class="status pending" id="config-status">Pending</span></h2>
+            <p>Paste your Firebase configuration from the Firebase Console:</p>
+            <textarea id="firebase-config" style="width: 100%; height: 200px; background: rgba(0, 0, 0, 0.3); color: white; border: 1px solid rgba(255, 255, 255, 0.2); border-radius: 8px; padding: 1rem; font-family: monospace;" placeholder="const firebaseConfig = {
+  apiKey: 'your-api-key',
+  authDomain: 'your-auth-domain',
+  projectId: 'your-project-id',
+  storageBucket: 'your-storage-bucket',
+  messagingSenderId: 'your-sender-id',
+  appId: 'your-app-id'
+};"></textarea>
+            <button onclick="saveConfig()">Save Configuration</button>
+            <button onclick="testConfig()">Test Configuration</button>
+        </div>
+
+        <!-- Step 2: Test Authentication -->
+        <div class="setup-card">
+            <h2>Step 2: Test Authentication <span class="status pending" id="auth-status">Pending</span></h2>
+            
+            <h3>Test Email/Password Sign Up</h3>
+            <input type="email" id="test-email" placeholder="test@example.com">
+            <input type="password" id="test-password" placeholder="password123">
+            <button onclick="testSignUp()">Test Sign Up</button>
+            <button onclick="testSignIn()">Test Sign In</button>
+            
+            <h3>Test Google Sign In</h3>
+            <button onclick="testGoogleSignIn()">Sign In with Google</button>
+            
+            <div class="test-results" id="auth-results"></div>
+        </div>
+
+        <!-- Step 3: Environment Variables -->
+        <div class="setup-card">
+            <h2>Step 3: Add to Vercel <span class="status pending" id="vercel-status">Pending</span></h2>
+            <p>Add these environment variables to Vercel:</p>
+            <div id="env-vars" class="code-block">
+                Environment variables will appear here after configuration...
+            </div>
+            <button onclick="copyEnvVars()">Copy Environment Variables</button>
+        </div>
+
+        <!-- Step 4: Test Integration -->
+        <div class="setup-card">
+            <h2>Step 4: Test Full Integration <span class="status pending" id="integration-status">Pending</span></h2>
+            <button onclick="testFullIntegration()">Test Firebase + Stripe Integration</button>
+            <div class="test-results" id="integration-results"></div>
+        </div>
+    </div>
+
+    <script type="module">
+        // Import Firebase SDK
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.0/firebase-app.js';
+        import { 
+            getAuth, 
+            createUserWithEmailAndPassword,
+            signInWithEmailAndPassword,
+            signInWithPopup,
+            GoogleAuthProvider
+        } from 'https://www.gstatic.com/firebasejs/10.7.0/firebase-auth.js';
+
+        let app, auth;
+        let firebaseConfig = {};
+
+        // Save configuration
+        window.saveConfig = () => {
+            const configText = document.getElementById('firebase-config').value;
+            try {
+                // Extract config object from the text
+                const configMatch = configText.match(/\{[\s\S]*\}/);
+                if (configMatch) {
+                    firebaseConfig = eval('(' + configMatch[0] + ')');
+                    localStorage.setItem('firebaseConfig', JSON.stringify(firebaseConfig));
+                    
+                    // Display environment variables
+                    document.getElementById('env-vars').innerHTML = `
+FIREBASE_API_KEY=${firebaseConfig.apiKey}
+FIREBASE_AUTH_DOMAIN=${firebaseConfig.authDomain}
+FIREBASE_PROJECT_ID=${firebaseConfig.projectId}
+FIREBASE_STORAGE_BUCKET=${firebaseConfig.storageBucket}
+FIREBASE_MESSAGING_SENDER_ID=${firebaseConfig.messagingSenderId}
+FIREBASE_APP_ID=${firebaseConfig.appId}
+                    `.trim();
+                    
+                    document.getElementById('config-status').className = 'status success';
+                    document.getElementById('config-status').textContent = 'Saved';
+                    alert('Configuration saved successfully!');
+                } else {
+                    throw new Error('Invalid configuration format');
+                }
+            } catch (error) {
+                alert('Error saving configuration: ' + error.message);
+                document.getElementById('config-status').className = 'status error';
+                document.getElementById('config-status').textContent = 'Error';
+            }
+        };
+
+        // Test configuration
+        window.testConfig = () => {
+            try {
+                const savedConfig = localStorage.getItem('firebaseConfig');
+                if (savedConfig) {
+                    firebaseConfig = JSON.parse(savedConfig);
+                    app = initializeApp(firebaseConfig);
+                    auth = getAuth(app);
+                    
+                    document.getElementById('config-status').className = 'status success';
+                    document.getElementById('config-status').textContent = 'Connected';
+                    alert('Firebase initialized successfully!');
+                } else {
+                    alert('Please save configuration first');
+                }
+            } catch (error) {
+                alert('Error: ' + error.message);
+                document.getElementById('config-status').className = 'status error';
+                document.getElementById('config-status').textContent = 'Error';
+            }
+        };
+
+        // Test Sign Up
+        window.testSignUp = async () => {
+            const email = document.getElementById('test-email').value;
+            const password = document.getElementById('test-password').value;
+            
+            try {
+                if (!auth) {
+                    alert('Please test configuration first');
+                    return;
+                }
+                
+                const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+                const user = userCredential.user;
+                
+                document.getElementById('auth-status').className = 'status success';
+                document.getElementById('auth-status').textContent = 'Working';
+                
+                document.getElementById('auth-results').className = 'test-results show';
+                document.getElementById('auth-results').innerHTML = `
+                    <strong>✅ Sign Up Successful!</strong><br>
+                    User ID: ${user.uid}<br>
+                    Email: ${user.email}<br>
+                    Email Verified: ${user.emailVerified}
+                `;
+            } catch (error) {
+                document.getElementById('auth-status').className = 'status error';
+                document.getElementById('auth-status').textContent = 'Error';
+                
+                document.getElementById('auth-results').className = 'test-results show';
+                document.getElementById('auth-results').innerHTML = `
+                    <strong>❌ Error:</strong> ${error.message}
+                `;
+            }
+        };
+
+        // Test Sign In
+        window.testSignIn = async () => {
+            const email = document.getElementById('test-email').value;
+            const password = document.getElementById('test-password').value;
+            
+            try {
+                if (!auth) {
+                    alert('Please test configuration first');
+                    return;
+                }
+                
+                const userCredential = await signInWithEmailAndPassword(auth, email, password);
+                const user = userCredential.user;
+                
+                document.getElementById('auth-status').className = 'status success';
+                document.getElementById('auth-status').textContent = 'Working';
+                
+                document.getElementById('auth-results').className = 'test-results show';
+                document.getElementById('auth-results').innerHTML = `
+                    <strong>✅ Sign In Successful!</strong><br>
+                    User ID: ${user.uid}<br>
+                    Email: ${user.email}
+                `;
+            } catch (error) {
+                document.getElementById('auth-results').className = 'test-results show';
+                document.getElementById('auth-results').innerHTML = `
+                    <strong>❌ Error:</strong> ${error.message}
+                `;
+            }
+        };
+
+        // Test Google Sign In
+        window.testGoogleSignIn = async () => {
+            try {
+                if (!auth) {
+                    alert('Please test configuration first');
+                    return;
+                }
+                
+                const provider = new GoogleAuthProvider();
+                const result = await signInWithPopup(auth, provider);
+                const user = result.user;
+                
+                document.getElementById('auth-status').className = 'status success';
+                document.getElementById('auth-status').textContent = 'Working';
+                
+                document.getElementById('auth-results').className = 'test-results show';
+                document.getElementById('auth-results').innerHTML = `
+                    <strong>✅ Google Sign In Successful!</strong><br>
+                    Name: ${user.displayName}<br>
+                    Email: ${user.email}<br>
+                    Photo: <img src="${user.photoURL}" width="50" style="border-radius: 50%;">
+                `;
+            } catch (error) {
+                document.getElementById('auth-results').className = 'test-results show';
+                document.getElementById('auth-results').innerHTML = `
+                    <strong>❌ Error:</strong> ${error.message}
+                `;
+            }
+        };
+
+        // Copy environment variables
+        window.copyEnvVars = () => {
+            const envVars = document.getElementById('env-vars').textContent;
+            navigator.clipboard.writeText(envVars);
+            alert('Environment variables copied to clipboard!');
+        };
+
+        // Test full integration
+        window.testFullIntegration = async () => {
+            try {
+                // Test Firebase
+                const firebaseOk = auth ? true : false;
+                
+                // Test Stripe
+                const stripeResponse = await fetch('/api/health');
+                const stripeData = await stripeResponse.json();
+                const stripeOk = stripeData.status === 'healthy';
+                
+                document.getElementById('integration-status').className = 'status success';
+                document.getElementById('integration-status').textContent = 'Working';
+                
+                document.getElementById('integration-results').className = 'test-results show';
+                document.getElementById('integration-results').innerHTML = `
+                    <strong>Integration Test Results:</strong><br>
+                    Firebase Auth: ${firebaseOk ? '✅ Connected' : '❌ Not configured'}<br>
+                    Stripe Payments: ${stripeOk ? '✅ Working' : '❌ Not working'}<br>
+                    Ready for Production: ${firebaseOk && stripeOk ? '✅ Yes!' : '⚠️ Fix issues first'}
+                `;
+            } catch (error) {
+                document.getElementById('integration-results').className = 'test-results show';
+                document.getElementById('integration-results').innerHTML = `
+                    <strong>❌ Error:</strong> ${error.message}
+                `;
+            }
+        };
+
+        // Load saved config on page load
+        window.addEventListener('load', () => {
+            const savedConfig = localStorage.getItem('firebaseConfig');
+            if (savedConfig) {
+                const config = JSON.parse(savedConfig);
+                document.getElementById('firebase-config').value = `const firebaseConfig = ${JSON.stringify(config, null, 2)};`;
+                testConfig();
+            }
+        });
+    </script>
+</body>
+</html>
