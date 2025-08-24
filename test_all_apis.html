@@ -1,0 +1,406 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FlightTrace API Integration Test Suite</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 2rem;
+            min-height: 100vh;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        h1 {
+            text-align: center;
+            margin-bottom: 2rem;
+            font-size: 2.5rem;
+        }
+        .test-section {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        .test-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+        h2 {
+            font-size: 1.5rem;
+        }
+        .status {
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.875rem;
+            font-weight: 600;
+        }
+        .status.pending {
+            background: #fbbf24;
+            color: #1f2937;
+        }
+        .status.testing {
+            background: #60a5fa;
+            color: white;
+        }
+        .status.success {
+            background: #34d399;
+            color: white;
+        }
+        .status.error {
+            background: #f87171;
+            color: white;
+        }
+        .test-result {
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 8px;
+            padding: 1rem;
+            margin-top: 1rem;
+            font-family: 'Courier New', monospace;
+            font-size: 0.875rem;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        .test-button {
+            background: white;
+            color: #667eea;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .test-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+        }
+        .test-button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        .stripe-button {
+            background: #635bff;
+            color: white;
+        }
+        .summary {
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-top: 2rem;
+            text-align: center;
+        }
+        .summary h3 {
+            font-size: 1.5rem;
+            margin-bottom: 1rem;
+        }
+        .summary-stats {
+            display: flex;
+            justify-content: center;
+            gap: 2rem;
+            margin-top: 1rem;
+        }
+        .stat {
+            text-align: center;
+        }
+        .stat-value {
+            font-size: 2rem;
+            font-weight: bold;
+        }
+        .stat-label {
+            font-size: 0.875rem;
+            opacity: 0.8;
+        }
+        pre {
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🚀 FlightTrace API Integration Test Suite</h1>
+        
+        <!-- OpenSky API Test -->
+        <div class="test-section">
+            <div class="test-header">
+                <h2>✈️ OpenSky Network API</h2>
+                <span id="opensky-status" class="status pending">Pending</span>
+            </div>
+            <button class="test-button" onclick="testOpenSky()">Test Flight Data API</button>
+            <div id="opensky-result" class="test-result" style="display: none;">
+                <pre id="opensky-output">Waiting for test...</pre>
+            </div>
+        </div>
+
+        <!-- OpenWeather API Test -->
+        <div class="test-section">
+            <div class="test-header">
+                <h2>🌤️ OpenWeatherMap API</h2>
+                <span id="weather-status" class="status pending">Pending</span>
+            </div>
+            <button class="test-button" onclick="testWeather()">Test Weather API</button>
+            <div id="weather-result" class="test-result" style="display: none;">
+                <pre id="weather-output">Waiting for test...</pre>
+            </div>
+        </div>
+
+        <!-- Stripe API Test -->
+        <div class="test-section">
+            <div class="test-header">
+                <h2>💳 Stripe Payment API</h2>
+                <span id="stripe-status" class="status pending">Pending</span>
+            </div>
+            <button class="test-button stripe-button" onclick="testStripe()">Test Subscription Flow</button>
+            <div id="stripe-result" class="test-result" style="display: none;">
+                <pre id="stripe-output">Waiting for test...</pre>
+            </div>
+        </div>
+
+        <!-- Health Check -->
+        <div class="test-section">
+            <div class="test-header">
+                <h2>🏥 API Health Check</h2>
+                <span id="health-status" class="status pending">Pending</span>
+            </div>
+            <button class="test-button" onclick="testHealth()">Run Health Check</button>
+            <div id="health-result" class="test-result" style="display: none;">
+                <pre id="health-output">Waiting for test...</pre>
+            </div>
+        </div>
+
+        <!-- Summary -->
+        <div class="summary">
+            <h3>Test Summary</h3>
+            <div class="summary-stats">
+                <div class="stat">
+                    <div class="stat-value" id="tests-passed">0</div>
+                    <div class="stat-label">Tests Passed</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-value" id="tests-failed">0</div>
+                    <div class="stat-label">Tests Failed</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-value" id="tests-pending">4</div>
+                    <div class="stat-label">Tests Pending</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const BASE_URL = 'https://flightandtrace.com';
+        let testResults = { passed: 0, failed: 0, pending: 4 };
+
+        function updateStatus(testId, status, result) {
+            const statusEl = document.getElementById(`${testId}-status`);
+            statusEl.className = `status ${status}`;
+            statusEl.textContent = status.charAt(0).toUpperCase() + status.slice(1);
+            
+            const resultEl = document.getElementById(`${testId}-result`);
+            const outputEl = document.getElementById(`${testId}-output`);
+            
+            if (result) {
+                resultEl.style.display = 'block';
+                outputEl.textContent = typeof result === 'string' ? result : JSON.stringify(result, null, 2);
+            }
+            
+            updateSummary(status);
+        }
+
+        function updateSummary(status) {
+            if (status === 'success') {
+                testResults.passed++;
+                testResults.pending--;
+            } else if (status === 'error') {
+                testResults.failed++;
+                testResults.pending--;
+            }
+            
+            document.getElementById('tests-passed').textContent = testResults.passed;
+            document.getElementById('tests-failed').textContent = testResults.failed;
+            document.getElementById('tests-pending').textContent = Math.max(0, testResults.pending);
+        }
+
+        async function testOpenSky() {
+            updateStatus('opensky', 'testing', 'Fetching live flight data...');
+            
+            try {
+                // Test 1: Area search (New York area)
+                const response1 = await fetch(`${BASE_URL}/api/flights-live/area?lamin=40&lomin=-74&lamax=41&lomax=-73`);
+                const data1 = await response1.json();
+                
+                // Test 2: Search by callsign
+                const response2 = await fetch(`${BASE_URL}/api/flights-live/search?callsign=AAL`);
+                const data2 = await response2.json();
+                
+                const result = {
+                    test1_area_search: {
+                        status: data1.status,
+                        flights_found: data1.flights ? data1.flights.length : 0,
+                        sample_flight: data1.flights && data1.flights[0] ? {
+                            callsign: data1.flights[0].callsign,
+                            altitude: data1.flights[0].baro_altitude,
+                            velocity: data1.flights[0].velocity,
+                            on_ground: data1.flights[0].on_ground
+                        } : null
+                    },
+                    test2_callsign_search: {
+                        status: data2.status,
+                        flights_found: data2.flights ? data2.flights.length : 0
+                    },
+                    api_configured: !data1.sample_data,
+                    message: data1.sample_data ? "⚠️ Using sample data - OpenSky credentials may not be configured" : "✅ Real flight data from OpenSky"
+                };
+                
+                updateStatus('opensky', data1.status === 'success' ? 'success' : 'error', result);
+            } catch (error) {
+                updateStatus('opensky', 'error', `Error: ${error.message}`);
+            }
+        }
+
+        async function testWeather() {
+            updateStatus('weather', 'testing', 'Fetching weather data...');
+            
+            try {
+                // Test weather for JFK Airport coordinates
+                const response = await fetch(`${BASE_URL}/api/weather/current?lat=40.6413&lon=-73.7781`);
+                const data = await response.json();
+                
+                const result = {
+                    status: data.status,
+                    location: data.location,
+                    weather: data.weather,
+                    api_configured: !data.sample_data,
+                    message: data.sample_data ? "⚠️ Using sample data - OpenWeather API key may not be configured" : "✅ Real weather data from OpenWeatherMap"
+                };
+                
+                updateStatus('weather', data.status === 'success' ? 'success' : 'error', result);
+            } catch (error) {
+                updateStatus('weather', 'error', `Error: ${error.message}`);
+            }
+        }
+
+        async function testStripe() {
+            updateStatus('stripe', 'testing', 'Testing Stripe integration...');
+            
+            try {
+                // Test creating a checkout session
+                const testEmail = `test_${Date.now()}@example.com`;
+                
+                const response = await fetch(`${BASE_URL}/api/subscription/create-checkout`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        email: testEmail,
+                        plan: 'premium',
+                        success_url: `${BASE_URL}/success`,
+                        cancel_url: `${BASE_URL}/pricing`
+                    })
+                });
+                
+                const data = await response.json();
+                
+                const result = {
+                    status: data.status,
+                    checkout_session_created: !!data.checkout_url,
+                    session_id: data.session_id ? data.session_id.substring(0, 20) + '...' : null,
+                    products_info: {
+                        premium: {
+                            product_id: 'prod_SvXxgTkaFMW6eD',
+                            price_id: 'price_1RzgrMIwUuNq64NpIeE35Py1',
+                            amount: '$7.99/month'
+                        },
+                        professional: {
+                            product_id: 'prod_SvXyGJvJudyr84',
+                            price_id: 'price_1Rzgs7IwUuNq64NpjO9sQhDG',
+                            amount: '$24.99/month'
+                        }
+                    },
+                    test_mode: data.checkout_url && data.checkout_url.includes('test'),
+                    message: data.status === 'success' ? 
+                        "✅ Stripe is configured and checkout session created successfully" : 
+                        "⚠️ Stripe may not be fully configured - check API keys"
+                };
+                
+                if (data.checkout_url) {
+                    result.checkout_url = data.checkout_url;
+                    result.instructions = "To complete payment test: Copy the checkout_url and open in a new tab. Use test card 4242 4242 4242 4242";
+                }
+                
+                updateStatus('stripe', data.status === 'success' ? 'success' : 'error', result);
+            } catch (error) {
+                updateStatus('stripe', 'error', `Error: ${error.message}`);
+            }
+        }
+
+        async function testHealth() {
+            updateStatus('health', 'testing', 'Checking API health...');
+            
+            try {
+                const response = await fetch(`${BASE_URL}/api/health`);
+                const data = await response.json();
+                
+                const result = {
+                    status: data.status,
+                    timestamp: data.timestamp,
+                    services: data.services || {},
+                    apis_configured: {
+                        opensky: data.services?.opensky === 'connected',
+                        weather: data.services?.weather === 'connected',
+                        stripe: data.services?.stripe === 'connected'
+                    },
+                    message: "API health check complete"
+                };
+                
+                updateStatus('health', data.status === 'healthy' ? 'success' : 'error', result);
+            } catch (error) {
+                updateStatus('health', 'error', `Error: ${error.message}`);
+            }
+        }
+
+        // Run all tests automatically
+        async function runAllTests() {
+            console.log('Starting automated test suite...');
+            
+            // Reset counters
+            testResults = { passed: 0, failed: 0, pending: 4 };
+            
+            // Run tests in sequence
+            await testHealth();
+            await new Promise(resolve => setTimeout(resolve, 1000));
+            
+            await testOpenSky();
+            await new Promise(resolve => setTimeout(resolve, 1000));
+            
+            await testWeather();
+            await new Promise(resolve => setTimeout(resolve, 1000));
+            
+            await testStripe();
+        }
+
+        // Auto-run tests on page load
+        window.addEventListener('load', () => {
+            setTimeout(runAllTests, 1000);
+        });
+    </script>
+</body>
+</html>
