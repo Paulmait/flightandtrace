@@ -9,8 +9,20 @@
       "Bash(git commit:*)",
       "Bash(git push:*)",
       "Bash(git config:*)",
-      "Bash(git remote add:*)"
+      "Bash(git remote add:*)",
+      "Bash(find:*)",
+      "Bash(python -m pytest tests/test_fuel_estimation_v2.py::TestEnhancedFuelEstimator::test_textbook_profile -v --tb=short)",
+      "Bash(python -m pytest tests/test_fuel_estimation_v2.py tests/test_enhanced_rate_limiter.py tests/test_error_scenarios_integration.py --tb=no -q --cov=src.core --cov-report=term-missing)",
+      "Bash(python -m pytest tests/test_fuel_estimation_v2.py tests/test_enhanced_rate_limiter.py tests/test_error_scenarios_integration.py --tb=no -v)",
+      "Bash(python -m pytest tests/test_e2e_verification.py::TestFuelEstimateAPI::test_api_fuel_estimate_a320neo_2h_flight -v --tb=short)",
+      "Bash(python test:*)",
+      "Bash(python:*)",
+      "Bash(node:*)",
+      "Bash(npm install:*)"
     ],
-    "deny": []
+    "deny": [],
+    "additionalDirectories": [
+      "C:\\c\\Users\\maito\\flighttrace"
+    ]
   }
 }

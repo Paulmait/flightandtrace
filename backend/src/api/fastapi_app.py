@@ -44,6 +44,14 @@ import asyncio
 from datetime import datetime, timedelta
 import re
 from typing import List, Optional, Dict, Any
+from src.core.mfa import router as mfa_router
+from src.core.oauth2 import router as oauth2_router
+from src.core.monitoring import router as monitoring_router
+from src.core.aviation_data import router as aviation_data_router
+from src.core.alerting import router as alerting_router
+from src.core.analytics import router as analytics_router
+from src.core.analytics_extra import router as analytics_extra_router
+from src.core.analytics_enhanced import router as analytics_enhanced_router
 
 # Configure logging
 logging.basicConfig(
@@ -235,6 +243,14 @@ async def rate_limit_headers(request: Request, call_next):
 
 # Include routers
 app.include_router(admin_router, prefix="/admin", tags=["admin"])
+app.include_router(mfa_router, prefix="/api", tags=["mfa"])
+app.include_router(oauth2_router, prefix="/api", tags=["oauth2"])
+app.include_router(monitoring_router, prefix="/api", tags=["monitoring"])
+app.include_router(aviation_data_router, prefix="/api", tags=["aviation-data"])
+app.include_router(alerting_router, prefix="/api", tags=["alerting"])
+app.include_router(analytics_router, prefix="/api", tags=["analytics"])
+app.include_router(analytics_extra_router, prefix="/api", tags=["analytics-extra"])
+app.include_router(analytics_enhanced_router, prefix="/api", tags=["analytics-enhanced"])
 
 # Request/Response Models
 class UserCreate(BaseModel):
@@ -803,3 +819,10 @@ async def estimate_fuel_post(
 @app.get("/")
 async def root():
     return {"message": "FlightTrace API", "version": "1.0.0"}
+
+# TODO: Complete MFA secret storage/verification logic
+# TODO: Complete OAuth2 user mapping and JWT issuance
+# TODO: Add real-time alerting (PagerDuty/Slack integration)
+# TODO: Integrate with advanced aviation data sources (ADS-B, NOTAM, METAR, etc.)
+# TODO: Add advanced analytics endpoints for admin/enterprise
+# TODO: Add user-facing privacy/terms/cookie/disclaimer endpoints
