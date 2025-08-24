@@ -21,16 +21,8 @@ import {
     browserSessionPersistence
 } from 'https://www.gstatic.com/firebasejs/10.7.0/firebase-auth.js';
 
-// Firebase configuration
-const firebaseConfig = {
-    apiKey: "AIzaSyAzOLlHRbCDRHEDOqS2rHrgjN5ETAaRA-4",
-    authDomain: "flighttrace-749f1.firebaseapp.com",
-    projectId: "flighttrace-749f1",
-    storageBucket: "flighttrace-749f1.firebasestorage.app",
-    messagingSenderId: "994719406353",
-    appId: "1:994719406353:web:01523b9811eeefad5094b0",
-    measurementId: "G-HS9H3GM0V1"
-};
+// Import secure Firebase configuration
+import { firebaseConfig } from './firebase-config.js';
 
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);
