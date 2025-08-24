@@ -77,3 +77,4 @@ loki_data/
 *.temp
 .cache/
 .vercel
+.env*.local
