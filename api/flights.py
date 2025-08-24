@@ -87,6 +87,89 @@ SAMPLE_FLIGHTS = [
 ]
 
 class handler(BaseHTTPRequestHandler):
+    def generate_flight_for_number(self, flight_number):
+        """Generate realistic flight data for any flight number"""
+        import hashlib
+        
+        # Use flight number as seed for consistent data
+        seed = int(hashlib.md5(flight_number.encode()).hexdigest()[:8], 16)
+        random.seed(seed)
+        
+        # Airline codes and names
+        airline_map = {
+            'AA': 'American Airlines', 'DL': 'Delta Air Lines', 'UA': 'United Airlines',
+            'WN': 'Southwest Airlines', 'B6': 'JetBlue Airways', 'AS': 'Alaska Airlines',
+            'NK': 'Spirit Airlines', 'F9': 'Frontier Airlines', 'BA': 'British Airways',
+            'LH': 'Lufthansa', 'AF': 'Air France', 'EK': 'Emirates', 'QR': 'Qatar Airways',
+            'SQ': 'Singapore Airlines', 'AC': 'Air Canada', 'QF': 'Qantas'
+        }
+        
+        # Extract airline code (first 2 chars)
+        airline_code = flight_number[:2] if len(flight_number) >= 2 else 'XX'
+        airline_name = airline_map.get(airline_code, f'{airline_code} Airlines')
+        
+        # Major airports
+        airports = [
+            {"code": "JFK", "name": "John F Kennedy Intl", "city": "New York", "lat": 40.6413, "lng": -73.7781},
+            {"code": "LAX", "name": "Los Angeles Intl", "city": "Los Angeles", "lat": 33.9425, "lng": -118.4081},
+            {"code": "ORD", "name": "O'Hare Intl", "city": "Chicago", "lat": 41.9742, "lng": -87.9073},
+            {"code": "DFW", "name": "Dallas/Fort Worth", "city": "Dallas", "lat": 32.8998, "lng": -97.0403},
+            {"code": "ATL", "name": "Hartsfield-Jackson", "city": "Atlanta", "lat": 33.6407, "lng": -84.4277},
+            {"code": "DEN", "name": "Denver Intl", "city": "Denver", "lat": 39.8561, "lng": -104.6737},
+            {"code": "SFO", "name": "San Francisco Intl", "city": "San Francisco", "lat": 37.6213, "lng": -122.3790},
+            {"code": "LHR", "name": "Heathrow", "city": "London", "lat": 51.4700, "lng": -0.4543},
+            {"code": "CDG", "name": "Charles de Gaulle", "city": "Paris", "lat": 49.0097, "lng": 2.5479},
+            {"code": "DXB", "name": "Dubai Intl", "city": "Dubai", "lat": 25.2532, "lng": 55.3657}
+        ]
+        
+        # Pick random origin and destination
+        origin = random.choice(airports)
+        destination = random.choice([a for a in airports if a != origin])
+        
+        # Generate flight progress and position
+        progress = random.randint(0, 100)
+        lat = origin['lat'] + (destination['lat'] - origin['lat']) * (progress / 100)
+        lng = origin['lng'] + (destination['lng'] - origin['lng']) * (progress / 100)
+        
+        # Determine status and altitude based on progress
+        if progress == 0:
+            status = "Scheduled"
+            altitude = 0
+            speed = 0
+        elif progress < 10:
+            status = "Departing"
+            altitude = progress * 3500
+            speed = 250
+        elif progress > 90:
+            status = "Approaching"
+            altitude = (100 - progress) * 3500
+            speed = 250
+        else:
+            status = "En Route"
+            altitude = random.randint(33000, 41000)
+            speed = random.randint(450, 550)
+        
+        # Generate times
+        now = datetime.now()
+        dep_time = now - timedelta(minutes=progress * 3)
+        arr_time = now + timedelta(minutes=(100 - progress) * 3)
+        
+        return {
+            "flight_number": flight_number,
+            "airline": airline_name,
+            "aircraft": random.choice(["Boeing 737-800", "Airbus A320", "Boeing 787-9", "Airbus A350"]),
+            "origin": {"code": origin['code'], "name": origin['name'], "city": origin['city']},
+            "destination": {"code": destination['code'], "name": destination['name'], "city": destination['city']},
+            "status": status,
+            "altitude": int(altitude),
+            "speed": int(speed),
+            "heading": random.randint(0, 359),
+            "position": {"lat": round(lat, 4), "lng": round(lng, 4)},
+            "departure_time": dep_time.strftime("%H:%M"),
+            "arrival_time": arr_time.strftime("%H:%M"),
+            "progress": progress
+        }
+    
     def do_GET(self):
         """Handle GET requests for flight data."""
         path = self.path.split('?')[0]
@@ -113,8 +196,13 @@ class handler(BaseHTTPRequestHandler):
         if '/search' in path:
             flight_number = query_params.get('flight', '').upper()
             if flight_number:
-                # Search for specific flight
+                # Search for specific flight or generate one
                 flights = [f for f in SAMPLE_FLIGHTS if f['flight_number'] == flight_number]
+                
+                # If no exact match, generate a realistic flight
+                if not flights and len(flight_number) >= 3:
+                    flights = [self.generate_flight_for_number(flight_number)]
+                
                 response_data = {
                     "status": "success",
                     "results": flights,
