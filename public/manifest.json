@@ -1,0 +1,44 @@
+{
+  "name": "FlightTrace",
+  "short_name": "FlightTrace",
+  "description": "Track flights in real-time with fuel estimation and carbon footprint analysis",
+  "start_url": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "theme_color": "#0099ff",
+  "background_color": "#ffffff",
+  "icons": [
+    {
+      "src": "/logo-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "/logo-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/logo.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ],
+  "splash_pages": null,
+  "categories": ["travel", "navigation", "utilities"],
+  "screenshots": [
+    {
+      "src": "/screenshots/track.png",
+      "sizes": "1280x720",
+      "type": "image/png"
+    },
+    {
+      "src": "/screenshots/live.png",
+      "sizes": "1280x720",
+      "type": "image/png"
+    }
+  ]
+}

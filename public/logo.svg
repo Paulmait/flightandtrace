@@ -1,0 +1,31 @@
+<svg width="200" height="200" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+  <!-- Blue gradient background circle -->
+  <defs>
+    <linearGradient id="blueGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#0099ff;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#00c6ff;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+  
+  <!-- Background circle -->
+  <circle cx="100" cy="100" r="95" fill="url(#blueGradient)"/>
+  
+  <!-- Airplane icon -->
+  <g transform="translate(100, 85) scale(2.5) rotate(-10)">
+    <path d="M -20 0 L -10 -3 L 15 -8 L 20 -8 L 22 -6 L 22 -4 L 18 -2 L 15 -2 L -10 3 L -20 5 Z" 
+          fill="white" opacity="0.95"/>
+    <path d="M -5 -1 L -5 -6 L 0 -7 L 2 -6 L 2 -1 L 0 0 Z" 
+          fill="white" opacity="0.95"/>
+    <path d="M -5 1 L -5 6 L 0 7 L 2 6 L 2 1 L 0 0 Z" 
+          fill="white" opacity="0.95"/>
+  </g>
+  
+  <!-- Flight path curve -->
+  <path d="M 40 140 Q 70 110 100 100 T 160 120" 
+        stroke="white" 
+        stroke-width="3" 
+        fill="none" 
+        stroke-linecap="round"
+        opacity="0.8"
+        stroke-dasharray="5,5"/>
+</svg>

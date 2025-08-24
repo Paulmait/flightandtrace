@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <title>FlightTrace - Loading</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: linear-gradient(135deg, #0099ff 0%, #00c6ff 100%);
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+            position: relative;
+        }
+        
+        .splash-container {
+            text-align: center;
+            animation: fadeIn 0.5s ease-in;
+            z-index: 10;
+        }
+        
+        .logo-container {
+            width: 150px;
+            height: 150px;
+            margin: 0 auto 30px;
+            position: relative;
+        }
+        
+        .logo {
+            width: 100%;
+            height: 100%;
+            animation: float 3s ease-in-out infinite;
+        }
+        
+        .logo svg {
+            width: 100%;
+            height: 100%;
+            filter: drop-shadow(0 10px 30px rgba(0,0,0,0.2));
+        }
+        
+        h1 {
+            color: white;
+            font-size: 42px;
+            font-weight: 700;
+            margin-bottom: 10px;
+            text-shadow: 0 2px 10px rgba(0,0,0,0.2);
+        }
+        
+        .tagline {
+            color: rgba(255,255,255,0.9);
+            font-size: 18px;
+            margin-bottom: 40px;
+            font-weight: 300;
+        }
+        
+        .loader {
+            width: 60px;
+            height: 4px;
+            background: rgba(255,255,255,0.3);
+            border-radius: 2px;
+            margin: 0 auto;
+            overflow: hidden;
+            position: relative;
+        }
+        
+        .loader-bar {
+            width: 30%;
+            height: 100%;
+            background: white;
+            border-radius: 2px;
+            animation: loading 1.5s ease-in-out infinite;
+        }
+        
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        @keyframes float {
+            0%, 100% {
+                transform: translateY(0) rotate(0deg);
+            }
+            25% {
+                transform: translateY(-10px) rotate(-2deg);
+            }
+            75% {
+                transform: translateY(5px) rotate(2deg);
+            }
+        }
+        
+        @keyframes loading {
+            0% {
+                transform: translateX(-100%);
+            }
+            100% {
+                transform: translateX(400%);
+            }
+        }
+        
+        /* Animated background planes */
+        .bg-plane {
+            position: absolute;
+            opacity: 0.1;
+            animation: fly 20s linear infinite;
+        }
+        
+        .bg-plane svg {
+            fill: white;
+            width: 40px;
+            height: 40px;
+        }
+        
+        .bg-plane:nth-child(1) {
+            top: 20%;
+            animation-duration: 25s;
+            animation-delay: 0s;
+        }
+        
+        .bg-plane:nth-child(2) {
+            top: 50%;
+            animation-duration: 30s;
+            animation-delay: 5s;
+        }
+        
+        .bg-plane:nth-child(3) {
+            top: 80%;
+            animation-duration: 20s;
+            animation-delay: 10s;
+        }
+        
+        @keyframes fly {
+            from {
+                left: -50px;
+                transform: rotate(-10deg);
+            }
+            to {
+                left: calc(100% + 50px);
+                transform: rotate(-10deg);
+            }
+        }
+        
+        /* iOS specific styles */
+        @supports (-webkit-touch-callout: none) {
+            body {
+                padding-top: env(safe-area-inset-top);
+                padding-bottom: env(safe-area-inset-bottom);
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Background animated planes -->
+    <div class="bg-plane">
+        <svg viewBox="0 0 24 24">
+            <path d="M21,16v-2l-8-5V3.5A1.5,1.5 0 0,0 11.5,2A1.5,1.5 0 0,0 10,3.5V9l-8,5v2l8-2.5V19l-2,1.5V22l3.5-1l3.5,1v-1.5L13,19v-5.5L21,16z"/>
+        </svg>
+    </div>
+    <div class="bg-plane">
+        <svg viewBox="0 0 24 24">
+            <path d="M21,16v-2l-8-5V3.5A1.5,1.5 0 0,0 11.5,2A1.5,1.5 0 0,0 10,3.5V9l-8,5v2l8-2.5V19l-2,1.5V22l3.5-1l3.5,1v-1.5L13,19v-5.5L21,16z"/>
+        </svg>
+    </div>
+    <div class="bg-plane">
+        <svg viewBox="0 0 24 24">
+            <path d="M21,16v-2l-8-5V3.5A1.5,1.5 0 0,0 11.5,2A1.5,1.5 0 0,0 10,3.5V9l-8,5v2l8-2.5V19l-2,1.5V22l3.5-1l3.5,1v-1.5L13,19v-5.5L21,16z"/>
+        </svg>
+    </div>
+    
+    <div class="splash-container">
+        <div class="logo-container">
+            <div class="logo">
+                <svg width="200" height="200" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+                    <!-- White background circle -->
+                    <circle cx="100" cy="100" r="95" fill="white" opacity="0.95"/>
+                    
+                    <!-- Blue gradient for plane -->
+                    <defs>
+                        <linearGradient id="planeGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                            <stop offset="0%" style="stop-color:#0099ff;stop-opacity:1" />
+                            <stop offset="100%" style="stop-color:#00c6ff;stop-opacity:1" />
+                        </linearGradient>
+                    </defs>
+                    
+                    <!-- Airplane icon -->
+                    <g transform="translate(100, 85) scale(2.5) rotate(-10)">
+                        <path d="M -20 0 L -10 -3 L 15 -8 L 20 -8 L 22 -6 L 22 -4 L 18 -2 L 15 -2 L -10 3 L -20 5 Z" 
+                              fill="url(#planeGradient)"/>
+                        <path d="M -5 -1 L -5 -6 L 0 -7 L 2 -6 L 2 -1 L 0 0 Z" 
+                              fill="url(#planeGradient)"/>
+                        <path d="M -5 1 L -5 6 L 0 7 L 2 6 L 2 1 L 0 0 Z" 
+                              fill="url(#planeGradient)"/>
+                    </g>
+                    
+                    <!-- Flight path curve -->
+                    <path d="M 40 140 Q 70 110 100 100 T 160 120" 
+                          stroke="url(#planeGradient)" 
+                          stroke-width="3" 
+                          fill="none" 
+                          stroke-linecap="round"
+                          stroke-dasharray="5,5"/>
+                </svg>
+            </div>
+        </div>
+        <h1>FlightTrace</h1>
+        <p class="tagline">Track Every Journey</p>
+        <div class="loader">
+            <div class="loader-bar"></div>
+        </div>
+    </div>
+    
+    <script>
+        // Redirect to main app after loading
+        setTimeout(() => {
+            // Check if it's a mobile app context
+            if (window.navigator.standalone || window.matchMedia('(display-mode: standalone)').matches) {
+                window.location.href = '/';
+            } else {
+                // For web, go directly to homepage
+                window.location.href = '/';
+            }
+        }, 2000);
+        
+        // Add to home screen prompt for iOS
+        if ('standalone' in window.navigator && !window.navigator.standalone) {
+            // Show iOS install prompt (customize as needed)
+            console.log('Add to home screen available');
+        }
+    </script>
+</body>
+</html>
