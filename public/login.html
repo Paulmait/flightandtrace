@@ -466,6 +466,10 @@
             signInWithPopup,
             sendPasswordResetEmail
         };
+        
+        // Set a flag when Firebase is ready
+        window.firebaseReady = true;
+        console.log('Firebase initialized successfully');
     </script>
     
     <script>
@@ -598,9 +602,19 @@
         
         // Handle social login
         async function socialLogin(provider) {
+            // Check if Firebase is loaded
+            if (!window.firebaseAuth || !window.firebaseReady) {
+                console.error('Firebase not initialized yet');
+                document.getElementById('error-message').textContent = 'Authentication system is loading. Please try again in a moment.';
+                document.getElementById('error-message').style.display = 'block';
+                return;
+            }
+            
             document.getElementById('success-message').textContent = `Connecting to ${provider}...`;
             document.getElementById('success-message').style.display = 'block';
             document.getElementById('error-message').style.display = 'none';
+            
+            console.log(`Attempting ${provider} sign-in...`);
             
             try {
                 let authProvider;
@@ -612,10 +626,12 @@
                     throw new Error('Unknown provider');
                 }
                 
+                console.log('Opening popup for', provider);
                 const result = await window.firebaseAuth.signInWithPopup(
                     window.firebaseAuth.auth,
                     authProvider
                 );
+                console.log('Authentication successful:', result.user.email);
                 
                 document.getElementById('success-message').textContent = 'Login successful! Redirecting...';
                 document.getElementById('success-message').style.display = 'block';
@@ -629,7 +645,8 @@
                 if (error.code === 'auth/popup-closed-by-user') {
                     errorMsg += 'Login cancelled.';
                 } else if (error.code === 'auth/popup-blocked') {
-                    errorMsg += 'Please allow popups for this site.';
+                    errorMsg += 'Please allow popups for this site. You may need to click the address bar and allow popups.';
+                    console.error('Popup blocked. User needs to allow popups.');
                 } else if (error.code === 'auth/account-exists-with-different-credential') {
                     errorMsg += 'An account already exists with this email using a different sign-in method.';
                 } else if (error.code === 'auth/operation-not-allowed') {
