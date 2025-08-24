@@ -13,7 +13,21 @@ from http.server import BaseHTTPRequestHandler
 import os
 
 # Stripe configuration
-stripe.api_key = os.environ.get('FLIGHTTRACE_STRIPE_SECRET_KEY', os.environ.get('STRIPE_SECRET_KEY', 'sk_test_placeholder'))
+# Try multiple possible environment variable names
+stripe_key = (
+    os.environ.get('FLIGHTTRACE_STRIPE_SECRET_KEY') or
+    os.environ.get('STRIPE_SECRET_KEY') or
+    os.environ.get('STRIPE_API_KEY') or
+    os.environ.get('STRIPE_SECRET') or
+    None
+)
+
+# Only set if we have a real key, otherwise Stripe operations will return mock data
+if stripe_key and stripe_key != 'sk_test_placeholder':
+    stripe.api_key = stripe_key
+    STRIPE_CONFIGURED = True
+else:
+    STRIPE_CONFIGURED = False
 
 # Subscription tiers
 SUBSCRIPTION_TIERS = {
@@ -109,7 +123,9 @@ class handler(BaseHTTPRequestHandler):
             data = {}
         
         # Route endpoints
-        if '/subscribe' in path:
+        if '/create-checkout' in path:
+            response = self.create_checkout_session(data)
+        elif '/subscribe' in path:
             response = self.handle_subscription(data)
         elif '/cancel' in path:
             response = self.handle_cancellation(data)
@@ -137,11 +153,89 @@ class handler(BaseHTTPRequestHandler):
         self.end_headers()
         self.wfile.write(json.dumps(response, indent=2).encode())
     
+    def create_checkout_session(self, data: Dict) -> Dict:
+        """
+        Create Stripe checkout session for subscription
+        """
+        if not STRIPE_CONFIGURED:
+            return {
+                'status': 'error',
+                'message': 'Stripe not configured',
+                'debug': {
+                    'stripe_key_found': bool(stripe_key),
+                    'stripe_key_placeholder': stripe_key == 'sk_test_placeholder' if stripe_key else False,
+                    'env_vars_checked': ['FLIGHTTRACE_STRIPE_SECRET_KEY', 'STRIPE_SECRET_KEY', 'STRIPE_API_KEY', 'STRIPE_SECRET']
+                }
+            }
+        
+        plan = data.get('plan', 'premium')
+        email = data.get('email')
+        price_id = data.get('price_id')
+        
+        # Use provided price_id or default ones
+        if not price_id:
+            if plan == 'premium':
+                price_id = 'price_1RzgrMIwUuNq64NpIeE35Py1'
+            elif plan == 'professional':
+                price_id = 'price_1Rzgs7IwUuNq64NpjO9sQhDG'
+            else:
+                return {
+                    'status': 'error',
+                    'message': f'Invalid plan: {plan}'
+                }
+        
+        try:
+            session = stripe.checkout.Session.create(
+                payment_method_types=['card'],
+                line_items=[{
+                    'price': price_id,
+                    'quantity': 1,
+                }],
+                mode='subscription',
+                success_url=data.get('success_url', 'https://flightandtrace.com/success?session_id={CHECKOUT_SESSION_ID}'),
+                cancel_url=data.get('cancel_url', 'https://flightandtrace.com/pricing'),
+                customer_email=email,
+                allow_promotion_codes=True,
+                billing_address_collection='required',
+                subscription_data={
+                    'trial_period_days': 14,
+                    'metadata': {
+                        'plan': plan,
+                        'email': email
+                    }
+                },
+                metadata={
+                    'plan': plan,
+                    'email': email
+                }
+            )
+            
+            return {
+                'status': 'success',
+                'checkout_url': session.url,
+                'session_id': session.id,
+                'plan': plan,
+                'price_id': price_id
+            }
+            
+        except stripe.error.StripeError as e:
+            return {
+                'status': 'error',
+                'message': str(e),
+                'code': 'stripe_error'
+            }
+    
     def handle_subscription(self, data: Dict) -> Dict:
         """
         Create new subscription with full compliance
         One-click subscription with regulatory requirements
         """
+        if not STRIPE_CONFIGURED:
+            return {
+                'status': 'error',
+                'message': 'Stripe payment processing not configured'
+            }
+        
         tier = data.get('tier', 'premium')
         user_id = data.get('user_id')
         payment_method = data.get('payment_method_id')
@@ -647,10 +741,40 @@ class handler(BaseHTTPRequestHandler):
             }
         }
     
+    def do_GET(self):
+        """Handle GET requests for environment info"""
+        if '/env-check' in self.path:
+            response = self.check_environment()
+        else:
+            response = {'status': 'error', 'message': 'Endpoint not found'}
+        
+        self.send_response(200)
+        self.send_header('Content-Type', 'application/json')
+        self.send_header('Access-Control-Allow-Origin', '*')
+        self.end_headers()
+        self.wfile.write(json.dumps(response, indent=2).encode())
+    
+    def check_environment(self) -> Dict:
+        """Check environment configuration"""
+        return {
+            'status': 'success',
+            'stripe_configured': STRIPE_CONFIGURED,
+            'stripe_key_exists': bool(stripe_key),
+            'stripe_key_placeholder': stripe_key == 'sk_test_placeholder' if stripe_key else False,
+            'env_variables': {
+                'FLIGHTTRACE_STRIPE_SECRET_KEY': bool(os.environ.get('FLIGHTTRACE_STRIPE_SECRET_KEY')),
+                'STRIPE_SECRET_KEY': bool(os.environ.get('STRIPE_SECRET_KEY')),
+                'STRIPE_API_KEY': bool(os.environ.get('STRIPE_API_KEY')),
+                'STRIPE_SECRET': bool(os.environ.get('STRIPE_SECRET')),
+                'FLIGHTTRACE_STRIPE_WEBHOOK_SECRET': bool(os.environ.get('FLIGHTTRACE_STRIPE_WEBHOOK_SECRET')),
+                'STRIPE_WEBHOOK_SECRET': bool(os.environ.get('STRIPE_WEBHOOK_SECRET'))
+            }
+        }
+    
     def do_OPTIONS(self):
         """Handle CORS preflight"""
         self.send_response(200)
         self.send_header('Access-Control-Allow-Origin', '*')
-        self.send_header('Access-Control-Allow-Methods', 'POST, OPTIONS')
+        self.send_header('Access-Control-Allow-Methods', 'GET, POST, OPTIONS')
         self.send_header('Access-Control-Allow-Headers', 'Content-Type, Stripe-Signature')
         self.end_headers()
