@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>FlightTrace - Live Flight Tracker</title>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <link rel="stylesheet" href="/nav-style.css">
     <style>
         * {
             margin: 0;
@@ -273,7 +274,25 @@
     </style>
 </head>
 <body>
-    <header class="header">
+    <!-- Navigation Bar -->
+    <nav class="ft-nav" id="navbar">
+        <a href="/" class="ft-nav-logo">
+            <span>✈️</span> FlightTrace
+        </a>
+        <div class="ft-nav-links" id="navLinks">
+            <a href="/" class="ft-nav-link">Home</a>
+            <a href="/live.html" class="ft-nav-link">Live Tracking</a>
+            <a href="/track.html" class="ft-nav-link active">Flight Search</a>
+            <a href="/pricing.html" class="ft-nav-link highlight">Pricing</a>
+            <div class="ft-nav-auth">
+                <a href="/login.html" class="ft-nav-btn login">Login</a>
+                <a href="/login.html#signup" class="ft-nav-btn signup">Sign Up Free</a>
+            </div>
+        </div>
+        <button class="ft-nav-mobile-btn" onclick="toggleMobileMenu()">☰</button>
+    </nav>
+    
+    <header class="header" style="display: none;">
         <div class="header-content">
             <div class="logo">
                 <span>✈️</span> FlightTrace
@@ -400,7 +419,7 @@
                 <h2>Recent Flights</h2>
                 <div id="flightListContent">
                     <!-- Sample flights - will be replaced with real data -->
-                    <div class="flight-card" onclick="trackFlight('AA2351')">
+                    <div class="flight-card" onclick="trackFlightDetails('AA2351')">
                         <div class="flight-number">AA2351</div>
                         <div class="flight-route">
                             <span>JFK</span> → <span>LAX</span>
@@ -410,7 +429,7 @@
                         </div>
                         <span class="flight-status status-enroute">En Route</span>
                     </div>
-                    <div class="flight-card" onclick="trackFlight('DL1847')">
+                    <div class="flight-card" onclick="trackFlightDetails('DL1847')">
                         <div class="flight-number">DL1847</div>
                         <div class="flight-route">
                             <span>ATL</span> → <span>ORD</span>
@@ -420,7 +439,7 @@
                         </div>
                         <span class="flight-status status-enroute">En Route</span>
                     </div>
-                    <div class="flight-card" onclick="trackFlight('UA523')">
+                    <div class="flight-card" onclick="trackFlightDetails('UA523')">
                         <div class="flight-number">UA523</div>
                         <div class="flight-route">
                             <span>SFO</span> → <span>EWR</span>
@@ -430,7 +449,7 @@
                         </div>
                         <span class="flight-status status-scheduled">Scheduled</span>
                     </div>
-                    <div class="flight-card" onclick="trackFlight('SW4521')">
+                    <div class="flight-card" onclick="trackFlightDetails('SW4521')">
                         <div class="flight-number">SW4521</div>
                         <div class="flight-route">
                             <span>DEN</span> → <span>PHX</span>
@@ -440,7 +459,7 @@
                         </div>
                         <span class="flight-status status-landed">Landed</span>
                     </div>
-                    <div class="flight-card" onclick="trackFlight('B61923')">
+                    <div class="flight-card" onclick="trackFlightDetails('B61923')">
                         <div class="flight-number">B61923</div>
                         <div class="flight-route">
                             <span>BOS</span> → <span>FLL</span>
@@ -517,55 +536,190 @@
             document.getElementById(formMap[tabName]).classList.add('active');
         }
 
-        // Track specific flight
-        function trackFlight(flightNumber) {
-            document.getElementById('flightNumber').value = flightNumber;
-            
-            // Find flight data
-            const flight = sampleFlights.find(f => f.id === flightNumber);
-            if (flight && flight.alt > 0) {
-                // Center map on flight
-                map.setView([flight.lat, flight.lng], 6);
+
+        // API Integration Functions
+        async function searchFlights(params) {
+            try {
+                const queryString = new URLSearchParams(params).toString();
+                const response = await fetch(`/api/flights-live/search?${queryString}`);
+                const data = await response.json();
                 
-                // Show flight path (simplified)
-                const flightPath = L.polyline([
-                    [40.6413, -73.7781], // JFK coordinates
-                    [flight.lat, flight.lng],
-                    [33.9425, -118.4081] // LAX coordinates
-                ], { color: '#0099ff', weight: 3, opacity: 0.7 }).addTo(map);
+                if (data.status === 'success') {
+                    return data.flights;
+                } else {
+                    console.error('API Error:', data.message);
+                    return [];
+                }
+            } catch (error) {
+                console.error('Failed to fetch flights:', error);
+                return [];
             }
-            
-            // Show alert for demo
-            alert(`Tracking flight ${flightNumber}\n\nIn a production environment, this would fetch real-time data from aviation APIs.`);
         }
 
-        // Handle form submissions
-        document.getElementById('flightSearch').addEventListener('submit', (e) => {
+        async function getFlightDetails(flightNumber) {
+            try {
+                const response = await fetch(`/api/flights-live/flight/${flightNumber}`);
+                const data = await response.json();
+                
+                if (data.status === 'success') {
+                    return data.flight;
+                }
+                return null;
+            } catch (error) {
+                console.error('Failed to fetch flight details:', error);
+                return null;
+            }
+        }
+
+        function updateFlightList(flights) {
+            const listContent = document.getElementById('flightListContent');
+            
+            if (flights.length === 0) {
+                listContent.innerHTML = '<p style="text-align: center; color: #666;">No flights found</p>';
+                return;
+            }
+            
+            listContent.innerHTML = flights.map(flight => `
+                <div class="flight-card" onclick="trackFlightDetails('${flight.callsign || flight.icao24}')">
+                    <div class="flight-number">${flight.callsign || flight.icao24}</div>
+                    <div class="flight-route">
+                        <span>${flight.origin || 'Unknown'}</span> → <span>${flight.destination || 'Unknown'}</span>
+                    </div>
+                    <div class="flight-route" style="font-size: 14px;">
+                        ${flight.velocity ? `${Math.round(flight.velocity * 2.237)} mph` : 'On Ground'} • 
+                        ${flight.baro_altitude ? `${Math.round(flight.baro_altitude * 3.281).toLocaleString()} ft` : 'Ground'}
+                    </div>
+                    <span class="flight-status ${flight.on_ground ? 'status-landed' : 'status-enroute'}">
+                        ${flight.on_ground ? 'On Ground' : 'In Flight'}
+                    </span>
+                </div>
+            `).join('');
+        }
+
+        function updateMapWithFlights(flights) {
+            // Clear existing markers
+            map.eachLayer((layer) => {
+                if (layer instanceof L.Marker) {
+                    map.removeLayer(layer);
+                }
+            });
+            
+            // Add new markers
+            flights.forEach(flight => {
+                if (flight.latitude && flight.longitude && !flight.on_ground) {
+                    const marker = L.marker([flight.latitude, flight.longitude], { icon: aircraftIcon })
+                        .addTo(map)
+                        .bindPopup(`
+                            <strong>${flight.callsign || flight.icao24}</strong><br>
+                            ${flight.origin || 'Unknown'} → ${flight.destination || 'Unknown'}<br>
+                            Altitude: ${flight.baro_altitude ? Math.round(flight.baro_altitude * 3.281).toLocaleString() + ' ft' : 'Unknown'}<br>
+                            Speed: ${flight.velocity ? Math.round(flight.velocity * 2.237) + ' mph' : 'Unknown'}
+                        `);
+                }
+            });
+            
+            // Center map on flights if any
+            if (flights.length > 0 && flights[0].latitude && flights[0].longitude) {
+                map.setView([flights[0].latitude, flights[0].longitude], 6);
+            }
+        }
+
+        async function trackFlightDetails(identifier) {
+            const flight = await getFlightDetails(identifier);
+            if (flight) {
+                if (flight.latitude && flight.longitude) {
+                    map.setView([flight.latitude, flight.longitude], 8);
+                }
+                
+                // Update the flight number input
+                document.getElementById('flightNumber').value = identifier;
+                
+                // Show fuel estimation if available
+                if (flight.fuel_estimation) {
+                    alert(`Flight ${identifier}\n` +
+                        `Route: ${flight.origin || 'Unknown'} → ${flight.destination || 'Unknown'}\n` +
+                        `Current Fuel: ${flight.fuel_estimation.current_fuel_kg} kg\n` +
+                        `CO2 Emissions: ${flight.fuel_estimation.co2_emissions_kg} kg\n` +
+                        `Fuel Burn Rate: ${flight.fuel_estimation.fuel_burn_rate} kg/hr`);
+                }
+            }
+        }
+
+        // Handle form submissions with real API calls
+        document.getElementById('flightSearch').addEventListener('submit', async (e) => {
             e.preventDefault();
             const flightNumber = document.getElementById('flightNumber').value;
             if (flightNumber) {
-                trackFlight(flightNumber.toUpperCase());
+                const btn = e.target.querySelector('.btn');
+                btn.textContent = 'Searching...';
+                btn.disabled = true;
+                
+                const flights = await searchFlights({ callsign: flightNumber.toUpperCase() });
+                updateFlightList(flights);
+                updateMapWithFlights(flights);
+                
+                btn.textContent = 'Track Flight';
+                btn.disabled = false;
             }
         });
 
-        document.getElementById('routeSearch').addEventListener('submit', (e) => {
+        document.getElementById('routeSearch').addEventListener('submit', async (e) => {
             e.preventDefault();
             const origin = document.getElementById('origin').value;
             const destination = document.getElementById('destination').value;
-            alert(`Searching flights from ${origin} to ${destination}\n\nThis would show all flights on this route.`);
+            
+            const btn = e.target.querySelector('.btn');
+            btn.textContent = 'Searching...';
+            btn.disabled = true;
+            
+            const flights = await searchFlights({ origin, destination });
+            updateFlightList(flights);
+            updateMapWithFlights(flights);
+            
+            btn.textContent = 'Search Routes';
+            btn.disabled = false;
         });
 
-        document.getElementById('airportSearch').addEventListener('submit', (e) => {
+        document.getElementById('airportSearch').addEventListener('submit', async (e) => {
             e.preventDefault();
             const airport = document.getElementById('airport').value;
             const type = document.getElementById('flightType').value;
-            alert(`Viewing ${type} at ${airport}\n\nThis would show airport activity and flight boards.`);
+            
+            const btn = e.target.querySelector('.btn');
+            btn.textContent = 'Loading...';
+            btn.disabled = true;
+            
+            let params = {};
+            if (type === 'arrivals') {
+                params.destination = airport;
+            } else if (type === 'departures') {
+                params.origin = airport;
+            } else {
+                params.airport = airport;
+            }
+            
+            const flights = await searchFlights(params);
+            updateFlightList(flights);
+            updateMapWithFlights(flights);
+            
+            btn.textContent = 'View Airport';
+            btn.disabled = false;
         });
 
-        document.getElementById('aircraftSearch').addEventListener('submit', (e) => {
+        document.getElementById('aircraftSearch').addEventListener('submit', async (e) => {
             e.preventDefault();
             const registration = document.getElementById('registration').value;
-            alert(`Tracking aircraft ${registration}\n\nThis would show the aircraft's current position and flight history.`);
+            
+            const btn = e.target.querySelector('.btn');
+            btn.textContent = 'Tracking...';
+            btn.disabled = true;
+            
+            const flights = await searchFlights({ icao24: registration.toLowerCase() });
+            updateFlightList(flights);
+            updateMapWithFlights(flights);
+            
+            btn.textContent = 'Track Aircraft';
+            btn.disabled = false;
         });
 
         // Simulate real-time updates

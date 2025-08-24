@@ -22,7 +22,15 @@
       "Bash(vercel:*)",
       "WebFetch(domain:www.flightradar24.com)",
       "WebFetch(domain:www.flightaware.com)",
-      "Bash(dir:*)"
+      "Bash(dir:*)",
+      "Bash(curl:*)",
+      "WebFetch(domain:flightandtrace.com)",
+      "WebFetch(domain:flightandtrace.com)",
+      "Bash(npx playwright install:*)",
+      "Bash(npx playwright test:*)",
+      "Bash(set BASE_URL=https://flightandtrace.com)",
+      "Bash($env:BASE_URL=\"https://flightandtrace.com\")",
+      "Bash(timeout:*)"
     ],
     "deny": [],
     "additionalDirectories": [

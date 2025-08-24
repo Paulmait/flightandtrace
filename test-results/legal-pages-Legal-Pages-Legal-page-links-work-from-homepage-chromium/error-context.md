@@ -1,0 +1,49 @@
+# Page snapshot
+
+```yaml
+- generic [active] [ref=e1]:
+  - banner [ref=e2]:
+    - generic [ref=e3]: ✈️
+    - generic [ref=e4]:
+      - heading "FlightTrace" [level=1] [ref=e5]
+      - paragraph [ref=e6]: Real-Time Flight Tracking & Analytics
+  - main [ref=e7]:
+    - generic [ref=e8]:
+      - heading "Track Every Flight, Every Detail" [level=2] [ref=e9]
+      - paragraph [ref=e10]: Professional-grade flight tracking with fuel estimation, carbon footprint analysis, and real-time updates
+    - generic [ref=e11]:
+      - generic [ref=e12]:
+        - heading "🛫 Real-Time Tracking" [level=3] [ref=e13]
+        - paragraph [ref=e14]: Track flights worldwide with live updates, departure/arrival times, and current position on interactive maps.
+      - generic [ref=e15]:
+        - heading "⛽ Fuel Estimation" [level=3] [ref=e16]
+        - paragraph [ref=e17]: Advanced algorithms calculate fuel consumption based on aircraft type, distance, and flight conditions.
+      - generic [ref=e18]:
+        - heading "🌍 Carbon Footprint" [level=3] [ref=e19]
+        - paragraph [ref=e20]: Monitor environmental impact with detailed carbon emission calculations for every tracked flight.
+      - generic [ref=e21]:
+        - heading "📊 Analytics Dashboard" [level=3] [ref=e22]
+        - paragraph [ref=e23]: Comprehensive analytics with flight history, patterns, and detailed performance metrics.
+      - generic [ref=e24]:
+        - heading "🔔 Smart Notifications" [level=3] [ref=e25]
+        - paragraph [ref=e26]: Get instant alerts for flight status changes, delays, and important updates.
+      - generic [ref=e27]:
+        - heading "👥 Family Sharing" [level=3] [ref=e28]
+        - paragraph [ref=e29]: Share flight tracking with family and friends. Keep everyone informed about your travels.
+    - generic [ref=e30]:
+      - heading "Ready to Start Tracking?" [level=2] [ref=e31]
+      - paragraph [ref=e32]: Join thousands of aviation enthusiasts and professionals
+      - link "🔴 LIVE Tracking" [ref=e33] [cursor=pointer]:
+        - /url: /live.html
+      - link "Flight Search" [ref=e34] [cursor=pointer]:
+        - /url: /track.html
+  - contentinfo [ref=e35]:
+    - paragraph [ref=e36]: © 2025 FlightTrace. All rights reserved.
+    - paragraph [ref=e37]:
+      - link "Terms" [ref=e38] [cursor=pointer]:
+        - /url: /terms
+      - link "Privacy" [ref=e39] [cursor=pointer]:
+        - /url: /privacy
+      - link "Security" [ref=e40] [cursor=pointer]:
+        - /url: /security
+```

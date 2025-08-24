@@ -1,0 +1,830 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pricing - FlightTrace | 80% Cheaper Than FlightRadar24</title>
+    <meta name="description" content="FlightTrace pricing - Starting at $7.99/mo. 80% cheaper than competitors with exclusive fuel & CO2 tracking features.">
+    <link rel="stylesheet" href="/nav-style.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #f8f9fa;
+            color: #333;
+        }
+        
+        .hero-section {
+            background: linear-gradient(135deg, #0099ff 0%, #00c6ff 100%);
+            color: white;
+            padding: 4rem 2rem;
+            text-align: center;
+        }
+        
+        .hero-title {
+            font-size: 48px;
+            margin-bottom: 1rem;
+            font-weight: bold;
+        }
+        
+        .hero-subtitle {
+            font-size: 24px;
+            margin-bottom: 1rem;
+            opacity: 0.95;
+        }
+        
+        .hero-badge {
+            display: inline-block;
+            background: rgba(255, 255, 255, 0.2);
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-weight: 600;
+            margin-bottom: 2rem;
+        }
+        
+        .comparison-bar {
+            background: white;
+            padding: 1.5rem;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            position: sticky;
+            top: 60px;
+            z-index: 100;
+        }
+        
+        .comparison-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 2rem;
+        }
+        
+        .comparison-item {
+            text-align: center;
+        }
+        
+        .comparison-label {
+            color: #666;
+            font-size: 14px;
+            margin-bottom: 0.5rem;
+        }
+        
+        .comparison-price {
+            font-size: 24px;
+            font-weight: bold;
+        }
+        
+        .comparison-price.us {
+            color: #00c6ff;
+        }
+        
+        .comparison-price.them {
+            color: #999;
+            text-decoration: line-through;
+        }
+        
+        .pricing-container {
+            max-width: 1200px;
+            margin: 3rem auto;
+            padding: 0 2rem;
+        }
+        
+        .pricing-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 2rem;
+            margin-bottom: 4rem;
+        }
+        
+        .pricing-card {
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+            transition: transform 0.3s, box-shadow 0.3s;
+            position: relative;
+        }
+        
+        .pricing-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
+        }
+        
+        .pricing-card.featured {
+            border: 3px solid #00c6ff;
+        }
+        
+        .pricing-card.featured::before {
+            content: 'MOST POPULAR';
+            position: absolute;
+            top: 15px;
+            right: -30px;
+            background: #ff4757;
+            color: white;
+            padding: 5px 40px;
+            transform: rotate(45deg);
+            font-size: 11px;
+            font-weight: bold;
+        }
+        
+        .pricing-header {
+            padding: 2rem;
+            text-align: center;
+            border-bottom: 1px solid #f0f0f0;
+        }
+        
+        .plan-name {
+            font-size: 24px;
+            font-weight: bold;
+            margin-bottom: 0.5rem;
+        }
+        
+        .plan-description {
+            color: #666;
+            font-size: 14px;
+            margin-bottom: 1rem;
+        }
+        
+        .plan-price {
+            font-size: 48px;
+            font-weight: bold;
+            color: #0099ff;
+        }
+        
+        .plan-price sup {
+            font-size: 24px;
+        }
+        
+        .plan-price span {
+            font-size: 16px;
+            color: #999;
+            font-weight: normal;
+        }
+        
+        .plan-original-price {
+            color: #999;
+            text-decoration: line-through;
+            font-size: 18px;
+            margin-top: 0.5rem;
+        }
+        
+        .plan-savings {
+            background: #e8f5e9;
+            color: #2e7d32;
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            display: inline-block;
+            margin-top: 0.5rem;
+        }
+        
+        .pricing-features {
+            padding: 2rem;
+        }
+        
+        .feature-category {
+            margin-bottom: 1.5rem;
+        }
+        
+        .feature-category-title {
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+            color: #999;
+            margin-bottom: 0.75rem;
+            letter-spacing: 1px;
+        }
+        
+        .feature-item {
+            display: flex;
+            align-items: flex-start;
+            margin-bottom: 1rem;
+            font-size: 14px;
+        }
+        
+        .feature-icon {
+            color: #00c6ff;
+            margin-right: 0.75rem;
+            font-size: 16px;
+        }
+        
+        .feature-icon.exclusive {
+            color: #ff4757;
+        }
+        
+        .feature-text {
+            flex: 1;
+            color: #333;
+        }
+        
+        .feature-badge {
+            background: #ff4757;
+            color: white;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 10px;
+            font-weight: 600;
+            margin-left: 0.5rem;
+        }
+        
+        .pricing-cta {
+            padding: 0 2rem 2rem;
+        }
+        
+        .btn-subscribe {
+            width: 100%;
+            padding: 1rem;
+            background: linear-gradient(135deg, #0099ff 0%, #00c6ff 100%);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .btn-subscribe:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(0, 153, 255, 0.3);
+        }
+        
+        .btn-subscribe.secondary {
+            background: transparent;
+            color: #0099ff;
+            border: 2px solid #0099ff;
+        }
+        
+        .btn-subscribe.secondary:hover {
+            background: #0099ff;
+            color: white;
+        }
+        
+        .unique-features {
+            background: linear-gradient(135deg, #f5f7fa 0%, #e8f4ff 100%);
+            padding: 4rem 2rem;
+            text-align: center;
+            margin: 4rem 0;
+        }
+        
+        .unique-title {
+            font-size: 36px;
+            margin-bottom: 1rem;
+            color: #333;
+        }
+        
+        .unique-subtitle {
+            font-size: 18px;
+            color: #666;
+            margin-bottom: 3rem;
+        }
+        
+        .unique-grid {
+            max-width: 1000px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 2rem;
+        }
+        
+        .unique-card {
+            background: white;
+            padding: 2rem;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        }
+        
+        .unique-icon {
+            font-size: 48px;
+            margin-bottom: 1rem;
+        }
+        
+        .unique-card-title {
+            font-size: 20px;
+            margin-bottom: 0.75rem;
+            color: #333;
+        }
+        
+        .unique-card-text {
+            color: #666;
+            font-size: 14px;
+            line-height: 1.6;
+        }
+        
+        .comparison-table {
+            max-width: 1000px;
+            margin: 4rem auto;
+            padding: 0 2rem;
+        }
+        
+        .table-title {
+            font-size: 36px;
+            text-align: center;
+            margin-bottom: 3rem;
+            color: #333;
+        }
+        
+        .comparison-table table {
+            width: 100%;
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+        }
+        
+        .comparison-table th {
+            background: #f8f9fa;
+            padding: 1rem;
+            text-align: left;
+            font-weight: 600;
+            color: #333;
+            border-bottom: 2px solid #e0e0e0;
+        }
+        
+        .comparison-table td {
+            padding: 1rem;
+            border-bottom: 1px solid #f0f0f0;
+        }
+        
+        .comparison-table tr:hover {
+            background: #f8f9fa;
+        }
+        
+        .check {
+            color: #00c6ff;
+            font-size: 20px;
+        }
+        
+        .cross {
+            color: #ccc;
+            font-size: 20px;
+        }
+        
+        .faq-section {
+            max-width: 800px;
+            margin: 4rem auto;
+            padding: 0 2rem;
+        }
+        
+        .faq-title {
+            font-size: 36px;
+            text-align: center;
+            margin-bottom: 3rem;
+            color: #333;
+        }
+        
+        .faq-item {
+            background: white;
+            border-radius: 12px;
+            margin-bottom: 1rem;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+            overflow: hidden;
+        }
+        
+        .faq-question {
+            padding: 1.5rem;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-weight: 600;
+            color: #333;
+        }
+        
+        .faq-question:hover {
+            background: #f8f9fa;
+        }
+        
+        .faq-answer {
+            padding: 0 1.5rem;
+            max-height: 0;
+            overflow: hidden;
+            transition: all 0.3s;
+            color: #666;
+        }
+        
+        .faq-item.active .faq-answer {
+            padding: 0 1.5rem 1.5rem;
+            max-height: 500px;
+        }
+        
+        .faq-icon {
+            transition: transform 0.3s;
+        }
+        
+        .faq-item.active .faq-icon {
+            transform: rotate(45deg);
+        }
+        
+        @media (max-width: 768px) {
+            .hero-title {
+                font-size: 32px;
+            }
+            
+            .hero-subtitle {
+                font-size: 18px;
+            }
+            
+            .pricing-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .comparison-bar {
+                position: static;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation Bar -->
+    <nav class="ft-nav" id="navbar">
+        <a href="/" class="ft-nav-logo">
+            <span>✈️</span> FlightTrace
+        </a>
+        <div class="ft-nav-links" id="navLinks">
+            <a href="/" class="ft-nav-link">Home</a>
+            <a href="/live.html" class="ft-nav-link">Live Tracking</a>
+            <a href="/track.html" class="ft-nav-link">Flight Search</a>
+            <a href="/pricing.html" class="ft-nav-link active">Pricing</a>
+            <div class="ft-nav-auth">
+                <a href="/login.html" class="ft-nav-btn login">Login</a>
+                <a href="/login.html#signup" class="ft-nav-btn signup">Start Free Trial</a>
+            </div>
+        </div>
+        <button class="ft-nav-mobile-btn" onclick="toggleMobileMenu()">☰</button>
+    </nav>
+    
+    <!-- Hero Section -->
+    <div class="hero-section">
+        <h1 class="hero-title">Save 80% vs FlightRadar24</h1>
+        <p class="hero-subtitle">Get More Features for Less Money</p>
+        <div class="hero-badge">✨ Exclusive: Fuel & CO2 Tracking Included</div>
+    </div>
+    
+    <!-- Comparison Bar -->
+    <div class="comparison-bar">
+        <div class="comparison-content">
+            <div class="comparison-item">
+                <div class="comparison-label">FlightTrace Premium</div>
+                <div class="comparison-price us">$7.99/mo</div>
+            </div>
+            <div class="comparison-item">
+                <div class="comparison-label">FlightRadar24 Silver</div>
+                <div class="comparison-price them">$9.99/mo</div>
+            </div>
+            <div class="comparison-item">
+                <div class="comparison-label">FlightAware Basic</div>
+                <div class="comparison-price them">$39.95/mo</div>
+            </div>
+            <div class="comparison-item">
+                <div class="comparison-label">Your Savings</div>
+                <div class="comparison-price us">Up to $31.96/mo</div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Pricing Cards -->
+    <div class="pricing-container">
+        <div class="pricing-grid">
+            <!-- Free Plan -->
+            <div class="pricing-card">
+                <div class="pricing-header">
+                    <h3 class="plan-name">Free</h3>
+                    <p class="plan-description">Perfect for casual tracking</p>
+                    <div class="plan-price">
+                        <sup>$</sup>0
+                        <span>/month</span>
+                    </div>
+                </div>
+                <div class="pricing-features">
+                    <div class="feature-category">
+                        <div class="feature-category-title">Tracking</div>
+                        <div class="feature-item">
+                            <span class="feature-icon">✓</span>
+                            <span class="feature-text">25 flights per day</span>
+                        </div>
+                        <div class="feature-item">
+                            <span class="feature-icon">✓</span>
+                            <span class="feature-text">5-minute delay</span>
+                        </div>
+                        <div class="feature-item">
+                            <span class="feature-icon">✓</span>
+                            <span class="feature-text">7-day history</span>
+                        </div>
+                    </div>
+                    <div class="feature-category">
+                        <div class="feature-category-title">Features</div>
+                        <div class="feature-item">
+                            <span class="feature-icon">✓</span>
+                            <span class="feature-text">Basic search</span>
+                        </div>
+                        <div class="feature-item">
+                            <span class="feature-icon">✓</span>
+                            <span class="feature-text">Mobile app access</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="pricing-cta">
+                    <button class="btn-subscribe secondary" onclick="signUp('free')">Start Free</button>
+                </div>
+            </div>
+            
+            <!-- Premium Plan -->
+            <div class="pricing-card featured">
+                <div class="pricing-header">
+                    <h3 class="plan-name">Premium</h3>
+                    <p class="plan-description">Most popular for enthusiasts</p>
+                    <div class="plan-price">
+                        <sup>$</sup>7.99
+                        <span>/month</span>
+                    </div>
+                    <div class="plan-original-price">Others charge $9.99+</div>
+                    <div class="plan-savings">SAVE 20%</div>
+                </div>
+                <div class="pricing-features">
+                    <div class="feature-category">
+                        <div class="feature-category-title">Tracking</div>
+                        <div class="feature-item">
+                            <span class="feature-icon">✓</span>
+                            <span class="feature-text">Unlimited flights</span>
+                        </div>
+                        <div class="feature-item">
+                            <span class="feature-icon">✓</span>
+                            <span class="feature-text">Real-time tracking</span>
+                        </div>
+                        <div class="feature-item">
+                            <span class="feature-icon">✓</span>
+                            <span class="feature-text">90-day history</span>
+                        </div>
+                    </div>
+                    <div class="feature-category">
+                        <div class="feature-category-title">Exclusive Features</div>
+                        <div class="feature-item">
+                            <span class="feature-icon exclusive">★</span>
+                            <span class="feature-text">Fuel consumption tracking<span class="feature-badge">UNIQUE</span></span>
+                        </div>
+                        <div class="feature-item">
+                            <span class="feature-icon exclusive">★</span>
+                            <span class="feature-text">CO2 emissions data<span class="feature-badge">UNIQUE</span></span>
+                        </div>
+                        <div class="feature-item">
+                            <span class="feature-icon">✓</span>
+                            <span class="feature-text">Weather overlays</span>
+                        </div>
+                        <div class="feature-item">
+                            <span class="feature-icon">✓</span>
+                            <span class="feature-text">10 flight alerts</span>
+                        </div>
+                        <div class="feature-item">
+                            <span class="feature-icon">✓</span>
+                            <span class="feature-text">API access (1,000/day)</span>
+                        </div>
+                        <div class="feature-item">
+                            <span class="feature-icon">✓</span>
+                            <span class="feature-text">No advertisements</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="pricing-cta">
+                    <button class="btn-subscribe" onclick="signUp('premium')">Start 14-Day Free Trial</button>
+                </div>
+            </div>
+            
+            <!-- Professional Plan -->
+            <div class="pricing-card">
+                <div class="pricing-header">
+                    <h3 class="plan-name">Professional</h3>
+                    <p class="plan-description">For aviation professionals</p>
+                    <div class="plan-price">
+                        <sup>$</sup>24.99
+                        <span>/month</span>
+                    </div>
+                    <div class="plan-original-price">FR24 Gold: $34.99</div>
+                    <div class="plan-savings">SAVE 29%</div>
+                </div>
+                <div class="pricing-features">
+                    <div class="feature-category">
+                        <div class="feature-category-title">Everything in Premium, plus:</div>
+                        <div class="feature-item">
+                            <span class="feature-icon">✓</span>
+                            <span class="feature-text">365-day history</span>
+                        </div>
+                        <div class="feature-item">
+                            <span class="feature-icon">✓</span>
+                            <span class="feature-text">Unlimited alerts</span>
+                        </div>
+                        <div class="feature-item">
+                            <span class="feature-icon">✓</span>
+                            <span class="feature-text">Fleet tracking (50 aircraft)</span>
+                        </div>
+                        <div class="feature-item">
+                            <span class="feature-icon">✓</span>
+                            <span class="feature-text">3D view</span>
+                        </div>
+                        <div class="feature-item">
+                            <span class="feature-icon">✓</span>
+                            <span class="feature-text">Aeronautical charts</span>
+                        </div>
+                        <div class="feature-item">
+                            <span class="feature-icon">✓</span>
+                            <span class="feature-text">METAR/TAF weather</span>
+                        </div>
+                        <div class="feature-item">
+                            <span class="feature-icon">✓</span>
+                            <span class="feature-text">API access (10,000/day)</span>
+                        </div>
+                        <div class="feature-item">
+                            <span class="feature-icon">✓</span>
+                            <span class="feature-text">Priority support</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="pricing-cta">
+                    <button class="btn-subscribe" onclick="signUp('professional')">Start 14-Day Free Trial</button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Unique Features Section -->
+        <div class="unique-features">
+            <h2 class="unique-title">Exclusive Features You Won't Find Elsewhere</h2>
+            <p class="unique-subtitle">FlightTrace is the only tracker with environmental impact data</p>
+            <div class="unique-grid">
+                <div class="unique-card">
+                    <div class="unique-icon">⛽</div>
+                    <h3 class="unique-card-title">Fuel Consumption</h3>
+                    <p class="unique-card-text">Real-time fuel burn calculations based on aircraft type, altitude, and weather conditions.</p>
+                </div>
+                <div class="unique-card">
+                    <div class="unique-icon">🌍</div>
+                    <h3 class="unique-card-title">CO2 Emissions</h3>
+                    <p class="unique-card-text">Track environmental impact with accurate carbon footprint data for every flight.</p>
+                </div>
+                <div class="unique-card">
+                    <div class="unique-icon">📊</div>
+                    <h3 class="unique-card-title">Cost Analysis</h3>
+                    <p class="unique-card-text">Estimate operating costs including fuel expenses for any tracked flight.</p>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Comparison Table -->
+        <div class="comparison-table">
+            <h2 class="table-title">Feature Comparison</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Feature</th>
+                        <th>FlightTrace</th>
+                        <th>FlightRadar24</th>
+                        <th>FlightAware</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><strong>Starting Price</strong></td>
+                        <td><strong style="color: #00c6ff;">$7.99/mo</strong></td>
+                        <td>$9.99/mo</td>
+                        <td>$39.95/mo</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Free Trial</strong></td>
+                        <td><span class="check">✓</span> 14 days</td>
+                        <td><span class="check">✓</span> 7 days</td>
+                        <td><span class="cross">✗</span></td>
+                    </tr>
+                    <tr>
+                        <td><strong>Fuel Tracking</strong></td>
+                        <td><span class="check">✓</span></td>
+                        <td><span class="cross">✗</span></td>
+                        <td><span class="cross">✗</span></td>
+                    </tr>
+                    <tr>
+                        <td><strong>CO2 Emissions</strong></td>
+                        <td><span class="check">✓</span></td>
+                        <td><span class="cross">✗</span></td>
+                        <td><span class="cross">✗</span></td>
+                    </tr>
+                    <tr>
+                        <td><strong>One-Click Cancel</strong></td>
+                        <td><span class="check">✓</span></td>
+                        <td><span class="cross">✗</span></td>
+                        <td><span class="cross">✗</span></td>
+                    </tr>
+                    <tr>
+                        <td><strong>Refund Policy</strong></td>
+                        <td><span class="check">✓</span> Pro-rated</td>
+                        <td><span class="cross">✗</span></td>
+                        <td><span class="cross">✗</span></td>
+                    </tr>
+                    <tr>
+                        <td><strong>API in Premium</strong></td>
+                        <td><span class="check">✓</span> 1,000/day</td>
+                        <td><span class="cross">✗</span></td>
+                        <td><span class="cross">✗</span></td>
+                    </tr>
+                    <tr>
+                        <td><strong>Pause Subscription</strong></td>
+                        <td><span class="check">✓</span></td>
+                        <td><span class="cross">✗</span></td>
+                        <td><span class="cross">✗</span></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        
+        <!-- FAQ Section -->
+        <div class="faq-section">
+            <h2 class="faq-title">Frequently Asked Questions</h2>
+            
+            <div class="faq-item">
+                <div class="faq-question" onclick="toggleFAQ(this)">
+                    <span>Why is FlightTrace so much cheaper?</span>
+                    <span class="faq-icon">+</span>
+                </div>
+                <div class="faq-answer">
+                    <p>We use modern serverless architecture and efficient data sources to keep costs low. We pass these savings directly to our users. Plus, we believe flight tracking should be accessible to everyone, not just those who can afford premium prices.</p>
+                </div>
+            </div>
+            
+            <div class="faq-item">
+                <div class="faq-question" onclick="toggleFAQ(this)">
+                    <span>How accurate is the fuel and CO2 tracking?</span>
+                    <span class="faq-icon">+</span>
+                </div>
+                <div class="faq-answer">
+                    <p>Our fuel consumption calculations use industry-standard formulas based on aircraft type, weight, altitude, and weather conditions. CO2 emissions are calculated using ICAO's official carbon calculator methodology. Accuracy is typically within 5-10% of actual consumption.</p>
+                </div>
+            </div>
+            
+            <div class="faq-item">
+                <div class="faq-question" onclick="toggleFAQ(this)">
+                    <span>Can I cancel anytime?</span>
+                    <span class="faq-icon">+</span>
+                </div>
+                <div class="faq-answer">
+                    <p>Yes! We offer true one-click cancellation from your account dashboard. You can cancel immediately with a pro-rated refund, or at the end of your billing period. We also offer the unique ability to pause your subscription if you need a break.</p>
+                </div>
+            </div>
+            
+            <div class="faq-item">
+                <div class="faq-question" onclick="toggleFAQ(this)">
+                    <span>Do you have the same coverage as FlightRadar24?</span>
+                    <span class="faq-icon">+</span>
+                </div>
+                <div class="faq-answer">
+                    <p>We use multiple data sources including OpenSky Network and ADS-B Exchange to provide comprehensive global coverage. While FlightRadar24 has more receivers, our coverage includes all major flight routes and airports worldwide.</p>
+                </div>
+            </div>
+            
+            <div class="faq-item">
+                <div class="faq-question" onclick="toggleFAQ(this)">
+                    <span>Is there really no credit card required for the trial?</span>
+                    <span class="faq-icon">+</span>
+                </div>
+                <div class="faq-answer">
+                    <p>Correct! Start your 14-day trial with just an email address. We only ask for payment information if you decide to continue after the trial ends. No surprises, no auto-charging.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <footer style="background: #1a1a1a; color: white; padding: 2rem; text-align: center; margin-top: 4rem;">
+        <p>&copy; 2025 FlightTrace. All rights reserved.</p>
+        <p style="margin-top: 0.5rem; font-size: 14px;">
+            <a href="/legal/terms.html" style="color: white; margin: 0 1rem;">Terms of Service</a>
+            <a href="/legal/privacy.html" style="color: white; margin: 0 1rem;">Privacy Policy</a>
+            <a href="/legal/security.html" style="color: white; margin: 0 1rem;">Security Policy</a>
+        </p>
+    </footer>
+    
+    <script>
+        // Toggle mobile menu
+        function toggleMobileMenu() {
+            document.getElementById('navLinks').classList.toggle('active');
+        }
+        
+        // Toggle FAQ
+        function toggleFAQ(element) {
+            const faqItem = element.parentElement;
+            faqItem.classList.toggle('active');
+        }
+        
+        // Sign up
+        function signUp(plan) {
+            // Store selected plan
+            localStorage.setItem('selectedPlan', plan);
+            // Redirect to signup
+            window.location.href = '/login.html#signup';
+        }
+    </script>
+</body>
+</html>

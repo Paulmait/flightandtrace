@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>FlightTrace - Real-Time Flight Tracking</title>
     <meta name="description" content="Track flights in real-time with fuel estimation and carbon footprint analysis">
+    <link rel="stylesheet" href="/nav-style.css">
     <style>
         * {
             margin: 0;
@@ -127,7 +128,25 @@
         }
     </style>
 </head>
-<body>
+<body class="homepage">
+    <!-- Navigation Bar -->
+    <nav class="ft-nav" id="navbar">
+        <a href="/" class="ft-nav-logo">
+            <span>✈️</span> FlightTrace
+        </a>
+        <div class="ft-nav-links" id="navLinks">
+            <a href="/" class="ft-nav-link active">Home</a>
+            <a href="/live.html" class="ft-nav-link">Live Tracking</a>
+            <a href="/track.html" class="ft-nav-link">Flight Search</a>
+            <a href="/pricing.html" class="ft-nav-link highlight">Pricing</a>
+            <div class="ft-nav-auth">
+                <a href="/login.html" class="ft-nav-btn login">Login</a>
+                <a href="/login.html#signup" class="ft-nav-btn signup">Sign Up Free</a>
+            </div>
+        </div>
+        <button class="ft-nav-mobile-btn" onclick="toggleMobileMenu()">☰</button>
+    </nav>
+    
     <header>
         <div class="logo">✈️</div>
         <div>
@@ -180,10 +199,27 @@
     <footer>
         <p>&copy; 2025 FlightTrace. All rights reserved.</p>
         <p style="margin-top: 0.5rem; font-size: 14px;">
-            <a href="/terms" style="color: white; margin: 0 1rem;">Terms</a>
-            <a href="/privacy" style="color: white; margin: 0 1rem;">Privacy</a>
-            <a href="/security" style="color: white; margin: 0 1rem;">Security</a>
+            <a href="/legal/terms.html" style="color: white; margin: 0 1rem;">Terms of Service</a>
+            <a href="/legal/privacy.html" style="color: white; margin: 0 1rem;">Privacy Policy</a>
+            <a href="/legal/security.html" style="color: white; margin: 0 1rem;">Security Policy</a>
         </p>
     </footer>
+    
+    <script>
+        // Navigation functionality
+        function toggleMobileMenu() {
+            document.getElementById('navLinks').classList.toggle('active');
+        }
+        
+        // Change nav background on scroll
+        window.addEventListener('scroll', function() {
+            const nav = document.getElementById('navbar');
+            if (window.scrollY > 50) {
+                nav.classList.add('scrolled');
+            } else {
+                nav.classList.remove('scrolled');
+            }
+        });
+    </script>
 </body>
 </html>

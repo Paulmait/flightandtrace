@@ -6,6 +6,7 @@
     <title>FlightTrace Live - Real-Time Flight Tracker</title>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="/nav-style.css">
     <style>
         * {
             margin: 0;
@@ -559,8 +560,26 @@
     </style>
 </head>
 <body>
+    <!-- Navigation Bar -->
+    <nav class="ft-nav" id="navbar">
+        <a href="/" class="ft-nav-logo">
+            <span>✈️</span> FlightTrace
+        </a>
+        <div class="ft-nav-links" id="navLinks">
+            <a href="/" class="ft-nav-link">Home</a>
+            <a href="/live.html" class="ft-nav-link active">Live Tracking</a>
+            <a href="/track.html" class="ft-nav-link">Flight Search</a>
+            <a href="/pricing.html" class="ft-nav-link highlight">Pricing</a>
+            <div class="ft-nav-auth">
+                <a href="/login.html" class="ft-nav-btn login">Login</a>
+                <a href="/login.html#signup" class="ft-nav-btn signup">Sign Up Free</a>
+            </div>
+        </div>
+        <button class="ft-nav-mobile-btn" onclick="toggleMobileMenu()">☰</button>
+    </nav>
+    
     <!-- Header -->
-    <header class="header">
+    <header class="header" style="display: none;">
         <div class="logo">
             <i class="fas fa-plane"></i>
             <span>FlightTrace LIVE</span>
@@ -855,69 +874,97 @@
             });
         }
         
-        // Generate realistic flight data
-        function generateFlightData() {
-            const airlines = ['AA', 'DL', 'UA', 'WN', 'B6', 'NK', 'F9', 'AS', 'G4', 'SY'];
-            const aircraft = ['B738', 'A320', 'B77W', 'A321', 'B739', 'A319', 'B752', 'A333', 'B763', 'E175'];
-            const airports = [
-                {code: 'JFK', lat: 40.6413, lng: -73.7781},
-                {code: 'LAX', lat: 33.9425, lng: -118.4081},
-                {code: 'ORD', lat: 41.9742, lng: -87.9073},
-                {code: 'ATL', lat: 33.6407, lng: -84.4277},
-                {code: 'DFW', lat: 32.8998, lng: -97.0403},
-                {code: 'DEN', lat: 39.8561, lng: -104.6737},
-                {code: 'SFO', lat: 37.6213, lng: -122.3790},
-                {code: 'SEA', lat: 47.4502, lng: -122.3088},
-                {code: 'MIA', lat: 25.7959, lng: -80.2870},
-                {code: 'BOS', lat: 42.3656, lng: -71.0096}
-            ];
+        // Fetch real flight data from API
+        async function fetchFlightData() {
+            try {
+                // Get current map bounds
+                const bounds = map.getBounds();
+                const params = new URLSearchParams({
+                    lamin: bounds.getSouth(),
+                    lomin: bounds.getWest(),
+                    lamax: bounds.getNorth(),
+                    lomax: bounds.getEast()
+                });
+                
+                const response = await fetch(`/api/flights-live/area?${params}`);
+                const data = await response.json();
+                
+                if (data.status === 'success') {
+                    return data.flights.map(flight => ({
+                        id: flight.icao24,
+                        airline: flight.callsign ? flight.callsign.substring(0, 2) : 'N/A',
+                        flightNumber: flight.callsign || flight.icao24,
+                        aircraft: 'Aircraft',
+                        origin: flight.origin_country || 'Unknown',
+                        destination: 'Unknown',
+                        position: {
+                            lat: flight.latitude,
+                            lng: flight.longitude
+                        },
+                        altitude: flight.baro_altitude ? Math.round(flight.baro_altitude * 3.281) : 0,
+                        speed: flight.velocity ? Math.round(flight.velocity * 2.237) : 0,
+                        heading: flight.true_track || 0,
+                        progress: 50,
+                        status: flight.on_ground ? 'On Ground' : 'En Route',
+                        rawData: flight
+                    }));
+                }
+                return [];
+            } catch (error) {
+                console.error('Failed to fetch flight data:', error);
+                // Return sample data as fallback
+                return generateSampleFlights();
+            }
+        }
+        
+        // Generate sample flights as fallback
+        function generateSampleFlights() {
+            const airlines = ['AA', 'DL', 'UA', 'WN', 'B6'];
+            const sampleFlights = [];
             
-            const generatedFlights = [];
-            
-            // Generate 50 random flights
-            for (let i = 0; i < 50; i++) {
+            for (let i = 0; i < 20; i++) {
                 const airline = airlines[Math.floor(Math.random() * airlines.length)];
                 const flightNum = Math.floor(Math.random() * 9000) + 1000;
-                const origin = airports[Math.floor(Math.random() * airports.length)];
-                const dest = airports[Math.floor(Math.random() * airports.length)];
                 
-                if (origin.code === dest.code) continue;
-                
-                // Calculate position along route
-                const progress = Math.random();
-                const lat = origin.lat + (dest.lat - origin.lat) * progress;
-                const lng = origin.lng + (dest.lng - origin.lng) * progress;
-                
-                // Calculate heading
-                const deltaY = dest.lng - origin.lng;
-                const deltaX = dest.lat - origin.lat;
-                const heading = Math.atan2(deltaY, deltaX) * 180 / Math.PI;
-                
-                generatedFlights.push({
+                sampleFlights.push({
                     id: `${airline}${flightNum}`,
                     airline: airline,
                     flightNumber: `${airline}${flightNum}`,
-                    aircraft: aircraft[Math.floor(Math.random() * aircraft.length)],
-                    origin: origin.code,
-                    destination: dest.code,
-                    position: {lat, lng},
+                    aircraft: 'B738',
+                    origin: 'JFK',
+                    destination: 'LAX',
+                    position: {
+                        lat: 35 + Math.random() * 10,
+                        lng: -110 + Math.random() * 30
+                    },
                     altitude: Math.floor(Math.random() * 35000) + 10000,
                     speed: Math.floor(Math.random() * 200) + 400,
-                    heading: heading,
-                    progress: Math.floor(progress * 100),
-                    status: progress === 0 ? 'Scheduled' : progress === 1 ? 'Landed' : 'En Route'
+                    heading: Math.random() * 360,
+                    progress: 50,
+                    status: 'En Route'
                 });
             }
             
-            return generatedFlights;
+            return sampleFlights;
         }
         
         // Update flight positions
-        function updateFlights() {
-            const flightData = generateFlightData();
+        async function updateFlights() {
+            document.getElementById('loading').style.display = 'block';
+            
+            const flightData = await fetchFlightData();
+            
+            // Clear old markers that are no longer in data
+            const currentFlightIds = new Set(flightData.map(f => f.id));
+            markers.forEach((marker, id) => {
+                if (!currentFlightIds.has(id)) {
+                    map.removeLayer(marker);
+                    markers.delete(id);
+                }
+            });
             
             flightData.forEach(flight => {
-                if (flight.status === 'En Route') {
+                if (flight.status === 'En Route' || flight.status === 'On Ground') {
                     // Add or update marker
                     if (markers.has(flight.id)) {
                         const marker = markers.get(flight.id);
@@ -948,6 +995,12 @@
             
             updateFlightList(flightData.filter(f => f.status === 'En Route'));
             updateStatistics(flightData);
+            
+            document.getElementById('loading').style.display = 'none';
+            
+            // Update data age indicator
+            const now = new Date();
+            document.getElementById('dataAge').textContent = `${now.getHours()}:${String(now.getMinutes()).padStart(2, '0')}`;
         }
         
         // Update flight list in sidebar
@@ -1089,15 +1142,64 @@
             }
         }
         
-        function performSearch() {
+        async function performSearch() {
             const query = document.getElementById('mainSearch').value.toUpperCase();
             if (query) {
-                const flight = Array.from(flights.values()).find(f => f.flightNumber.includes(query));
-                if (flight) {
-                    showFlightDetails(flight);
-                } else {
-                    alert(`No flight found for: ${query}`);
+                document.getElementById('loading').style.display = 'block';
+                
+                try {
+                    // Search for specific flight
+                    const response = await fetch(`/api/flights-live/search?callsign=${query}`);
+                    const data = await response.json();
+                    
+                    if (data.status === 'success' && data.flights.length > 0) {
+                        const flight = data.flights[0];
+                        const formattedFlight = {
+                            id: flight.icao24,
+                            airline: flight.callsign ? flight.callsign.substring(0, 2) : 'N/A',
+                            flightNumber: flight.callsign || flight.icao24,
+                            aircraft: 'Aircraft',
+                            origin: flight.origin_country || 'Unknown',
+                            destination: 'Unknown',
+                            position: {
+                                lat: flight.latitude,
+                                lng: flight.longitude
+                            },
+                            altitude: flight.baro_altitude ? Math.round(flight.baro_altitude * 3.281) : 0,
+                            speed: flight.velocity ? Math.round(flight.velocity * 2.237) : 0,
+                            heading: flight.true_track || 0,
+                            status: flight.on_ground ? 'On Ground' : 'En Route',
+                            rawData: flight
+                        };
+                        
+                        // Add marker for searched flight
+                        if (!markers.has(formattedFlight.id)) {
+                            const marker = L.marker([formattedFlight.position.lat, formattedFlight.position.lng], {
+                                icon: createAircraftIcon(formattedFlight.heading, formattedFlight.altitude),
+                                title: formattedFlight.flightNumber
+                            }).addTo(map);
+                            
+                            marker.on('click', () => showFlightDetails(formattedFlight));
+                            markers.set(formattedFlight.id, marker);
+                        }
+                        
+                        flights.set(formattedFlight.id, formattedFlight);
+                        showFlightDetails(formattedFlight);
+                    } else {
+                        // Try local search
+                        const flight = Array.from(flights.values()).find(f => f.flightNumber.includes(query));
+                        if (flight) {
+                            showFlightDetails(flight);
+                        } else {
+                            alert(`No flight found for: ${query}`);
+                        }
+                    }
+                } catch (error) {
+                    console.error('Search failed:', error);
+                    alert(`Search failed. Please try again.`);
                 }
+                
+                document.getElementById('loading').style.display = 'none';
             }
         }
         
@@ -1125,8 +1227,17 @@
         // Initialize
         updateFlights();
         
-        // Auto-update every 5 seconds
-        updateInterval = setInterval(updateFlights, 5000);
+        // Auto-update every 10 seconds
+        updateInterval = setInterval(updateFlights, 10000);
+        
+        // Update when map moves
+        let moveTimeout;
+        map.on('moveend', () => {
+            clearTimeout(moveTimeout);
+            moveTimeout = setTimeout(() => {
+                updateFlights();
+            }, 1000);
+        });
         
         // Clean up on page unload
         window.addEventListener('beforeunload', () => {

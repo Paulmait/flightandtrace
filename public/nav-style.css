@@ -1,0 +1,202 @@
+/* FlightTrace Navigation Bar Styles */
+.ft-nav {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 60px;
+    background: rgba(0, 0, 0, 0.95);
+    backdrop-filter: blur(10px);
+    border-bottom: 1px solid rgba(0, 153, 255, 0.3);
+    z-index: 10000;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 2rem;
+    transition: all 0.3s ease;
+}
+
+.ft-nav.scrolled {
+    background: rgba(0, 0, 0, 0.98);
+    box-shadow: 0 2px 20px rgba(0, 0, 0, 0.5);
+}
+
+.ft-nav-logo {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    color: #00c6ff;
+    text-decoration: none;
+    font-size: 24px;
+    font-weight: bold;
+    transition: transform 0.3s;
+}
+
+.ft-nav-logo:hover {
+    transform: scale(1.05);
+}
+
+.ft-nav-logo span {
+    font-size: 28px;
+}
+
+.ft-nav-links {
+    display: flex;
+    gap: 2rem;
+    align-items: center;
+}
+
+.ft-nav-link {
+    color: rgba(255, 255, 255, 0.9);
+    text-decoration: none;
+    font-size: 16px;
+    font-weight: 500;
+    position: relative;
+    transition: color 0.3s;
+    padding: 5px 0;
+}
+
+.ft-nav-link:hover {
+    color: #00c6ff;
+}
+
+.ft-nav-link::after {
+    content: '';
+    position: absolute;
+    bottom: -2px;
+    left: 0;
+    width: 0;
+    height: 2px;
+    background: #00c6ff;
+    transition: width 0.3s;
+}
+
+.ft-nav-link:hover::after,
+.ft-nav-link.active::after {
+    width: 100%;
+}
+
+.ft-nav-link.active {
+    color: #00c6ff;
+}
+
+.ft-nav-link.highlight {
+    background: linear-gradient(135deg, #0099ff 0%, #00c6ff 100%);
+    color: white;
+    padding: 8px 16px;
+    border-radius: 20px;
+    transition: transform 0.3s, box-shadow 0.3s;
+}
+
+.ft-nav-link.highlight:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(0, 153, 255, 0.4);
+    color: white;
+}
+
+.ft-nav-link.highlight::after {
+    display: none;
+}
+
+.ft-nav-auth {
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+}
+
+.ft-nav-btn {
+    padding: 8px 20px;
+    border-radius: 20px;
+    text-decoration: none;
+    font-weight: 600;
+    transition: all 0.3s;
+    font-size: 15px;
+}
+
+.ft-nav-btn.login {
+    color: #00c6ff;
+    border: 2px solid #00c6ff;
+    background: transparent;
+}
+
+.ft-nav-btn.login:hover {
+    background: #00c6ff;
+    color: white;
+    box-shadow: 0 4px 15px rgba(0, 198, 255, 0.3);
+}
+
+.ft-nav-btn.signup {
+    background: linear-gradient(135deg, #0099ff 0%, #00c6ff 100%);
+    color: white;
+    border: none;
+}
+
+.ft-nav-btn.signup:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 20px rgba(0, 153, 255, 0.4);
+}
+
+/* Mobile Menu Button */
+.ft-nav-mobile-btn {
+    display: none;
+    background: none;
+    border: none;
+    color: white;
+    font-size: 24px;
+    cursor: pointer;
+    padding: 5px;
+}
+
+/* Mobile Styles */
+@media (max-width: 768px) {
+    .ft-nav {
+        padding: 0 1rem;
+    }
+    
+    .ft-nav-links {
+        position: fixed;
+        top: 60px;
+        left: 0;
+        right: 0;
+        background: rgba(0, 0, 0, 0.98);
+        flex-direction: column;
+        padding: 2rem;
+        gap: 1.5rem;
+        transform: translateY(-100%);
+        transition: transform 0.3s;
+        border-bottom: 1px solid rgba(0, 153, 255, 0.3);
+    }
+    
+    .ft-nav-links.active {
+        transform: translateY(0);
+    }
+    
+    .ft-nav-mobile-btn {
+        display: block;
+    }
+    
+    .ft-nav-auth {
+        width: 100%;
+        justify-content: center;
+        padding-top: 1rem;
+        border-top: 1px solid rgba(255, 255, 255, 0.1);
+    }
+}
+
+/* Adjust page content for fixed nav */
+body {
+    padding-top: 60px;
+}
+
+/* Special styles for homepage */
+body.homepage {
+    padding-top: 0;
+}
+
+body.homepage .ft-nav {
+    background: transparent;
+}
+
+body.homepage .ft-nav.scrolled {
+    background: rgba(0, 0, 0, 0.95);
+}
