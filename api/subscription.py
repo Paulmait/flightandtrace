@@ -13,7 +13,7 @@ from http.server import BaseHTTPRequestHandler
 import os
 
 # Stripe configuration
-stripe.api_key = os.environ.get('STRIPE_SECRET_KEY', 'sk_test_placeholder')
+stripe.api_key = os.environ.get('FLIGHTTRACE_STRIPE_SECRET_KEY', os.environ.get('STRIPE_SECRET_KEY', 'sk_test_placeholder'))
 
 # Subscription tiers
 SUBSCRIPTION_TIERS = {
@@ -555,7 +555,7 @@ class handler(BaseHTTPRequestHandler):
         Handle Stripe webhooks for subscription events
         """
         sig_header = self.headers.get('Stripe-Signature')
-        webhook_secret = os.environ.get('STRIPE_WEBHOOK_SECRET')
+        webhook_secret = os.environ.get('FLIGHTTRACE_STRIPE_WEBHOOK_SECRET', os.environ.get('STRIPE_WEBHOOK_SECRET'))
         
         try:
             event = stripe.Webhook.construct_event(body, sig_header, webhook_secret)
