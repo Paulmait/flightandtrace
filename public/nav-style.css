@@ -195,8 +195,12 @@ body.homepage {
 
 body.homepage .ft-nav {
     background: transparent;
+    backdrop-filter: none;
+    border-bottom: 1px solid rgba(0, 153, 255, 0.1);
 }
 
 body.homepage .ft-nav.scrolled {
     background: rgba(0, 0, 0, 0.95);
+    backdrop-filter: blur(10px);
+    border-bottom: 1px solid rgba(0, 153, 255, 0.3);
 }

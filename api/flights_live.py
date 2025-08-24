@@ -77,11 +77,11 @@ def fetch_live_flights(bounds: Optional[Dict] = None) -> List[Dict]:
             return flights
         else:
             # Return sample data as fallback
-            return get_sample_flights()
+            return get_sample_flights(bounds)
             
     except Exception as e:
         print(f"Error fetching OpenSky data: {e}")
-        return get_sample_flights()
+        return get_sample_flights(bounds)
 
 def process_opensky_data(states: List) -> List[Dict]:
     """
@@ -180,7 +180,7 @@ def get_airline_name(code: str) -> str:
     }
     return airlines.get(code, code)
 
-def get_sample_flights() -> List[Dict]:
+def get_sample_flights(bounds: Optional[Dict] = None) -> List[Dict]:
     """Return realistic sample flights as fallback when API is unavailable"""
     import random
     
@@ -235,6 +235,17 @@ def get_sample_flights() -> List[Dict]:
             'on_ground': altitude < 1000
         })
     
+    # Filter by bounds if provided
+    if bounds:
+        filtered = []
+        for flight in flights:
+            lat = flight['position']['lat']
+            lng = flight['position']['lng']
+            if (bounds['min_lat'] <= lat <= bounds['max_lat'] and
+                bounds['min_lon'] <= lng <= bounds['max_lon']):
+                filtered.append(flight)
+        return filtered
+    
     return flights
 
 class handler(BaseHTTPRequestHandler):
@@ -261,15 +272,15 @@ class handler(BaseHTTPRequestHandler):
         response_data = {}
         
         try:
-            if '/live' in path or '/all' in path:
-                # Get bounding box if provided
+            if '/live' in path or '/all' in path or '/area' in path:
+                # Get bounding box if provided  
                 bounds = None
-                if all(k in query_params for k in ['min_lat', 'max_lat', 'min_lon', 'max_lon']):
+                if all(k in query_params for k in ['lamin', 'lamax', 'lomin', 'lomax']):
                     bounds = {
-                        'min_lat': float(query_params['min_lat']),
-                        'max_lat': float(query_params['max_lat']),
-                        'min_lon': float(query_params['min_lon']),
-                        'max_lon': float(query_params['max_lon'])
+                        'min_lat': float(query_params['lamin']),
+                        'max_lat': float(query_params['lamax']),
+                        'min_lon': float(query_params['lomin']),
+                        'max_lon': float(query_params['lomax'])
                     }
                 
                 # Fetch live flights
