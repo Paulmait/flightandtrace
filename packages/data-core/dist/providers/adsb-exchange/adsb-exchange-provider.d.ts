@@ -1,0 +1,55 @@
+import { BaseProvider, ProviderConfig, QueryOptions } from '../base-provider';
+import { Flight, Position } from '../../types';
+interface ADSBExchangeAircraft {
+    hex: string;
+    type: string;
+    flight: string | null;
+    r: string | null;
+    t: string | null;
+    alt_baro: number | string;
+    alt_geom: number;
+    gs: number;
+    track: number;
+    baro_rate: number;
+    squawk: string;
+    emergency: string;
+    category: string;
+    nav_qnh: number;
+    nav_altitude_mcp: number;
+    nav_heading: number;
+    lat: number;
+    lon: number;
+    nic: number;
+    rc: number;
+    seen_pos: number;
+    version: number;
+    nic_baro: number;
+    nac_p: number;
+    nac_v: number;
+    sil: number;
+    sil_type: string;
+    gva: number;
+    sda: number;
+    mlat: any[];
+    tisb: any[];
+    messages: number;
+    seen: number;
+    rssi: number;
+    dst: number;
+    dir: number;
+    nav_modes: string[];
+}
+export declare class ADSBExchangeProvider extends BaseProvider {
+    private client;
+    constructor(config?: Partial<ProviderConfig>);
+    fetchFlights(options?: QueryOptions): Promise<Flight[]>;
+    fetchFlight(icao24: string): Promise<Flight | null>;
+    fetchPositions(icao24: string, start?: Date, end?: Date): Promise<Position[]>;
+    normalizeFlightData(rawData: ADSBExchangeAircraft): Flight;
+    normalizePositionData(rawData: ADSBExchangeAircraft): Position;
+    private createPositionFromAircraft;
+    private determineFlightStatus;
+    private getPositionSource;
+    private getPositionAccuracy;
+}
+export {};

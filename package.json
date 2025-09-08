@@ -1,0 +1,20 @@
+{
+  "name": "flight-tracker-project",
+  "version": "1.0.0",
+  "private": true,
+  "workspaces": [
+    "frontend",
+    "backend", 
+    "packages/*"
+  ],
+  "scripts": {
+    "install:all": "npm install && cd frontend && npm install && cd ../backend && npm install && cd ../packages/data-core && npm install",
+    "build:packages": "cd packages/data-core && npm run build",
+    "build:frontend": "cd frontend && npm run build",
+    "build:all": "npm run build:packages && npm run build:frontend",
+    "dev": "cd frontend && npm start"
+  },
+  "engines": {
+    "node": "18.x"
+  }
+}
