@@ -138,7 +138,7 @@ const createGreatCircleArc = (startPos, endPos) => {
     const lat = startPos.latitude + (endPos.latitude - startPos.latitude) * f;
     const lon = startPos.longitude + (endPos.longitude - startPos.longitude) * f;
     
-    const altitude = interpolateAltitude(startPos.altitude, endPos.altitude, f);
+    // const altitude = interpolateAltitude(startPos.altitude, endPos.altitude, f);
     coordinates.push([lon, lat]);
   }
 

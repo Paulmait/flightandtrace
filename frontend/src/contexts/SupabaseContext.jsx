@@ -47,6 +47,7 @@ export const SupabaseProvider = ({ children }) => {
     return () => {
       authSubscription.unsubscribe();
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const checkSession = async () => {
