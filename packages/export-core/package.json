@@ -1,0 +1,32 @@
+{
+  "name": "@flighttrace/export-core",
+  "version": "1.0.0",
+  "description": "Data export services for FlightTrace with tier-based access",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "test": "jest",
+    "lint": "eslint src --ext .ts",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@flighttrace/data-core": "file:../data-core",
+    "@flighttrace/billing-core": "file:../billing-core",
+    "csv-writer": "^1.6.0",
+    "archiver": "^6.0.1",
+    "stream": "^0.0.2",
+    "redis": "^4.6.12"
+  },
+  "devDependencies": {
+    "@types/jest": "^29.5.11",
+    "@types/node": "^20.10.0",
+    "@types/archiver": "^6.0.2",
+    "@typescript-eslint/eslint-plugin": "^6.15.0",
+    "@typescript-eslint/parser": "^6.15.0",
+    "eslint": "^8.56.0",
+    "jest": "^29.7.0",
+    "ts-jest": "^29.1.1",
+    "typescript": "^5.3.3"
+  }
+}

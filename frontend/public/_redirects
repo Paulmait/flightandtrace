@@ -1,0 +1,55 @@
+# Netlify redirects configuration for Flight and Trace
+# Domain redirects for flightandtrace.com
+
+# Redirect old FlightTrace branding to new unified branding
+/flighttrace/* /flightandtrace/:splat 301
+/flight-trace/* /flight-and-trace/:splat 301
+
+# API endpoints
+/api/* https://api.flightandtrace.com/api/:splat 200
+/graphql https://api.flightandtrace.com/graphql 200
+
+# Redirect common flight tracking URLs to appropriate pages
+/track/* /search?q=:splat 302
+/flight/* /search?q=:splat 302
+/aircraft/* /search?q=:splat 302
+/airport/* /search?q=:splat 302
+
+# Redirect legacy paths to new structure
+/alerts /dashboard/alerts 301
+/billing /dashboard/billing 301
+/account /dashboard/account 301
+/profile /dashboard/account 301
+/settings /dashboard/account 301
+
+# Social media and marketing redirects
+/twitter https://twitter.com/flightandtrace 301
+/github https://github.com/flightandtrace 301
+/blog https://blog.flightandtrace.com 301
+/help https://help.flightandtrace.com 301
+/support https://help.flightandtrace.com 301
+/docs https://docs.flightandtrace.com 301
+/api-docs https://docs.flightandtrace.com/api 301
+
+# Pricing and sales redirects
+/buy /pricing 301
+/subscribe /pricing 301
+/plans /pricing 301
+/upgrade /pricing 301
+/sales /contact-sales 301
+/enterprise /contact-sales 301
+/demo /contact-sales 301
+
+# Legal and compliance redirects
+/privacy /legal/privacy 301
+/terms /legal/terms 301
+/cookies /legal/cookies 301
+/gdpr /legal/privacy#gdpr 301
+
+# Short URLs for marketing campaigns
+/go/* https://flightandtrace.com/:splat 302
+/promo/* /pricing?promo=:splat 302
+/trial /pricing?trial=true 302
+
+# Handle SPA routing - this should be last
+/* /index.html 200

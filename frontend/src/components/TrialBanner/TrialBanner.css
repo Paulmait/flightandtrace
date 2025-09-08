@@ -1,0 +1,209 @@
+.trial-banner {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 1000;
+  padding: 12px 20px;
+  background: linear-gradient(135deg, #4ECDC4 0%, #44A08D 100%);
+  color: white;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease;
+}
+
+.trial-banner.trial-urgent {
+  background: linear-gradient(135deg, #FF6B6B 0%, #FF8E8E 100%);
+  animation: urgentPulse 2s infinite;
+}
+
+.trial-banner.free-banner {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+@keyframes urgentPulse {
+  0% { box-shadow: 0 2px 10px rgba(255, 107, 107, 0.3); }
+  50% { box-shadow: 0 2px 20px rgba(255, 107, 107, 0.6); }
+  100% { box-shadow: 0 2px 10px rgba(255, 107, 107, 0.3); }
+}
+
+.trial-banner-content {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  max-width: 1200px;
+  margin: 0 auto;
+  gap: 20px;
+}
+
+.trial-banner-text {
+  flex: 1;
+  min-width: 0;
+}
+
+.trial-banner-title {
+  margin: 0 0 4px 0;
+  font-size: 16px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.urgency-icon {
+  font-size: 18px;
+  animation: shake 0.5s ease-in-out infinite alternate;
+}
+
+@keyframes shake {
+  0% { transform: translateX(-2px); }
+  100% { transform: translateX(2px); }
+}
+
+.trial-banner-message {
+  margin: 0;
+  font-size: 14px;
+  opacity: 0.95;
+  line-height: 1.4;
+}
+
+.trial-banner-actions {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.trial-features {
+  display: flex;
+  gap: 16px;
+  font-size: 13px;
+  opacity: 0.9;
+}
+
+.feature {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  white-space: nowrap;
+}
+
+.banner-buttons {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.btn-upgrade {
+  background: rgba(255, 255, 255, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  color: white;
+  padding: 8px 16px;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+  backdrop-filter: blur(10px);
+}
+
+.btn-upgrade:hover {
+  background: rgba(255, 255, 255, 0.3);
+  border-color: rgba(255, 255, 255, 0.5);
+  transform: translateY(-1px);
+}
+
+.trial-urgent .btn-upgrade {
+  background: rgba(255, 255, 255, 0.95);
+  color: #FF6B6B;
+  border-color: rgba(255, 255, 255, 0.95);
+  animation: ctaPulse 2s infinite;
+}
+
+@keyframes ctaPulse {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.05); }
+  100% { transform: scale(1); }
+}
+
+.btn-dismiss {
+  background: none;
+  border: none;
+  color: white;
+  font-size: 20px;
+  line-height: 1;
+  cursor: pointer;
+  padding: 4px 8px;
+  border-radius: 4px;
+  transition: all 0.2s ease;
+  opacity: 0.7;
+}
+
+.btn-dismiss:hover {
+  background: rgba(255, 255, 255, 0.1);
+  opacity: 1;
+}
+
+.urgency-progress {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.progress-bar {
+  height: 100%;
+  background: rgba(255, 255, 255, 0.8);
+  transition: width 0.3s ease;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .trial-banner {
+    padding: 10px 16px;
+  }
+  
+  .trial-banner-content {
+    flex-direction: column;
+    gap: 12px;
+    text-align: center;
+  }
+  
+  .trial-features {
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+  
+  .trial-banner-title {
+    font-size: 15px;
+  }
+  
+  .trial-banner-message {
+    font-size: 13px;
+  }
+}
+
+@media (max-width: 480px) {
+  .trial-features {
+    display: none;
+  }
+  
+  .trial-banner-content {
+    gap: 8px;
+  }
+  
+  .trial-banner-title {
+    font-size: 14px;
+  }
+  
+  .trial-banner-message {
+    font-size: 12px;
+  }
+  
+  .btn-upgrade {
+    padding: 6px 12px;
+    font-size: 13px;
+  }
+}

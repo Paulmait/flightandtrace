@@ -1,0 +1,193 @@
+/* Loading Skeleton Styles */
+.skeleton {
+  position: relative;
+  overflow: hidden;
+}
+
+.skeleton-item {
+  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+  background-size: 200% 100%;
+  animation: loading 1.5s infinite;
+}
+
+@keyframes loading {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
+
+.skeleton-text {
+  border-radius: 4px;
+}
+
+.skeleton-rectangular {
+  border-radius: 4px;
+}
+
+.skeleton-circular {
+  border-radius: 50%;
+}
+
+.skeleton-line {
+  border-radius: 4px;
+}
+
+/* Card Skeleton */
+.skeleton-card {
+  background: white;
+  border-radius: 12px;
+  padding: 20px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+  border: 1px solid #f0f0f0;
+}
+
+.skeleton-header {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.skeleton-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.skeleton-body {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+/* Flight Card Skeleton */
+.flight-card-skeleton {
+  min-height: 140px;
+  margin-bottom: 16px;
+}
+
+/* Alert List Skeleton */
+.alert-list-skeleton {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.alert-item-skeleton {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 16px;
+  background: white;
+  border-radius: 8px;
+  border: 1px solid #f0f0f0;
+}
+
+.alert-content-skeleton {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+/* Map Skeleton */
+.map-skeleton {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  min-height: 400px;
+}
+
+.map-skeleton-content {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  background: #f8f9fa;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.map-skeleton-overlay {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  text-align: center;
+  z-index: 1;
+}
+
+.map-loading-text {
+  background: rgba(255, 255, 255, 0.9);
+  padding: 12px 24px;
+  border-radius: 24px;
+  font-size: 14px;
+  color: #7f8c8d;
+  font-weight: 500;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* Table Skeleton */
+.table-skeleton {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.skeleton-table-row td {
+  padding: 12px 16px;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+/* Multiline Skeleton */
+.skeleton-multiline {
+  display: flex;
+  flex-direction: column;
+}
+
+/* Dark mode support */
+@media (prefers-color-scheme: dark) {
+  .skeleton-item {
+    background: linear-gradient(90deg, #2c2c2c 25%, #3c3c3c 50%, #2c2c2c 75%);
+    background-size: 200% 100%;
+  }
+
+  .skeleton-card {
+    background: #2c3e50;
+    border-color: #34495e;
+  }
+
+  .alert-item-skeleton {
+    background: #2c3e50;
+    border-color: #34495e;
+  }
+
+  .map-skeleton-content {
+    background: #2c3e50;
+  }
+
+  .map-loading-text {
+    background: rgba(44, 62, 80, 0.9);
+    color: #bdc3c7;
+  }
+
+  .skeleton-table-row td {
+    border-bottom-color: #34495e;
+  }
+}
+
+/* Accessibility */
+@media (prefers-reduced-motion: reduce) {
+  .skeleton-item {
+    animation: none;
+    background: #f0f0f0;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    .skeleton-item {
+      background: #3c3c3c;
+    }
+  }
+}

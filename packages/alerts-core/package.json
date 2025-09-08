@@ -1,0 +1,35 @@
+{
+  "name": "@flighttrace/alerts-core",
+  "version": "1.0.0",
+  "description": "Alert system for FlightTrace with queue processing and notifications",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "test": "jest",
+    "lint": "eslint src --ext .ts",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "bull": "^4.12.0",
+    "redis": "^4.6.12",
+    "nodemailer": "^6.9.8",
+    "twilio": "^4.19.3",
+    "@flighttrace/data-core": "file:../data-core",
+    "@flighttrace/billing-core": "file:../billing-core",
+    "joi": "^17.11.0",
+    "luxon": "^3.4.4"
+  },
+  "devDependencies": {
+    "@types/jest": "^29.5.11",
+    "@types/node": "^20.10.0",
+    "@types/nodemailer": "^6.4.14",
+    "@types/luxon": "^3.3.7",
+    "@typescript-eslint/eslint-plugin": "^6.15.0",
+    "@typescript-eslint/parser": "^6.15.0",
+    "eslint": "^8.56.0",
+    "jest": "^29.7.0",
+    "ts-jest": "^29.1.1",
+    "typescript": "^5.3.3"
+  }
+}

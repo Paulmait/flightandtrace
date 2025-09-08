@@ -1,0 +1,388 @@
+.billing-dashboard {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 40px 20px;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+.billing-dashboard.loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 400px;
+  font-size: 18px;
+  color: #7F8C8D;
+}
+
+.dashboard-header {
+  text-align: center;
+  margin-bottom: 48px;
+}
+
+.dashboard-header h1 {
+  font-size: 40px;
+  font-weight: 700;
+  color: #2C3E50;
+  margin: 0 0 12px 0;
+}
+
+.dashboard-header p {
+  font-size: 18px;
+  color: #7F8C8D;
+  margin: 0;
+}
+
+.dashboard-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  grid-template-rows: auto auto;
+  gap: 24px;
+  margin-bottom: 40px;
+}
+
+.card {
+  background: white;
+  border-radius: 16px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+  overflow: hidden;
+  transition: transform 0.2s ease;
+}
+
+.card:hover {
+  transform: translateY(-2px);
+}
+
+.current-plan-card {
+  grid-column: span 2;
+}
+
+.card-header {
+  padding: 24px 24px 0 24px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.card-header h2 {
+  font-size: 24px;
+  font-weight: 600;
+  color: #2C3E50;
+  margin: 0;
+}
+
+.status-badge {
+  color: white;
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.plan-details {
+  padding: 24px;
+}
+
+.plan-name {
+  font-size: 32px;
+  font-weight: 700;
+  color: #2C3E50;
+  margin-bottom: 16px;
+}
+
+.billing-info {
+  margin-bottom: 24px;
+}
+
+.billing-cycle {
+  font-size: 16px;
+  color: #7F8C8D;
+  margin-bottom: 4px;
+}
+
+.next-billing {
+  font-size: 14px;
+  color: #95A5A6;
+}
+
+.plan-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.btn-primary, .btn-secondary, .btn-danger, .btn-upgrade {
+  padding: 12px 24px;
+  border: none;
+  border-radius: 8px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-primary {
+  background: linear-gradient(135deg, #4ECDC4, #44A08D);
+  color: white;
+}
+
+.btn-primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(78, 205, 196, 0.3);
+}
+
+.btn-secondary {
+  background: #F8F9FA;
+  color: #6C757D;
+  border: 1px solid #DEE2E6;
+}
+
+.btn-secondary:hover {
+  background: #E9ECEF;
+}
+
+.btn-danger {
+  background: #E74C3C;
+  color: white;
+}
+
+.btn-danger:hover {
+  background: #C0392B;
+}
+
+.btn-upgrade {
+  background: #3498DB;
+  color: white;
+  font-size: 14px;
+  padding: 8px 16px;
+}
+
+.btn-upgrade:hover {
+  background: #2980B9;
+}
+
+.upgrade-options {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.upgrade-options span {
+  font-size: 14px;
+  color: #7F8C8D;
+}
+
+.usage-stats {
+  padding: 24px;
+}
+
+.usage-item {
+  margin-bottom: 20px;
+}
+
+.usage-label {
+  font-size: 14px;
+  color: #7F8C8D;
+  margin-bottom: 4px;
+}
+
+.usage-value {
+  font-size: 24px;
+  font-weight: 700;
+  color: #2C3E50;
+  margin-bottom: 8px;
+}
+
+.usage-limit {
+  font-size: 16px;
+  font-weight: 400;
+  color: #95A5A6;
+}
+
+.usage-bar {
+  height: 4px;
+  background: #E9ECEF;
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.usage-fill {
+  height: 100%;
+  background: linear-gradient(135deg, #4ECDC4, #44A08D);
+  transition: width 0.3s ease;
+}
+
+.feature-list {
+  padding: 24px;
+}
+
+.feature-item {
+  display: flex;
+  align-items: center;
+  margin-bottom: 16px;
+  font-size: 16px;
+}
+
+.feature-icon {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  margin-right: 12px;
+  font-size: 14px;
+}
+
+.feature-item.enabled .feature-icon {
+  background: #2ECC71;
+  color: white;
+}
+
+.feature-item.disabled .feature-icon {
+  background: #E74C3C;
+  color: white;
+}
+
+.feature-item.enabled .feature-name {
+  color: #2C3E50;
+}
+
+.feature-item.disabled .feature-name {
+  color: #95A5A6;
+}
+
+/* Modal Styles */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.modal {
+  background: white;
+  border-radius: 16px;
+  max-width: 500px;
+  width: 90%;
+  max-height: 90vh;
+  overflow: hidden;
+}
+
+.modal-header {
+  padding: 24px 24px 0 24px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.modal-header h3 {
+  font-size: 24px;
+  font-weight: 600;
+  color: #2C3E50;
+  margin: 0;
+}
+
+.modal-close {
+  background: none;
+  border: none;
+  font-size: 24px;
+  cursor: pointer;
+  color: #95A5A6;
+  padding: 0;
+  width: 30px;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.modal-content {
+  padding: 24px;
+}
+
+.modal-content p {
+  font-size: 16px;
+  color: #7F8C8D;
+  margin-bottom: 24px;
+}
+
+.cancel-options {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.cancel-option {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.cancel-option input[type="radio"] {
+  margin-top: 4px;
+}
+
+.cancel-option label {
+  display: flex;
+  flex-direction: column;
+  cursor: pointer;
+}
+
+.cancel-option label strong {
+  color: #2C3E50;
+  margin-bottom: 4px;
+}
+
+.cancel-option label span {
+  font-size: 14px;
+  color: #7F8C8D;
+}
+
+.modal-actions {
+  padding: 0 24px 24px 24px;
+  display: flex;
+  gap: 12px;
+  justify-content: flex-end;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .billing-dashboard {
+    padding: 20px 16px;
+  }
+  
+  .dashboard-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .current-plan-card {
+    grid-column: span 1;
+  }
+  
+  .plan-actions {
+    gap: 12px;
+  }
+  
+  .upgrade-options {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+  
+  .modal {
+    width: 95%;
+    margin: 20px;
+  }
+  
+  .modal-actions {
+    flex-direction: column;
+  }
+}

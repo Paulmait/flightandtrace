@@ -1,0 +1,440 @@
+/**
+ * Privacy-Aware Flight Display Styles
+ */
+
+.privacy-aware-flight-display {
+  position: relative;
+  width: 100%;
+  height: 100%;
+}
+
+/* Flight Markers Layer */
+.flight-markers-layer {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+
+.flight-marker {
+  pointer-events: all;
+  position: relative;
+  z-index: 100;
+  transition: all 0.2s ease;
+}
+
+.flight-marker:hover {
+  z-index: 200;
+  transform: translate(-50%, -50%) scale(1.1);
+}
+
+/* Blocked Aircraft Marker */
+.blocked-aircraft-marker {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  opacity: 0.6;
+}
+
+.aircraft-icon.blocked {
+  filter: grayscale(100%);
+  opacity: 0.7;
+}
+
+.altitude-label.blocked {
+  background: #666;
+  color: #fff;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 10px;
+  font-weight: bold;
+  margin-top: 4px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+/* Standard Aircraft Marker */
+.standard-aircraft-marker {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.aircraft-icon {
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
+  transition: all 0.2s ease;
+}
+
+.callsign-label {
+  background: rgba(0, 122, 255, 0.9);
+  color: white;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 10px;
+  font-weight: bold;
+  margin-top: 2px;
+  white-space: nowrap;
+  max-width: 80px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.altitude-label {
+  background: rgba(0, 0, 0, 0.7);
+  color: white;
+  padding: 1px 4px;
+  border-radius: 3px;
+  font-size: 9px;
+  margin-top: 1px;
+}
+
+/* Privacy Indicator */
+.privacy-indicator {
+  position: absolute;
+  top: -8px;
+  right: -8px;
+  width: 16px;
+  height: 16px;
+  background: rgba(255, 165, 0, 0.9);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 8px;
+  border: 1px solid #fff;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+}
+
+/* Anonymized Aircraft Styling */
+.flight-marker.anonymized .aircraft-icon {
+  filter: hue-rotate(30deg) saturate(0.8);
+}
+
+.flight-marker.anonymized .callsign-label {
+  background: rgba(255, 165, 0, 0.9);
+}
+
+/* Privacy Statistics Overlay */
+.privacy-stats-overlay {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(10px);
+  border-radius: 12px;
+  padding: 16px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  min-width: 200px;
+  z-index: 1000;
+}
+
+.stats-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 600;
+  font-size: 14px;
+  color: #333;
+  margin-bottom: 12px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+.privacy-icon {
+  font-size: 16px;
+}
+
+.stats-content {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.stat-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.stat-label {
+  font-size: 12px;
+  color: #666;
+}
+
+.stat-value {
+  font-size: 12px;
+  font-weight: 600;
+  color: #333;
+}
+
+/* Privacy Modal */
+.privacy-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10000;
+  backdrop-filter: blur(5px);
+}
+
+.privacy-modal {
+  background: white;
+  border-radius: 16px;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+  max-width: 500px;
+  width: 90%;
+  max-height: 80vh;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.modal-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 24px;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+  background: rgba(248, 249, 250, 0.8);
+}
+
+.modal-header .privacy-icon {
+  font-size: 24px;
+}
+
+.modal-header h3 {
+  margin: 0;
+  flex: 1;
+  font-size: 18px;
+  font-weight: 600;
+  color: #333;
+}
+
+.close-button {
+  width: 32px;
+  height: 32px;
+  border: none;
+  background: rgba(0, 0, 0, 0.1);
+  border-radius: 50%;
+  cursor: pointer;
+  font-size: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+}
+
+.close-button:hover {
+  background: rgba(0, 0, 0, 0.2);
+}
+
+.modal-content {
+  padding: 24px;
+  flex: 1;
+  overflow-y: auto;
+}
+
+.modal-content p {
+  margin: 0 0 16px 0;
+  line-height: 1.6;
+  color: #666;
+}
+
+.blocked-info,
+.anonymization-info {
+  margin-top: 20px;
+}
+
+.blocked-info h4,
+.anonymization-info h4 {
+  margin: 0 0 12px 0;
+  font-size: 16px;
+  font-weight: 600;
+  color: #333;
+}
+
+.blocked-info ul,
+.anonymization-info ul {
+  margin: 0 0 16px 0;
+  padding-left: 20px;
+}
+
+.blocked-info li,
+.anonymization-info li {
+  margin: 8px 0;
+  color: #666;
+  line-height: 1.5;
+}
+
+.upgrade-notice {
+  background: rgba(0, 122, 255, 0.05);
+  border: 1px solid rgba(0, 122, 255, 0.2);
+  border-radius: 8px;
+  padding: 16px;
+  margin-top: 16px;
+}
+
+.upgrade-notice p {
+  margin: 0 0 12px 0;
+  color: #333;
+  font-weight: 500;
+}
+
+.upgrade-button {
+  background: linear-gradient(135deg, #007AFF, #0056CC);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  padding: 10px 20px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-size: 14px;
+}
+
+.upgrade-button:hover {
+  background: linear-gradient(135deg, #0056CC, #003D99);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 122, 255, 0.3);
+}
+
+.modal-footer {
+  padding: 20px 24px;
+  border-top: 1px solid rgba(0, 0, 0, 0.1);
+  background: rgba(248, 249, 250, 0.5);
+}
+
+/* Dark Mode Support */
+@media (prefers-color-scheme: dark) {
+  .privacy-stats-overlay {
+    background: rgba(28, 28, 30, 0.95);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+  }
+
+  .stats-header {
+    color: #fff;
+    border-bottom-color: rgba(255, 255, 255, 0.1);
+  }
+
+  .stat-label {
+    color: #999;
+  }
+
+  .stat-value {
+    color: #fff;
+  }
+
+  .privacy-modal {
+    background: #1c1c1e;
+  }
+
+  .modal-header {
+    background: rgba(28, 28, 30, 0.8);
+    border-bottom-color: rgba(255, 255, 255, 0.1);
+  }
+
+  .modal-header h3 {
+    color: #fff;
+  }
+
+  .modal-content p {
+    color: #999;
+  }
+
+  .blocked-info h4,
+  .anonymization-info h4 {
+    color: #fff;
+  }
+
+  .blocked-info li,
+  .anonymization-info li {
+    color: #999;
+  }
+
+  .upgrade-notice {
+    background: rgba(0, 122, 255, 0.1);
+    border-color: rgba(0, 122, 255, 0.3);
+  }
+
+  .upgrade-notice p {
+    color: #fff;
+  }
+
+  .modal-footer {
+    background: rgba(28, 28, 30, 0.5);
+    border-top-color: rgba(255, 255, 255, 0.1);
+  }
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .privacy-stats-overlay {
+    top: 10px;
+    right: 10px;
+    left: 10px;
+    padding: 12px;
+    min-width: unset;
+  }
+
+  .privacy-modal {
+    margin: 20px;
+    width: calc(100% - 40px);
+  }
+
+  .modal-header {
+    padding: 20px;
+  }
+
+  .modal-content {
+    padding: 20px;
+  }
+
+  .modal-footer {
+    padding: 16px 20px;
+  }
+}
+
+/* Animations */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.privacy-modal {
+  animation: fadeIn 0.2s ease-out;
+}
+
+.privacy-stats-overlay {
+  animation: fadeIn 0.3s ease-out;
+}
+
+/* Accessibility */
+.flight-marker:focus {
+  outline: 2px solid #007AFF;
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+.close-button:focus {
+  outline: 2px solid #007AFF;
+  outline-offset: 2px;
+}
+
+.upgrade-button:focus {
+  outline: 2px solid #fff;
+  outline-offset: 2px;
+}

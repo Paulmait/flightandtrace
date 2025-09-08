@@ -1,0 +1,272 @@
+/* Keyboard Shortcuts Modal Styles */
+.keyboard-shortcuts-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 20px;
+}
+
+.keyboard-shortcuts-modal {
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2);
+  width: 100%;
+  max-width: 600px;
+  max-height: 80vh;
+  overflow: hidden;
+  position: relative;
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 24px 24px 0 24px;
+  border-bottom: 1px solid #f0f0f0;
+  padding-bottom: 16px;
+}
+
+.modal-header h2 {
+  font-size: 24px;
+  font-weight: 700;
+  color: #2c3e50;
+  margin: 0;
+}
+
+.close-button {
+  background: none;
+  border: none;
+  font-size: 24px;
+  color: #7f8c8d;
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 4px;
+  transition: all 0.2s ease;
+}
+
+.close-button:hover {
+  color: #2c3e50;
+  background: rgba(0, 0, 0, 0.05);
+}
+
+.modal-content {
+  padding: 24px;
+  max-height: calc(80vh - 140px);
+  overflow-y: auto;
+}
+
+.shortcut-group {
+  margin-bottom: 32px;
+}
+
+.shortcut-group:last-child {
+  margin-bottom: 0;
+}
+
+.group-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: #2c3e50;
+  margin: 0 0 16px 0;
+  padding-bottom: 8px;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.shortcuts-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.shortcut-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 0;
+}
+
+.shortcut-description {
+  font-size: 14px;
+  color: #2c3e50;
+  font-weight: 500;
+}
+
+.shortcut-keys {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.key {
+  background: #f8f9fa;
+  border: 1px solid #e9ecef;
+  border-radius: 4px;
+  padding: 4px 8px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #495057;
+  font-family: 'Courier New', monospace;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  min-width: 24px;
+  text-align: center;
+}
+
+.key-separator {
+  font-size: 12px;
+  color: #7f8c8d;
+  margin: 0 2px;
+}
+
+.modal-footer {
+  padding: 16px 24px;
+  background: #f8f9fa;
+  border-top: 1px solid #f0f0f0;
+}
+
+.footer-note {
+  margin: 0;
+  font-size: 13px;
+  color: #7f8c8d;
+  text-align: center;
+}
+
+.footer-note .key {
+  margin: 0 4px;
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+  .keyboard-shortcuts-modal-overlay {
+    padding: 16px;
+  }
+
+  .keyboard-shortcuts-modal {
+    max-height: 90vh;
+  }
+
+  .modal-header {
+    padding: 20px 20px 0 20px;
+  }
+
+  .modal-header h2 {
+    font-size: 20px;
+  }
+
+  .modal-content {
+    padding: 20px;
+    max-height: calc(90vh - 120px);
+  }
+
+  .shortcut-item {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+    padding: 16px 0;
+    border-bottom: 1px solid #f0f0f0;
+  }
+
+  .shortcut-item:last-child {
+    border-bottom: none;
+  }
+
+  .shortcut-keys {
+    align-self: flex-end;
+  }
+
+  .shortcut-group {
+    margin-bottom: 24px;
+  }
+
+  .group-title {
+    font-size: 14px;
+    margin-bottom: 12px;
+  }
+
+  .modal-footer {
+    padding: 12px 20px;
+  }
+}
+
+/* Dark mode support */
+@media (prefers-color-scheme: dark) {
+  .keyboard-shortcuts-modal {
+    background: #2c3e50;
+  }
+
+  .modal-header {
+    border-bottom-color: #34495e;
+  }
+
+  .modal-header h2 {
+    color: #ecf0f1;
+  }
+
+  .close-button {
+    color: #bdc3c7;
+  }
+
+  .close-button:hover {
+    color: #ecf0f1;
+    background: rgba(255, 255, 255, 0.1);
+  }
+
+  .group-title {
+    color: #ecf0f1;
+    border-bottom-color: #34495e;
+  }
+
+  .shortcut-description {
+    color: #ecf0f1;
+  }
+
+  .key {
+    background: #34495e;
+    border-color: #4a6741;
+    color: #ecf0f1;
+  }
+
+  .key-separator {
+    color: #bdc3c7;
+  }
+
+  .modal-footer {
+    background: #34495e;
+    border-top-color: #4a6741;
+  }
+
+  .footer-note {
+    color: #bdc3c7;
+  }
+
+  .shortcut-item {
+    border-bottom-color: #34495e;
+  }
+}
+
+/* Accessibility */
+@media (prefers-reduced-motion: reduce) {
+  .close-button {
+    transition: none;
+  }
+}
+
+/* Focus styles for accessibility */
+.close-button:focus {
+  outline: 2px solid #4ecdc4;
+  outline-offset: 2px;
+}
+
+.keyboard-shortcuts-modal-overlay:focus {
+  outline: none;
+}
+
+.keyboard-shortcuts-modal {
+  outline: none;
+}

@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Flight Tracker</title>
+    <script src="https://api.mapbox.com/mapbox-gl-js/v2.15.0/mapbox-gl.js"></script>
+    <link href="https://api.mapbox.com/mapbox-gl-js/v2.15.0/mapbox-gl.css" rel="stylesheet">
+    <style>
+        body { margin: 0; padding: 0; }
+        #map { position: absolute; top: 0; bottom: 0; width: 100%; }
+        .mapboxgl-popup-content { 
+            background: #1a1a2e;
+            color: #fff;
+            border-radius: 8px;
+            padding: 15px;
+            box-shadow: 0 0 15px rgba(0, 255, 255, 0.5);
+        }
+        .flight-popup h3 { margin-top: 0; color: #0ff; }
+    </style>
+</head>
+<body>
+    <div id="map"></div>
+
+    <script>
+        // Replace with your Mapbox token (get one at mapbox.com)
+        mapboxgl.accessToken = 'pk.eyJ1IjoicGF1bG1haXRvIiwiYSI6ImNsd2NnOTU5aTFmYzQya3FwZ3ZzZ3F2a2wifQ.5VY0gx5V7Z7ZQ0Q0Q0Q0Q0';
+        
+        // Initialize map
+        const map = new mapboxgl.Map({
+            container: 'map',
+            style: 'mapbox://styles/mapbox/dark-v11',
+            center: [-0.118092, 51.509865],
+            zoom: 5,
+            pitch: 45
+        });
+
+        // Add 3D terrain when map loads
+        map.on('load', () => {
+            // Add terrain source
+            map.addSource('mapbox-dem', {
+                type: 'raster-dem',
+                url: 'mapbox://mapbox.mapbox-terrain-dem-v1'
+            });
+            
+            // Enable terrain
+            map.setTerrain({ source: 'mapbox-dem' });
+            
+            // Add sky layer for atmosphere
+            map.addLayer({
+                'id': 'sky',
+                'type': 'sky',
+                'paint': {
+                    'sky-type': 'atmosphere',
+                    'sky-atmosphere-sun': [0.0, 0.0],
+                    'sky-atmosphere-sun-intensity': 15
+                }
+            });
+            
+            // Create mock flight data
+            const flights = [
+                { id: '1', flight: 'BA123', lat: 51.5, lon: -0.1, alt: 35000, speed: 500 },
+                { id: '2', flight: 'AF456', lat: 51.6, lon: 0.1, alt: 32000, speed: 480 },
+                { id: '3', flight: 'LH789', lat: 51.4, lon: -0.3, alt: 34000, speed: 510 }
+            ];
+            
+            // Create flight markers
+            flights.forEach(flight => {
+                // Create custom marker element
+                const el = document.createElement('div');
+                el.className = 'flight-marker';
+                el.innerHTML = '✈';
+                el.style.color = '#ff6b6b';
+                el.style.fontSize = '24px';
+                el.style.textShadow = '0 0 5px rgba(255, 0, 0, 0.8)';
+                el.style.transform = 'rotate(45deg)';
+                
+                // Add marker to map
+                new mapboxgl.Marker(el)
+                    .setLngLat([flight.lon, flight.lat])
+                    .setPopup(new mapboxgl.Popup({ offset: 25 })
+                        .setHTML(`
+                            <div class="flight-popup">
+                                <h3>✈ ${flight.flight}</h3>
+                                <p>Altitude: ${flight.alt} ft</p>
+                                <p>Speed: ${flight.speed} kts</p>
+                                <p>Position: ${flight.lat.toFixed(4)}, ${flight.lon.toFixed(4)}</p>
+                            </div>
+                        `))
+                    .addTo(map);
+            });
+            
+            // Animate flights
+            setInterval(() => {
+                flights.forEach(flight => {
+                    // Update position (simple animation)
+                    flight.lat += 0.01;
+                    flight.lon += 0.01;
+                    
+                    // Find marker and update position
+                    document.querySelectorAll('.flight-marker').forEach(marker => {
+                        const markerId = marker.getAttribute('data-flight-id');
+                        if (markerId === flight.id) {
+                            marker._mapboxMarker.setLngLat([flight.lon, flight.lat]);
+                        }
+                    });
+                });
+            }, 200);
+        });
+    </script>
+</body>
+</html>

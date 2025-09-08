@@ -1,0 +1,270 @@
+/* Legal Pages Styles */
+.legal-page {
+  min-height: 100vh;
+  background: #f8f9fa;
+  padding: 40px 20px;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+.legal-container {
+  max-width: 800px;
+  margin: 0 auto;
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+  overflow: hidden;
+}
+
+.legal-header {
+  background: linear-gradient(135deg, #4ecdc4, #44a08d);
+  color: white;
+  padding: 40px 40px 32px 40px;
+  text-align: center;
+}
+
+.legal-header h1 {
+  font-size: 36px;
+  font-weight: 700;
+  margin: 0 0 16px 0;
+  letter-spacing: -0.5px;
+}
+
+.legal-dates {
+  display: flex;
+  justify-content: center;
+  gap: 32px;
+  margin-top: 16px;
+}
+
+.legal-dates p {
+  margin: 0;
+  font-size: 14px;
+  opacity: 0.9;
+}
+
+.legal-content {
+  padding: 40px;
+  line-height: 1.7;
+  color: #2c3e50;
+}
+
+.legal-intro {
+  font-size: 16px;
+  font-weight: 500;
+  color: #34495e;
+  background: rgba(78, 205, 196, 0.05);
+  padding: 20px;
+  border-radius: 8px;
+  border-left: 4px solid #4ecdc4;
+  margin-bottom: 32px;
+}
+
+.legal-section {
+  margin-bottom: 32px;
+  padding-bottom: 24px;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.legal-section:last-child {
+  border-bottom: none;
+  margin-bottom: 0;
+}
+
+.legal-section h2 {
+  font-size: 24px;
+  font-weight: 700;
+  color: #2c3e50;
+  margin: 0 0 16px 0;
+  padding-bottom: 8px;
+  border-bottom: 2px solid #4ecdc4;
+  display: inline-block;
+}
+
+.legal-section h3 {
+  font-size: 18px;
+  font-weight: 600;
+  color: #34495e;
+  margin: 24px 0 12px 0;
+}
+
+.legal-section p {
+  margin: 0 0 16px 0;
+  font-size: 15px;
+}
+
+.legal-section ul {
+  margin: 0 0 16px 0;
+  padding-left: 24px;
+}
+
+.legal-section li {
+  margin-bottom: 8px;
+  font-size: 15px;
+}
+
+.legal-section a {
+  color: #4ecdc4;
+  text-decoration: none;
+  font-weight: 500;
+  transition: color 0.2s ease;
+}
+
+.legal-section a:hover {
+  color: #44a08d;
+  text-decoration: underline;
+}
+
+.contact-info {
+  background: rgba(78, 205, 196, 0.05);
+  padding: 20px;
+  border-radius: 8px;
+  border: 1px solid rgba(78, 205, 196, 0.2);
+}
+
+.contact-info p {
+  margin: 0 0 8px 0;
+  font-size: 15px;
+}
+
+.contact-info p:last-child {
+  margin-bottom: 0;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .legal-page {
+    padding: 20px 12px;
+  }
+
+  .legal-header {
+    padding: 24px 24px 20px 24px;
+  }
+
+  .legal-header h1 {
+    font-size: 28px;
+  }
+
+  .legal-dates {
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .legal-content {
+    padding: 24px;
+  }
+
+  .legal-intro {
+    padding: 16px;
+    font-size: 15px;
+  }
+
+  .legal-section h2 {
+    font-size: 20px;
+  }
+
+  .legal-section h3 {
+    font-size: 16px;
+  }
+
+  .legal-section p,
+  .legal-section li {
+    font-size: 14px;
+  }
+
+  .contact-info {
+    padding: 16px;
+  }
+}
+
+/* Print Styles */
+@media print {
+  .legal-page {
+    background: white;
+    padding: 0;
+  }
+
+  .legal-container {
+    box-shadow: none;
+    border-radius: 0;
+  }
+
+  .legal-header {
+    background: white;
+    color: #2c3e50;
+    padding: 20px 0;
+  }
+
+  .legal-content {
+    padding: 20px 0;
+  }
+
+  .legal-section a {
+    color: #2c3e50;
+    text-decoration: underline;
+  }
+
+  .legal-intro,
+  .contact-info {
+    background: white;
+    border: 1px solid #ddd;
+  }
+}
+
+/* Dark Mode Support */
+@media (prefers-color-scheme: dark) {
+  .legal-page {
+    background: #1a1a1a;
+  }
+
+  .legal-container {
+    background: #2c3e50;
+  }
+
+  .legal-content {
+    color: #ecf0f1;
+  }
+
+  .legal-intro {
+    background: rgba(78, 205, 196, 0.1);
+    color: #ecf0f1;
+  }
+
+  .legal-section {
+    border-bottom-color: #34495e;
+  }
+
+  .legal-section h2 {
+    color: #ecf0f1;
+  }
+
+  .legal-section h3 {
+    color: #bdc3c7;
+  }
+
+  .contact-info {
+    background: rgba(78, 205, 196, 0.1);
+    border-color: rgba(78, 205, 196, 0.3);
+  }
+}
+
+/* Accessibility */
+.legal-section h2:focus,
+.legal-section h3:focus {
+  outline: 2px solid #4ecdc4;
+  outline-offset: 2px;
+}
+
+.legal-section a:focus {
+  outline: 2px solid #4ecdc4;
+  outline-offset: 2px;
+  border-radius: 2px;
+}
+
+/* Text Selection */
+.legal-content ::selection {
+  background: rgba(78, 205, 196, 0.2);
+}
+
+.legal-content ::-moz-selection {
+  background: rgba(78, 205, 196, 0.2);
+}

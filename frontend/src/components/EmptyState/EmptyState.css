@@ -1,0 +1,272 @@
+/* Empty State Styles */
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 48px 24px;
+  min-height: 200px;
+}
+
+.empty-state-icon {
+  font-size: 48px;
+  margin-bottom: 16px;
+  opacity: 0.8;
+}
+
+.empty-state-title {
+  font-size: 20px;
+  font-weight: 600;
+  color: #2c3e50;
+  margin: 0 0 8px 0;
+}
+
+.empty-state-description {
+  font-size: 14px;
+  color: #7f8c8d;
+  line-height: 1.5;
+  max-width: 400px;
+  margin: 0 0 24px 0;
+}
+
+.empty-state-action {
+  margin-top: 8px;
+}
+
+/* Button styles for empty states */
+.empty-state .btn-primary,
+.empty-state .btn-secondary,
+.empty-state .btn-upgrade {
+  padding: 12px 24px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border: none;
+  text-decoration: none;
+  display: inline-block;
+}
+
+.empty-state .btn-primary {
+  background: linear-gradient(135deg, #4ecdc4, #44a08d);
+  color: white;
+}
+
+.empty-state .btn-primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(78, 205, 196, 0.3);
+}
+
+.empty-state .btn-secondary {
+  background: #f8f9fa;
+  color: #2c3e50;
+  border: 1px solid #e9ecef;
+}
+
+.empty-state .btn-secondary:hover {
+  background: #e9ecef;
+  transform: translateY(-1px);
+}
+
+.empty-state .btn-upgrade {
+  background: linear-gradient(135deg, #ff6b6b, #ff8e8e);
+  color: white;
+}
+
+.empty-state .btn-upgrade:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(255, 107, 107, 0.3);
+}
+
+/* Variant styles */
+.empty-state-error .empty-state-title {
+  color: #e74c3c;
+}
+
+.empty-state-error .empty-state-icon {
+  color: #e74c3c;
+}
+
+.empty-state-search .empty-state-title {
+  color: #3498db;
+}
+
+.empty-state-search .empty-state-icon {
+  color: #3498db;
+}
+
+.empty-state-feature-locked .empty-state-title {
+  color: #f39c12;
+}
+
+.empty-state-feature-locked .empty-state-icon {
+  color: #f39c12;
+}
+
+/* Specific empty state components */
+.no-flights-empty {
+  background: rgba(52, 152, 219, 0.05);
+  border-radius: 12px;
+  border: 1px solid rgba(52, 152, 219, 0.1);
+}
+
+.no-alerts-empty {
+  background: rgba(78, 205, 196, 0.05);
+  border-radius: 12px;
+  border: 1px solid rgba(78, 205, 196, 0.1);
+}
+
+.connection-error-empty {
+  background: rgba(231, 76, 60, 0.05);
+  border-radius: 12px;
+  border: 1px solid rgba(231, 76, 60, 0.1);
+}
+
+.search-empty {
+  background: rgba(52, 152, 219, 0.05);
+  border-radius: 12px;
+  border: 1px solid rgba(52, 152, 219, 0.1);
+}
+
+.feature-locked-empty {
+  background: rgba(243, 156, 18, 0.05);
+  border-radius: 12px;
+  border: 1px solid rgba(243, 156, 18, 0.1);
+}
+
+.maintenance-empty {
+  background: rgba(149, 165, 166, 0.05);
+  border-radius: 12px;
+  border: 1px solid rgba(149, 165, 166, 0.1);
+}
+
+/* Data Loading Empty State */
+.data-loading-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 48px 24px;
+  min-height: 200px;
+}
+
+.loading-spinner {
+  margin-bottom: 16px;
+}
+
+.spinner-circle {
+  width: 40px;
+  height: 40px;
+  border: 3px solid rgba(78, 205, 196, 0.3);
+  border-radius: 50%;
+  border-top-color: #4ecdc4;
+  animation: spin 1s ease-in-out infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.loading-message {
+  font-size: 14px;
+  color: #7f8c8d;
+  margin: 0;
+  font-weight: 500;
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+  .empty-state {
+    padding: 32px 16px;
+    min-height: 160px;
+  }
+
+  .empty-state-icon {
+    font-size: 36px;
+    margin-bottom: 12px;
+  }
+
+  .empty-state-title {
+    font-size: 18px;
+  }
+
+  .empty-state-description {
+    font-size: 13px;
+    margin-bottom: 20px;
+  }
+
+  .empty-state .btn-primary,
+  .empty-state .btn-secondary,
+  .empty-state .btn-upgrade {
+    width: 100%;
+    max-width: 200px;
+  }
+}
+
+/* Dark mode support */
+@media (prefers-color-scheme: dark) {
+  .empty-state-title {
+    color: #ecf0f1;
+  }
+
+  .empty-state-description {
+    color: #bdc3c7;
+  }
+
+  .loading-message {
+    color: #bdc3c7;
+  }
+
+  .empty-state .btn-secondary {
+    background: #34495e;
+    color: #ecf0f1;
+    border-color: #4a6741;
+  }
+
+  .empty-state .btn-secondary:hover {
+    background: #4a6741;
+  }
+
+  .no-flights-empty,
+  .search-empty {
+    background: rgba(52, 152, 219, 0.1);
+    border-color: rgba(52, 152, 219, 0.2);
+  }
+
+  .no-alerts-empty {
+    background: rgba(78, 205, 196, 0.1);
+    border-color: rgba(78, 205, 196, 0.2);
+  }
+
+  .connection-error-empty {
+    background: rgba(231, 76, 60, 0.1);
+    border-color: rgba(231, 76, 60, 0.2);
+  }
+
+  .feature-locked-empty {
+    background: rgba(243, 156, 18, 0.1);
+    border-color: rgba(243, 156, 18, 0.2);
+  }
+
+  .maintenance-empty {
+    background: rgba(149, 165, 166, 0.1);
+    border-color: rgba(149, 165, 166, 0.2);
+  }
+}
+
+/* Accessibility */
+@media (prefers-reduced-motion: reduce) {
+  .spinner-circle {
+    animation: none;
+  }
+
+  .empty-state .btn-primary:hover,
+  .empty-state .btn-secondary:hover,
+  .empty-state .btn-upgrade:hover {
+    transform: none;
+  }
+}
