@@ -1,0 +1,13 @@
+VERCEL DEPLOYMENT TRIGGER
+========================
+Timestamp: 2025-09-08T20:15:00Z
+Commit: Fixed deployment with root package.json
+Build: BY9nrnS6H (previous failed build)
+
+This file triggers a new deployment after fixing:
+1. Added missing root package.json (CRITICAL)
+2. Fixed TypeScript imports in data-core
+3. Configured proper API routes
+4. Merged all deployment fixes
+
+DELETE THIS FILE AFTER SUCCESSFUL DEPLOYMENT
