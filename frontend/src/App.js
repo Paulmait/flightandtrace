@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
 import FlightMap from './components/Map/FlightMap';
-import { SubscriptionProvider } from './contexts/SubscriptionContext';
-import { SupabaseProvider } from './contexts/SupabaseContext';
-import SupabaseTest from './components/SupabaseTest';
-import AuthTest from './components/AuthTest';
+// Temporarily disable Supabase to test deployment
+// import { SubscriptionProvider } from './contexts/SubscriptionContext';
+// import { SupabaseProvider } from './contexts/SupabaseContext';
+// import SupabaseTest from './components/SupabaseTest';
+// import AuthTest from './components/AuthTest';
 
 function App() {
   // Mock flight data compatible with the new FlightMap component
@@ -50,40 +51,51 @@ function App() {
     },
     {
       id: '3',
-      callsign: 'LH789',
-      registration: 'D-AIQF',
+      callsign: 'DL789',
+      registration: 'N123DL',
       icao24: '400003',
       position: {
         latitude: 51.4,
         longitude: -0.3,
-        altitude: 34000,
+        altitude: 38000,
         heading: 270,
-        groundSpeed: 510,
+        groundSpeed: 520,
         verticalRate: 0
       },
       status: 'EN_ROUTE',
       aircraft: {
-        registration: 'D-AIQF',
-        icaoTypeCode: 'A320',
-        model: 'Airbus A320-200'
+        registration: 'N123DL',
+        icaoTypeCode: 'B763',
+        model: 'Boeing 767-300'
       }
     }
   ]);
 
   return (
-    <SupabaseProvider>
-      <SubscriptionProvider>
-        <div style={{ width: '100%', height: '100vh' }}>
-          <SupabaseTest />
-          <AuthTest />
-          <FlightMap 
-            flights={flights}
-            center={[-0.118092, 51.509865]}
-            zoom={5}
-          />
-        </div>
-      </SubscriptionProvider>
-    </SupabaseProvider>
+    <div style={{ width: '100%', height: '100vh', position: 'relative' }}>
+      <div style={{
+        position: 'absolute',
+        top: 20,
+        left: 20,
+        zIndex: 1000,
+        background: 'white',
+        padding: '10px 20px',
+        borderRadius: 8,
+        boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
+      }}>
+        <h1 style={{ margin: 0, fontSize: '24px', color: '#333' }}>
+          ✈️ Flight Tracker - Deployment Successful!
+        </h1>
+        <p style={{ margin: '5px 0 0 0', color: '#666' }}>
+          Showing {flights.length} mock flights over London
+        </p>
+      </div>
+      <FlightMap 
+        flights={flights}
+        center={[-0.118092, 51.509865]}
+        zoom={5}
+      />
+    </div>
   );
 }
 

@@ -16,7 +16,8 @@ const FlightMap = ({ flights, selectedFlight, onFlightSelect, showEstimatedSegme
 
     map.current = new maplibregl.Map({
       container: mapContainer.current,
-      style: 'https://api.maptiler.com/maps/streets/style.json?key=' + (process.env.REACT_APP_MAPTILER_KEY || 'YOUR_MAPTILER_KEY'),
+      // Use a free public style that doesn't require API key for initial deployment
+      style: 'https://demotiles.maplibre.org/style.json',
       center: center || [-74.006, 40.7128],
       zoom: zoom || 5,
       pitch: 0,
