@@ -1,60 +1,31 @@
 {
   "version": 2,
-  "buildCommand": "npm run build:all",
-  "outputDirectory": "frontend/build",
-  "installCommand": "npm install && npm run install:all",
-  "functions": {
-    "backend/api/*.js": {
-      "runtime": "@vercel/node@3"
+  "builds": [
+    {
+      "src": "api/**/*.js",
+      "use": "@vercel/node"
     },
-    "backend/api/**/*.js": {
-      "runtime": "@vercel/node@3"
+    {
+      "src": "public/**",
+      "use": "@vercel/static"
     }
-  },
-  "rewrites": [
+  ],
+  "routes": [
     {
-      "source": "/api/fuel/estimate",
-      "destination": "/backend/api/fuel/estimate.js"
+      "src": "/api/health",
+      "dest": "/api/health.js"
     },
     {
-      "source": "/api/flights/(.*)",
-      "destination": "/backend/api/flights.js"
+      "src": "/api/test-env",
+      "dest": "/api/test_env.js"
     },
     {
-      "source": "/api/flights-live/(.*)",
-      "destination": "/backend/api/flights_live.js"
+      "src": "/api/flights/(.*)",
+      "dest": "/api/flights.js"
     },
     {
-      "source": "/api/subscription/create-checkout",
-      "destination": "/backend/api/subscription/create-checkout.js"
-    },
-    {
-      "source": "/api/subscription/webhook",
-      "destination": "/backend/api/subscription/webhook.js"
-    },
-    {
-      "source": "/api/email/(.*)",
-      "destination": "/backend/api/email_service.js"
-    },
-    {
-      "source": "/api/weather/(.*)",
-      "destination": "/backend/api/weather.js"
-    },
-    {
-      "source": "/api/admin/(.*)",
-      "destination": "/backend/api/admin.js"
-    },
-    {
-      "source": "/api/health",
-      "destination": "/backend/api/health.js"
-    },
-    {
-      "source": "/api/test-env",
-      "destination": "/backend/api/test_env.js"
-    },
-    {
-      "source": "/(.*)",
-      "destination": "/index.html"
+      "src": "/(.*)",
+      "dest": "/public/$1"
     }
   ],
   "headers": [
@@ -69,9 +40,6 @@
     }
   ],
   "env": {
-    "FUEL_ESTIMATES_ENABLED": "true",
-    "API_RATE_LIMIT": "100",
-    "NODE_VERSION": "18.x",
     "NODE_ENV": "production"
   }
 }

@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Flight Tracker - Deployment Test</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 40px; }
+        .status { padding: 20px; border: 1px solid #ccc; border-radius: 8px; margin: 10px 0; }
+        .success { background: #d4edda; border-color: #c3e6cb; }
+        .info { background: #d1ecf1; border-color: #bee5eb; }
+    </style>
+</head>
+<body>
+    <h1>🛩️ Flight Tracker</h1>
+    <p>Deployment test page - Fixed structure</p>
+    
+    <div class="status success">
+        <h3>✅ Frontend Deployed</h3>
+        <p>Static files are serving correctly from /public/</p>
+    </div>
+    
+    <div class="status info">
+        <h3>🔧 API Endpoints</h3>
+        <ul>
+            <li><a href="/api/health">/api/health</a> - Health check</li>
+            <li><a href="/api/test_env">/api/test_env</a> - Environment info</li>
+            <li><a href="/api/flights">/api/flights</a> - Flight data</li>
+        </ul>
+    </div>
+</body>
+</html>
