@@ -1,3 +1,6 @@
+import { Aircraft } from './aircraft';
+import { Position } from './position';
+
 export interface Flight {
   id: string;
   callsign: string | null;
