@@ -1,0 +1,15 @@
+{
+  "name": "flight-tracker-project",
+  "version": "1.0.0", 
+  "description": "Enterprise flight tracking platform",
+  "main": "index.js",
+  "scripts": {
+    "build": "cd frontend && npm run build",
+    "start": "cd frontend && npm start",
+    "dev": "cd frontend && npm start"
+  },
+  "engines": {
+    "node": "18.x"
+  },
+  "license": "MIT"
+}
