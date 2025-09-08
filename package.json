@@ -1,0 +1,12 @@
+{
+  "name": "flight-tracker-project",
+  "version": "1.0.0",
+  "description": "Flight tracking application",
+  "scripts": {
+    "build": "cd frontend && npm install && npm run build",
+    "start": "echo 'Static deployment'"
+  },
+  "engines": {
+    "node": "18.x"
+  }
+}
