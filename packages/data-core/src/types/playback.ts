@@ -1,3 +1,6 @@
+import { Position } from './position';
+import { DataSource } from './flight';
+
 export interface PlaybackSlice {
   timestamp: Date;
   flights: PlaybackFlight[];
@@ -57,9 +60,3 @@ export enum FilterType {
   DESTINATION = 'destination'
 }
 
-export enum DataSource {
-  OPENSKY = 'opensky',
-  ADSB_EXCHANGE = 'adsb_exchange',
-  MANUAL = 'manual',
-  ESTIMATED = 'estimated'
-}
