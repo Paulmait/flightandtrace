@@ -1,15 +1,36 @@
 {
   "name": "flight-tracker-project",
-  "version": "1.0.0", 
-  "description": "Enterprise flight tracking platform",
+  "version": "1.0.0",
+  "description": "Enterprise flight tracking platform with deployment fixes",
   "main": "index.js",
   "scripts": {
+    "dev": "vercel dev",
     "build": "cd frontend && npm run build",
-    "start": "cd frontend && npm start",
-    "dev": "cd frontend && npm start"
+    "start": "vercel --prod",
+    "deploy": "vercel --prod",
+    "deploy:preview": "vercel",
+    "test": "echo 'No tests specified'"
+  },
+  "devDependencies": {
+    "vercel": "^32.7.2"
   },
   "engines": {
-    "node": "18.x"
+    "node": ">=16.0.0",
+    "npm": ">=8.0.0"
   },
-  "license": "MIT"
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Paulmait/flightandtrace.git"
+  },
+  "keywords": [
+    "flight-tracking",
+    "aviation",
+    "vercel",
+    "serverless"
+  ],
+  "author": "Flight Tracker Team",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/Paulmait/flightandtrace/issues"
+  }
 }
