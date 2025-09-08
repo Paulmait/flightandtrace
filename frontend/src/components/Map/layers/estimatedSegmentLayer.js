@@ -155,10 +155,10 @@ const createGreatCircleArc = (startPos, endPos) => {
   };
 };
 
-const interpolateAltitude = (startAlt, endAlt, fraction) => {
-  if (startAlt === null || endAlt === null) return null;
-  return startAlt + (endAlt - startAlt) * fraction;
-};
+// const interpolateAltitude = (startAlt, endAlt, fraction) => {
+//   if (startAlt === null || endAlt === null) return null;
+//   return startAlt + (endAlt - startAlt) * fraction;
+// };
 
 const calculateConfidence = (timeDiff, distance, expectedMaxDistance) => {
   const timeConfidence = Math.max(0, 1 - (timeDiff / 3600000));
