@@ -1,0 +1,174 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Helper functions
+    function isSignedIn() {
+      return request.auth != null;
+    }
+    
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+    
+    function isAdmin() {
+      return isSignedIn() && 
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+    }
+    
+    function hasValidSubscription() {
+      return isSignedIn() && 
+        exists(/databases/$(database)/documents/users/$(request.auth.uid)/subscription);
+    }
+    
+    function getUserTier() {
+      return isSignedIn() ? 
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.tier : 'free';
+    }
+    
+    // Rate limiting helper (checks write frequency)
+    function rateLimitWrite(seconds) {
+      return request.time > resource.data.lastUpdate + duration.value(seconds, 's');
+    }
+    
+    // Data validation helpers
+    function isValidFlight() {
+      return request.resource.data.keys().hasAll(['icao24', 'position', 'lastUpdate']) &&
+        request.resource.data.icao24 is string &&
+        request.resource.data.position is map &&
+        request.resource.data.position.keys().hasAll(['latitude', 'longitude']) &&
+        request.resource.data.position.latitude is number &&
+        request.resource.data.position.latitude >= -90 &&
+        request.resource.data.position.latitude <= 90 &&
+        request.resource.data.position.longitude is number &&
+        request.resource.data.position.longitude >= -180 &&
+        request.resource.data.position.longitude <= 180;
+    }
+    
+    function isValidUser() {
+      return request.resource.data.keys().hasAll(['email', 'createdAt']) &&
+        request.resource.data.email is string &&
+        request.resource.data.email.matches('^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$');
+    }
+    
+    // System configuration - Read only for all, write for admins only
+    match /system/{document=**} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+    
+    // Flight data - Public read, admin write only
+    match /flights/{flightId} {
+      allow read: if true;
+      allow create: if isAdmin() && isValidFlight();
+      allow update: if isAdmin() && isValidFlight() && rateLimitWrite(1);
+      allow delete: if isAdmin();
+    }
+    
+    // User profiles - Users can read/write their own data
+    match /users/{userId} {
+      allow read: if isOwner(userId) || isAdmin();
+      allow create: if isOwner(userId) && isValidUser();
+      allow update: if (isOwner(userId) && isValidUser() && rateLimitWrite(5)) || isAdmin();
+      allow delete: if isAdmin();
+      
+      // User subscription data
+      match /subscription/{document=**} {
+        allow read: if isOwner(userId) || isAdmin();
+        allow write: if isAdmin(); // Only admin/backend can modify subscriptions
+      }
+      
+      // User saved flights
+      match /savedFlights/{flightId} {
+        allow read: if isOwner(userId);
+        allow write: if isOwner(userId) && 
+          request.resource.data.keys().hasAll(['flightId', 'savedAt']);
+        allow delete: if isOwner(userId);
+      }
+      
+      // User search history
+      match /searchHistory/{searchId} {
+        allow read: if isOwner(userId);
+        allow create: if isOwner(userId) && 
+          request.resource.data.keys().hasAll(['query', 'timestamp']);
+        allow update: if false; // Search history is immutable
+        allow delete: if isOwner(userId);
+      }
+    }
+    
+    // Flight history - Public read, admin write
+    match /flightHistory/{date}/{flightId} {
+      allow read: if true;
+      allow write: if isAdmin() && isValidFlight();
+    }
+    
+    // Saved searches - Authenticated users only
+    match /savedSearches/{searchId} {
+      allow read: if isSignedIn() && 
+        (resource.data.userId == request.auth.uid || resource.data.public == true);
+      allow create: if isSignedIn() && 
+        request.resource.data.userId == request.auth.uid &&
+        request.resource.data.keys().hasAll(['query', 'userId', 'createdAt']);
+      allow update: if isOwner(resource.data.userId) && rateLimitWrite(10);
+      allow delete: if isOwner(resource.data.userId) || isAdmin();
+    }
+    
+    // Subscription tiers - Read only
+    match /subscriptionTiers/{tierId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+    
+    // Rate limits configuration - Read only
+    match /rateLimits/{document=**} {
+      allow read: if isAdmin();
+      allow write: if isAdmin();
+    }
+    
+    // Data sources configuration - Admin only
+    match /dataSources/{document=**} {
+      allow read: if isAdmin();
+      allow write: if isAdmin();
+    }
+    
+    // Analytics - Public read for overview, admin write
+    match /analytics/{document=**} {
+      allow read: if document == 'overview' || isAdmin();
+      allow write: if isAdmin();
+    }
+    
+    // Alerts - Users can manage their own alerts
+    match /alerts/{alertId} {
+      allow read: if isOwner(resource.data.userId) || isAdmin();
+      allow create: if isSignedIn() && 
+        request.resource.data.userId == request.auth.uid &&
+        request.resource.data.keys().hasAll(['userId', 'type', 'criteria', 'active']) &&
+        // Limit alerts based on subscription tier
+        (getUserTier() == 'professional' || 
+         get(/databases/$(database)/documents/users/$(request.auth.uid)/alerts).size < 10);
+      allow update: if isOwner(resource.data.userId) && rateLimitWrite(60);
+      allow delete: if isOwner(resource.data.userId) || isAdmin();
+    }
+    
+    // API keys - User specific, secure storage
+    match /apiKeys/{userId} {
+      allow read: if isOwner(userId);
+      allow write: if isOwner(userId) && 
+        (getUserTier() == 'professional' || getUserTier() == 'premium');
+    }
+    
+    // Audit logs - Admin only
+    match /auditLogs/{logId} {
+      allow read: if isAdmin();
+      allow create: if isAdmin();
+      allow update: if false; // Audit logs are immutable
+      allow delete: if false; // Audit logs cannot be deleted
+    }
+    
+    // Block all other access by default
+    match /{document=**} {
+      allow read: if false;
+      allow write: if false;
+    }
+  }
+}
