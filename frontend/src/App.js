@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import FlightMap from './components/Map/FlightMap';
+import FlightMap from './components/Map/FlightMap.jsx';
 
 function App() {
   const [flights, setFlights] = useState([]);
