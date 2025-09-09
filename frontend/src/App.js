@@ -1,21 +1,26 @@
 import React, { useState, useEffect } from 'react';
 import FlightMap from './components/Map/FlightMap.jsx';
 import LoadingScreen from './components/LoadingScreen.jsx';
+import { getOptimalLocation, calculateBoundingBox, getRegionDefaults } from './utils/locationService';
 
 function App() {
   const [flights, setFlights] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [lastUpdate, setLastUpdate] = useState(null);
+  const [mapCenter, setMapCenter] = useState([10, 50]); // Default center
+  const [mapZoom, setMapZoom] = useState(5);
+  const [userLocation, setUserLocation] = useState(null);
+  const [boundingBox, setBoundingBox] = useState('-20,35,30,65'); // Default Europe
 
   // Fetch live flights
-  const fetchFlights = async () => {
+  const fetchFlights = async (bbox = boundingBox) => {
     try {
       setLoading(true);
-      // Use the Vercel API endpoint - expanded area for more flights
+      // Use the Vercel API endpoint with dynamic bounding box
       const apiUrl = process.env.NODE_ENV === 'development' 
-        ? 'http://localhost:3000/api/flights?bbox=-20,35,30,65'
-        : '/api/flights?bbox=-20,35,30,65'; // Europe-wide area
+        ? `http://localhost:3000/api/flights?bbox=${bbox}`
+        : `/api/flights?bbox=${bbox}`;
       const response = await fetch(apiUrl);
       
       if (!response.ok) {
@@ -58,15 +63,41 @@ function App() {
     }
   };
 
+  // Initialize user location
   useEffect(() => {
-    // Fetch flights immediately
-    fetchFlights();
+    const initializeLocation = async () => {
+      try {
+        const location = await getOptimalLocation();
+        setUserLocation(location);
+        
+        // Calculate bounding box for user's area
+        const regionDefaults = getRegionDefaults(location.latitude, location.longitude);
+        const box = calculateBoundingBox(location.latitude, location.longitude, regionDefaults.radius);
+        const bboxString = `${box.minLon},${box.minLat},${box.maxLon},${box.maxLat}`;
+        
+        setBoundingBox(bboxString);
+        setMapCenter([location.longitude, location.latitude]);
+        setMapZoom(regionDefaults.zoom);
+        
+        // Fetch flights for user's area
+        fetchFlights(bboxString);
+      } catch (error) {
+        console.error('Location initialization failed:', error);
+        // Use default and fetch flights
+        fetchFlights();
+      }
+    };
     
-    // Refresh every 30 seconds
-    const interval = setInterval(fetchFlights, 30000);
-    
-    return () => clearInterval(interval);
+    initializeLocation();
   }, []);
+
+  // Set up refresh interval
+  useEffect(() => {
+    if (!boundingBox) return;
+    
+    const interval = setInterval(() => fetchFlights(boundingBox), 30000);
+    return () => clearInterval(interval);
+  }, [boundingBox]);
 
   // Show loading screen for initial load
   if (loading && !flights.length && !error) {
@@ -121,7 +152,12 @@ function App() {
         
         <div style={{ marginTop: '10px', fontSize: '12px', color: '#999' }}>
           Data: OpenSky Network | Updates: 30s
-          {process.env.REACT_APP_MAPTILER_KEY && <span> | Map: MapTiler ✓</span>}
+          {userLocation && userLocation.city && (
+            <span> | Location: {userLocation.city}</span>
+          )}
+          {userLocation && (
+            <span> | {userLocation.source === 'geolocation' ? '📍' : '🌐'}</span>
+          )}
         </div>
         
         {/* Debug info - remove in production */}
@@ -135,8 +171,8 @@ function App() {
       
       <FlightMap 
         flights={flights}
-        center={[10, 50]} // Central Europe
-        zoom={5}
+        center={mapCenter}
+        zoom={mapZoom}
       />
     </div>
   );
