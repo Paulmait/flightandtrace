@@ -1,75 +1,68 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import FlightMap from './components/Map/FlightMap';
-// Temporarily disable Supabase to test deployment
-// import { SubscriptionProvider } from './contexts/SubscriptionContext';
-// import { SupabaseProvider } from './contexts/SupabaseContext';
-// import SupabaseTest from './components/SupabaseTest';
-// import AuthTest from './components/AuthTest';
 
 function App() {
-  // Mock flight data compatible with the new FlightMap component
-  const [flights] = useState([
-    {
-      id: '1',
-      callsign: 'BA123',
-      registration: 'G-EUUU',
-      icao24: '400001',
-      position: {
-        latitude: 51.5,
-        longitude: -0.1,
-        altitude: 35000,
-        heading: 90,
-        groundSpeed: 500,
-        verticalRate: 0
-      },
-      status: 'EN_ROUTE',
-      aircraft: {
-        registration: 'G-EUUU',
-        icaoTypeCode: 'A320',
-        model: 'Airbus A320-200'
+  const [flights, setFlights] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [lastUpdate, setLastUpdate] = useState(null);
+
+  // Fetch live flights
+  const fetchFlights = async () => {
+    try {
+      setLoading(true);
+      // Use the Vercel API endpoint
+      const response = await fetch('/api/flights?bbox=-10,45,5,55'); // UK/Ireland area
+      
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
       }
-    },
-    {
-      id: '2', 
-      callsign: 'AF456',
-      registration: 'F-HBNK',
-      icao24: '400002',
-      position: {
-        latitude: 51.6,
-        longitude: 0.1,
-        altitude: 32000,
-        heading: 180,
-        groundSpeed: 480,
-        verticalRate: 0
-      },
-      status: 'EN_ROUTE',
-      aircraft: {
-        registration: 'F-HBNK',
-        icaoTypeCode: 'A319',
-        model: 'Airbus A319-100'
+      
+      const data = await response.json();
+      
+      if (data.success && data.flights) {
+        setFlights(data.flights);
+        setLastUpdate(new Date());
+        setError(null);
+      } else {
+        throw new Error(data.error || 'Failed to fetch flights');
       }
-    },
-    {
-      id: '3',
-      callsign: 'DL789',
-      registration: 'N123DL',
-      icao24: '400003',
-      position: {
-        latitude: 51.4,
-        longitude: -0.3,
-        altitude: 38000,
-        heading: 270,
-        groundSpeed: 520,
-        verticalRate: 0
-      },
-      status: 'EN_ROUTE',
-      aircraft: {
-        registration: 'N123DL',
-        icaoTypeCode: 'B763',
-        model: 'Boeing 767-300'
-      }
+    } catch (err) {
+      console.error('Error fetching flights:', err);
+      setError(err.message);
+      
+      // Use mock data as fallback
+      setFlights([
+        {
+          id: '1',
+          callsign: 'MOCK001',
+          registration: 'G-DEMO',
+          icao24: '400001',
+          position: {
+            latitude: 51.5,
+            longitude: -0.1,
+            altitude: 35000,
+            heading: 90,
+            groundSpeed: 500,
+            verticalRate: 0
+          },
+          status: 'EN_ROUTE'
+        }
+      ]);
+    } finally {
+      setLoading(false);
     }
-  ]);
+  };
+
+  useEffect(() => {
+    // Fetch flights immediately
+    fetchFlights();
+    
+    // Refresh every 30 seconds
+    const interval = setInterval(fetchFlights, 30000);
+    
+    return () => clearInterval(interval);
+  }, []);
 
   return (
     <div style={{ width: '100%', height: '100vh', position: 'relative' }}>
@@ -81,19 +74,48 @@ function App() {
         background: 'white',
         padding: '10px 20px',
         borderRadius: 8,
-        boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
+        boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
+        maxWidth: '400px'
       }}>
         <h1 style={{ margin: 0, fontSize: '24px', color: '#333' }}>
-          ✈️ Flight Tracker - Deployment Successful!
+          ✈️ Flight Tracker
         </h1>
-        <p style={{ margin: '5px 0 0 0', color: '#666' }}>
-          Showing {flights.length} mock flights over London
-        </p>
+        
+        {loading && !flights.length ? (
+          <p style={{ margin: '5px 0 0 0', color: '#666' }}>
+            Loading live flights...
+          </p>
+        ) : error ? (
+          <div>
+            <p style={{ margin: '5px 0 0 0', color: '#e74c3c' }}>
+              ⚠️ {error}
+            </p>
+            <p style={{ margin: '5px 0 0 0', color: '#666', fontSize: '12px' }}>
+              Showing mock data. Check console for details.
+            </p>
+          </div>
+        ) : (
+          <div>
+            <p style={{ margin: '5px 0 0 0', color: '#27ae60', fontWeight: 'bold' }}>
+              🟢 LIVE - {flights.length} aircraft tracked
+            </p>
+            {lastUpdate && (
+              <p style={{ margin: '5px 0 0 0', color: '#666', fontSize: '12px' }}>
+                Last updated: {lastUpdate.toLocaleTimeString()}
+              </p>
+            )}
+          </div>
+        )}
+        
+        <div style={{ marginTop: '10px', fontSize: '12px', color: '#999' }}>
+          Data: OpenSky Network | Updates: 30s
+        </div>
       </div>
+      
       <FlightMap 
         flights={flights}
-        center={[-0.118092, 51.509865]}
-        zoom={5}
+        center={[-0.118092, 51.509865]} // London
+        zoom={6}
       />
     </div>
   );
