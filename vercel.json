@@ -3,18 +3,15 @@
   "buildCommand": "cd frontend && npm install && npm run build",
   "outputDirectory": "frontend/build",
   "framework": null,
+  "functions": {
+    "api/*.js": {
+      "maxDuration": 10
+    }
+  },
   "routes": [
     {
-      "src": "/api/health",
-      "dest": "/backend/api/health.js"
-    },
-    {
-      "src": "/api/test-env",
-      "dest": "/backend/api/test_env.js"
-    },
-    {
       "src": "/api/(.*)",
-      "dest": "/backend/api/$1.js"
+      "dest": "/api/$1.js"
     },
     {
       "src": "/(.*)",
