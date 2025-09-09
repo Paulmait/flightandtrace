@@ -39,25 +39,8 @@ function App() {
     } catch (err) {
       console.error('Error fetching flights:', err);
       setError(err.message);
-      
-      // Use mock data as fallback
-      setFlights([
-        {
-          id: '1',
-          callsign: 'MOCK001',
-          registration: 'G-DEMO',
-          icao24: '400001',
-          position: {
-            latitude: 51.5,
-            longitude: -0.1,
-            altitude: 35000,
-            heading: 90,
-            groundSpeed: 500,
-            verticalRate: 0
-          },
-          status: 'EN_ROUTE'
-        }
-      ]);
+      // Don't set mock data - keep flights empty on error
+      setFlights([]);
     } finally {
       setLoading(false);
     }
@@ -134,7 +117,7 @@ function App() {
               ⚠️ {error}
             </p>
             <p style={{ margin: '5px 0 0 0', color: '#666', fontSize: '12px' }}>
-              Showing mock data. Check console for details.
+              Unable to load flight data. Please try again.
             </p>
           </div>
         ) : (
@@ -160,13 +143,6 @@ function App() {
           )}
         </div>
         
-        {/* Debug info - remove in production */}
-        {process.env.NODE_ENV === 'development' && (
-          <div style={{ marginTop: '10px', fontSize: '10px', color: '#ccc' }}>
-            Debug: MapTiler: {process.env.REACT_APP_MAPTILER_KEY ? '✓' : '✗'} | 
-            Firebase: {process.env.REACT_APP_FIREBASE_PROJECT_ID || process.env.FIREBASE_PROJECT_ID ? '✓' : '✗'}
-          </div>
-        )}
       </div>
       
       <FlightMap 
