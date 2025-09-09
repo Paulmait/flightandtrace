@@ -12,10 +12,10 @@ function App() {
   const fetchFlights = async () => {
     try {
       setLoading(true);
-      // Use the Vercel API endpoint
+      // Use the Vercel API endpoint - expanded area for more flights
       const apiUrl = process.env.NODE_ENV === 'development' 
-        ? 'http://localhost:3000/api/flights?bbox=-10,45,5,55'
-        : '/api/flights?bbox=-10,45,5,55'; // UK/Ireland area
+        ? 'http://localhost:3000/api/flights?bbox=-20,35,30,65'
+        : '/api/flights?bbox=-20,35,30,65'; // Europe-wide area
       const response = await fetch(apiUrl);
       
       if (!response.ok) {
@@ -135,8 +135,8 @@ function App() {
       
       <FlightMap 
         flights={flights}
-        center={[-0.118092, 51.509865]} // London
-        zoom={6}
+        center={[10, 50]} // Central Europe
+        zoom={5}
       />
     </div>
   );
