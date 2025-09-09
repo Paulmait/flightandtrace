@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import FlightMap from './components/Map/FlightMap.jsx';
 import LoadingScreen from './components/LoadingScreen.jsx';
 import { getOptimalLocation, calculateBoundingBox, getRegionDefaults } from './utils/locationService';
@@ -14,13 +14,16 @@ function App() {
   const [boundingBox, setBoundingBox] = useState('-20,35,30,65'); // Default Europe
 
   // Fetch live flights
-  const fetchFlights = async (bbox = boundingBox) => {
+  const fetchFlights = useCallback(async (bbox) => {
+    const bboxToUse = bbox || boundingBox;
+    if (!bboxToUse) return; // Don't fetch if no bounding box
+    
     try {
       setLoading(true);
       // Use the Vercel API endpoint with dynamic bounding box
       const apiUrl = process.env.NODE_ENV === 'development' 
-        ? `http://localhost:3000/api/flights?bbox=${bbox}`
-        : `/api/flights?bbox=${bbox}`;
+        ? `http://localhost:3000/api/flights?bbox=${bboxToUse}`
+        : `/api/flights?bbox=${bboxToUse}`;
       const response = await fetch(apiUrl);
       
       if (!response.ok) {
@@ -44,7 +47,7 @@ function App() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [boundingBox]);
 
   // Initialize user location
   useEffect(() => {
@@ -72,7 +75,7 @@ function App() {
     };
     
     initializeLocation();
-  }, []);
+  }, [fetchFlights]);
 
   // Set up refresh interval
   useEffect(() => {
@@ -80,7 +83,7 @@ function App() {
     
     const interval = setInterval(() => fetchFlights(boundingBox), 30000);
     return () => clearInterval(interval);
-  }, [boundingBox]);
+  }, [boundingBox, fetchFlights]);
 
   // Show loading screen for initial load
   if (loading && !flights.length && !error) {
