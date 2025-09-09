@@ -17,11 +17,13 @@ export default async function handler(req, res) {
     
     const url = `https://opensky-network.org/api/states/all?lamin=${lamin}&lomin=${lomin}&lamax=${lamax}&lomax=${lomax}`;
     
-    const response = await fetch(url, {
-      headers: {
-        'Authorization': 'Basic ' + Buffer.from(`${username}:${password}`).toString('base64')
-      }
-    });
+    // Use authentication if credentials are provided and valid
+    const headers = {};
+    if (username && password && username !== 'your_username') {
+      headers['Authorization'] = 'Basic ' + Buffer.from(`${username}:${password}`).toString('base64');
+    }
+    
+    const response = await fetch(url, { headers });
 
     if (!response.ok) {
       throw new Error(`OpenSky API error: ${response.status}`);

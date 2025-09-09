@@ -1,0 +1,4 @@
+Y
+firestore.rules
+firestore.indexes.json
+Y
