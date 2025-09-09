@@ -14,10 +14,15 @@ const FlightMap = ({ flights, selectedFlight, onFlightSelect, showEstimatedSegme
   useEffect(() => {
     if (map.current) return;
 
+    // Use MapTiler if API key is available, otherwise use demo tiles
+    const mapTilerKey = process.env.REACT_APP_MAPTILER_KEY;
+    const styleUrl = mapTilerKey 
+      ? `https://api.maptiler.com/maps/streets-v2/style.json?key=${mapTilerKey}`
+      : 'https://demotiles.maplibre.org/style.json';
+    
     map.current = new maplibregl.Map({
       container: mapContainer.current,
-      // Use a free public style that doesn't require API key for initial deployment
-      style: 'https://demotiles.maplibre.org/style.json',
+      style: styleUrl,
       center: center || [-74.006, 40.7128],
       zoom: zoom || 5,
       pitch: 0,

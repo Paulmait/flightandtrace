@@ -12,7 +12,10 @@ function App() {
     try {
       setLoading(true);
       // Use the Vercel API endpoint
-      const response = await fetch('/api/flights?bbox=-10,45,5,55'); // UK/Ireland area
+      const apiUrl = process.env.NODE_ENV === 'development' 
+        ? 'http://localhost:3000/api/flights?bbox=-10,45,5,55'
+        : '/api/flights?bbox=-10,45,5,55'; // UK/Ireland area
+      const response = await fetch(apiUrl);
       
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
@@ -109,7 +112,16 @@ function App() {
         
         <div style={{ marginTop: '10px', fontSize: '12px', color: '#999' }}>
           Data: OpenSky Network | Updates: 30s
+          {process.env.REACT_APP_MAPTILER_KEY && <span> | Map: MapTiler ✓</span>}
         </div>
+        
+        {/* Debug info - remove in production */}
+        {process.env.NODE_ENV === 'development' && (
+          <div style={{ marginTop: '10px', fontSize: '10px', color: '#ccc' }}>
+            Debug: MapTiler: {process.env.REACT_APP_MAPTILER_KEY ? '✓' : '✗'} | 
+            Firebase: {process.env.REACT_APP_FIREBASE_PROJECT_ID || process.env.FIREBASE_PROJECT_ID ? '✓' : '✗'}
+          </div>
+        )}
       </div>
       
       <FlightMap 
