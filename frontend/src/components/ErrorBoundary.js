@@ -24,23 +24,35 @@ class ErrorBoundary extends React.Component {
           justifyContent: 'center',
           height: '100vh',
           padding: '20px',
-          fontFamily: 'system-ui, -apple-system, sans-serif'
+          fontFamily: 'system-ui, -apple-system, sans-serif',
+          background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)'
         }}>
-          <h1 style={{ color: '#e74c3c' }}>⚠️ Something went wrong</h1>
-          <p style={{ color: '#666', marginBottom: '20px' }}>
-            The app encountered an error but will continue working with limited features.
+          <img src="/logo192.png" alt="Flight Tracker" style={{ 
+            width: '80px', 
+            height: '80px',
+            marginBottom: '20px',
+            filter: 'drop-shadow(0 4px 6px rgba(0, 0, 0, 0.1))'
+          }} />
+          <h1 style={{ color: 'white', marginBottom: '10px' }}>Something went wrong</h1>
+          <p style={{ color: 'rgba(255, 255, 255, 0.9)', marginBottom: '30px', textAlign: 'center', maxWidth: '400px' }}>
+            We encountered an unexpected error. Please reload the page to continue tracking flights.
           </p>
           <button
             onClick={() => window.location.reload()}
             style={{
-              padding: '10px 20px',
-              backgroundColor: '#3498db',
-              color: 'white',
+              padding: '12px 32px',
+              backgroundColor: 'white',
+              color: '#667eea',
               border: 'none',
-              borderRadius: '5px',
+              borderRadius: '25px',
               cursor: 'pointer',
-              fontSize: '16px'
+              fontSize: '16px',
+              fontWeight: '600',
+              boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)',
+              transition: 'transform 0.2s'
             }}
+            onMouseOver={(e) => e.target.style.transform = 'scale(1.05)'}
+            onMouseOut={(e) => e.target.style.transform = 'scale(1)'}
           >
             Reload Page
           </button>

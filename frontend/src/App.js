@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import FlightMap from './components/Map/FlightMap.jsx';
+import LoadingScreen from './components/LoadingScreen.jsx';
 
 function App() {
   const [flights, setFlights] = useState([]);
@@ -67,6 +68,11 @@ function App() {
     return () => clearInterval(interval);
   }, []);
 
+  // Show loading screen for initial load
+  if (loading && !flights.length && !error) {
+    return <LoadingScreen />;
+  }
+
   return (
     <div style={{ width: '100%', height: '100vh', position: 'relative' }}>
       <div style={{
@@ -80,13 +86,16 @@ function App() {
         boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
         maxWidth: '400px'
       }}>
-        <h1 style={{ margin: 0, fontSize: '24px', color: '#333' }}>
-          ✈️ Flight Tracker
-        </h1>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '10px' }}>
+          <img src="/logo192.png" alt="Flight Tracker" style={{ width: '32px', height: '32px' }} />
+          <h1 style={{ margin: 0, fontSize: '24px', color: '#333' }}>
+            Flight Tracker
+          </h1>
+        </div>
         
-        {loading && !flights.length ? (
+        {loading && flights.length > 0 ? (
           <p style={{ margin: '5px 0 0 0', color: '#666' }}>
-            Loading live flights...
+            Updating...
           </p>
         ) : error ? (
           <div>
