@@ -3,7 +3,8 @@ import * as Cesium from 'cesium';
 import "cesium/Build/Cesium/Widgets/widgets.css";
 
 // Set Cesium Ion default access token (free tier available)
-Cesium.Ion.defaultAccessToken = process.env.REACT_APP_CESIUM_TOKEN || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiJkZW1vLXRva2VuIiwiaWQiOjEsImlhdCI6MTYwMDAwMDAwMH0.demo';
+// Get token from: https://cesium.com/ion/tokens
+Cesium.Ion.defaultAccessToken = process.env.REACT_APP_CESIUM_TOKEN || process.env.CESIUM_TOKEN || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiJkZW1vLXRva2VuIiwiaWQiOjEsImlhdCI6MTYwMDAwMDAwMH0.demo';
 
 const FlightMap3D = ({ flights, center, zoom, enabled = false, subscription = 'free' }) => {
   const cesiumContainer = useRef(null);

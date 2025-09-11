@@ -7,7 +7,7 @@ const environmentConfig = {
   // Stripe Configuration - Using your existing Vercel variables
   stripe: {
     publishableKey: process.env.FLIGHTTRACE_STRIPE_PUBLISHABLE_KEY,
-    secretKey: process.env.STRIPE_SECRET_KEY,
+    secretKey: process.env.FLIGHTTRACE_STRIPE_SECRET_KEY || process.env.STRIPE_SECRET_KEY,
     webhookSecret: process.env.FLIGHTTRACE_STRIPE_WEBHOOK_SECRET,
     
     // Price IDs from your Vercel config
@@ -84,14 +84,14 @@ const environmentConfig = {
 function validateEnvironment() {
   const required = [
     'FLIGHTTRACE_STRIPE_PUBLISHABLE_KEY',
-    'STRIPE_SECRET_KEY',
+    'FLIGHTTRACE_STRIPE_SECRET_KEY',
     'FLIGHTTRACE_STRIPE_WEBHOOK_SECRET',
     'STRIPE_PREMIUM_PRICE_ID',
     'STRIPE_PROFESSIONAL_PRICE_ID',
     'OPENSKY_USERNAME',
     'OPENSKY_PASSWORD',
-    'OPENWEATHER_API_KEY',
-    'PE_SECRET_KEY'
+    'JWT_SECRET',
+    'SESSION_SECRET'
   ];
 
   const missing = required.filter(key => !process.env[key]);
