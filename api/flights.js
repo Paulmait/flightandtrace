@@ -1,3 +1,13 @@
+// Import cache manager with fallback
+let cacheManager;
+try {
+  const cache = await import('./lib/cache.js');
+  cacheManager = cache.default;
+} catch (e) {
+  // Cache not available, will work without it
+  cacheManager = null;
+}
+
 // Helper function to transform OpenSky data
 function transformFlights(states) {
   if (!states || !Array.isArray(states)) return [];
@@ -22,9 +32,10 @@ function transformFlights(states) {
 }
 
 export default async function handler(req, res) {
-  // Enable CORS
+  // Enable CORS - keep backward compatibility
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
   
   if (req.method === 'OPTIONS') {
     return res.status(200).end();
@@ -32,6 +43,26 @@ export default async function handler(req, res) {
 
   try {
     const { bbox = '-10,40,10,60' } = req.query; // Default to Europe
+    
+    // Try cache first if available
+    let cachedData = null;
+    const cacheKey = `flights:${bbox}`;
+    
+    if (cacheManager) {
+      try {
+        cachedData = await cacheManager.get(cacheKey);
+        if (cachedData && cachedData.flights) {
+          return res.status(200).json({
+            ...cachedData,
+            cached: true,
+            timestamp: new Date().toISOString()
+          });
+        }
+      } catch (e) {
+        // Cache error, continue without cache
+      }
+    }
+    
     const [lamin, lomin, lamax, lomax] = bbox.split(',').map(Number);
     
     // OpenSky Network API endpoint
@@ -44,12 +75,9 @@ export default async function handler(req, res) {
     const headers = {};
     let authUsed = false;
     
-    if (username && password && username !== 'your_username') {
+    if (username && password && username !== 'your_username' && !username.includes('your_')) {
       headers['Authorization'] = 'Basic ' + Buffer.from(`${username}:${password}`).toString('base64');
       authUsed = true;
-      console.log('Using OpenSky authentication for user:', username);
-    } else {
-      console.log('Using anonymous OpenSky access (rate limited)');
     }
     
     const response = await fetch(url, { headers });
@@ -57,17 +85,27 @@ export default async function handler(req, res) {
     if (!response.ok) {
       // If auth failed, try without auth
       if (response.status === 401 && authUsed) {
-        console.log('Auth failed, retrying without authentication...');
         const anonResponse = await fetch(url);
         if (anonResponse.ok) {
           const data = await anonResponse.json();
-          return res.status(200).json({
+          const result = {
             success: true,
             count: data.states ? data.states.length : 0,
             flights: transformFlights(data.states || []),
             timestamp: new Date().toISOString(),
-            note: 'Using anonymous access - consider updating OpenSky credentials'
-          });
+            note: 'Using anonymous access'
+          };
+          
+          // Cache result if available
+          if (cacheManager) {
+            try {
+              await cacheManager.set(cacheKey, result, 30);
+            } catch (e) {
+              // Cache error, continue
+            }
+          }
+          
+          return res.status(200).json(result);
         }
       }
       throw new Error(`OpenSky API error: ${response.status}`);
@@ -77,14 +115,25 @@ export default async function handler(req, res) {
     
     // Transform OpenSky data to our format
     const flights = transformFlights(data.states || []);
-
-    res.status(200).json({
+    
+    const result = {
       success: true,
       count: flights.length,
       flights,
       timestamp: new Date().toISOString(),
       authenticated: authUsed
-    });
+    };
+    
+    // Cache result if available
+    if (cacheManager && flights.length > 0) {
+      try {
+        await cacheManager.set(cacheKey, result, 30);
+      } catch (e) {
+        // Cache error, continue
+      }
+    }
+
+    res.status(200).json(result);
   } catch (error) {
     console.error('Flight API error:', error);
     res.status(500).json({
