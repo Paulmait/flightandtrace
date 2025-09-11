@@ -1,5 +1,6 @@
 import { authenticateToken, configureCors, securityHeaders } from './middleware/auth.js';
 import cacheManager, { flightCache, CacheTTL } from './lib/cache.js';
+import { fetchWithAuth } from './lib/opensky-auth.js';
 
 // Data source aggregator
 class FlightDataAggregator {
@@ -47,19 +48,8 @@ class FlightDataAggregator {
     const [lamin, lomin, lamax, lomax] = bbox.split(',').map(Number);
     const url = `https://opensky-network.org/api/states/all?lamin=${lamin}&lomin=${lomin}&lamax=${lamax}&lomax=${lomax}`;
     
-    const headers = {};
-    
-    // Use authentication if available for higher rate limits
-    if (process.env.OPENSKY_USERNAME && process.env.OPENSKY_PASSWORD) {
-      headers['Authorization'] = 'Basic ' + Buffer.from(
-        `${process.env.OPENSKY_USERNAME}:${process.env.OPENSKY_PASSWORD}`
-      ).toString('base64');
-    }
-    
-    const response = await fetch(url, { 
-      headers,
-      signal: AbortSignal.timeout(5000) // 5 second timeout
-    });
+    // Use OAuth2 authentication or fall back to anonymous access
+    const response = await fetchWithAuth(url);
     
     if (!response.ok) {
       throw new Error(`OpenSky API error: ${response.status}`);

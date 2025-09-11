@@ -8,6 +8,9 @@ try {
   cacheManager = null;
 }
 
+// Import OpenSky OAuth2 authentication
+import { fetchWithAuth } from './lib/opensky-auth.js';
+
 // Helper function to transform OpenSky data
 function transformFlights(states) {
   if (!states || !Array.isArray(states)) return [];
@@ -87,50 +90,12 @@ export default async function handler(req, res) {
     }
     
     // OpenSky Network API endpoint
-    const username = process.env.OPENSKY_USERNAME;
-    const password = process.env.OPENSKY_PASSWORD;
-    
-    // Note: We'll try with credentials if available, otherwise use anonymous access
-    
     const url = `https://opensky-network.org/api/states/all?lamin=${lamin}&lomin=${lomin}&lamax=${lamax}&lomax=${lomax}`;
     
-    // Use authentication if credentials are provided and valid
-    const headers = {};
-    let authUsed = false;
-    
-    if (username && password && username !== 'your_username' && !username.includes('your_')) {
-      headers['Authorization'] = 'Basic ' + Buffer.from(`${username}:${password}`).toString('base64');
-      authUsed = true;
-    }
-    
-    const response = await fetch(url, { headers });
+    // Use OAuth2 authentication or fall back to anonymous access
+    const response = await fetchWithAuth(url);
 
     if (!response.ok) {
-      // If auth failed, try without auth
-      if (response.status === 401 && authUsed) {
-        const anonResponse = await fetch(url);
-        if (anonResponse.ok) {
-          const data = await anonResponse.json();
-          const result = {
-            success: true,
-            count: data.states ? data.states.length : 0,
-            flights: transformFlights(data.states || []),
-            timestamp: new Date().toISOString(),
-            note: 'Using anonymous access'
-          };
-          
-          // Cache result if available
-          if (cacheManager) {
-            try {
-              await cacheManager.set(cacheKey, result, 30);
-            } catch (e) {
-              // Cache error, continue
-            }
-          }
-          
-          return res.status(200).json(result);
-        }
-      }
       throw new Error(`OpenSky API error: ${response.status}`);
     }
 
@@ -144,7 +109,7 @@ export default async function handler(req, res) {
       count: flights.length,
       flights,
       timestamp: new Date().toISOString(),
-      authenticated: authUsed
+      note: process.env.OPENSKY_CLIENT_ID ? 'Using OAuth2 authentication' : 'Using anonymous access'
     };
     
     // Cache result if available
