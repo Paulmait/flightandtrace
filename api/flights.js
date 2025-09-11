@@ -42,11 +42,34 @@ export default async function handler(req, res) {
   }
 
   try {
-    const { bbox = '-10,40,10,60' } = req.query; // Default to Europe
+    // Parse query parameters
+    let lamin, lomin, lamax, lomax;
+    
+    if (req.query.lat && req.query.lon && req.query.radius) {
+      // Convert lat/lon/radius to bounding box
+      const lat = parseFloat(req.query.lat);
+      const lon = parseFloat(req.query.lon);
+      const radius = parseFloat(req.query.radius) || 50;
+      
+      // Rough conversion: 1 degree latitude = ~111km
+      const latDelta = radius / 111;
+      const lonDelta = radius / (111 * Math.cos(lat * Math.PI / 180));
+      
+      lamin = lat - latDelta;
+      lamax = lat + latDelta;
+      lomin = lon - lonDelta;
+      lomax = lon + lonDelta;
+    } else if (req.query.bbox) {
+      // Use provided bbox
+      [lamin, lomin, lamax, lomax] = req.query.bbox.split(',').map(Number);
+    } else {
+      // Default to Europe
+      [lamin, lomin, lamax, lomax] = [-10, 40, 10, 60];
+    }
     
     // Try cache first if available
     let cachedData = null;
-    const cacheKey = `flights:${bbox}`;
+    const cacheKey = `flights:${lamin},${lomin},${lamax},${lomax}`;
     
     if (cacheManager) {
       try {
@@ -63,27 +86,11 @@ export default async function handler(req, res) {
       }
     }
     
-    const [lamin, lomin, lamax, lomax] = bbox.split(',').map(Number);
-    
     // OpenSky Network API endpoint
     const username = process.env.OPENSKY_USERNAME;
     const password = process.env.OPENSKY_PASSWORD;
     
-    // Check if credentials are available
-    if (!username || !password) {
-      console.log('OpenSky credentials not found in environment variables');
-      return res.status(200).json({
-        success: true,
-        count: 0,
-        flights: [],
-        timestamp: new Date().toISOString(),
-        error: 'OpenSky credentials not configured. Please add OPENSKY_USERNAME and OPENSKY_PASSWORD to environment variables.',
-        debug: {
-          hasUsername: !!username,
-          hasPassword: !!password
-        }
-      });
-    }
+    // Note: We'll try with credentials if available, otherwise use anonymous access
     
     const url = `https://opensky-network.org/api/states/all?lamin=${lamin}&lomin=${lomin}&lamax=${lamax}&lomax=${lomax}`;
     
