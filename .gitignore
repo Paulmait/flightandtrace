@@ -1,0 +1,151 @@
+# Environment Variables - NEVER COMMIT THESE
+.env
+.env.*
+!.env.example
+*.env
+.env.local
+.env.production
+.env.development
+
+# API Keys and Secrets
+**/config/secrets.js
+**/config/keys.js
+**/config/credentials.js
+firebaseServiceAccount.json
+serviceAccountKey.json
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+lerna-debug.log*
+logs/
+*.log.*
+
+# Dependencies
+node_modules/
+**/node_modules/
+/.pnp
+.pnp.js
+
+# Testing
+/coverage
+*.lcov
+.nyc_output
+
+# Production builds
+/build
+/dist
+/.next
+/out
+**/build/
+**/dist/
+
+# IDE and editors
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.project
+.classpath
+.c9/
+*.sublime-workspace
+*.sublime-project
+
+# OS files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+desktop.ini
+
+# Firebase
+.firebase/
+.firebaserc
+firebase-debug.log
+firestore-debug.log
+ui-debug.log
+database-debug.log
+pubsub-debug.log
+
+# Vercel
+.vercel/
+.vercel.json.local
+
+# Temporary files
+*.tmp
+*.temp
+.tmp/
+.temp/
+tmp/
+temp/
+
+# Cache
+.cache/
+.parcel-cache/
+.npm
+.eslintcache
+.stylelintcache
+*.tsbuildinfo
+
+# Package manager files
+yarn.lock
+package-lock.json
+pnpm-lock.yaml
+
+# Misc
+.env.production.local
+.env.development.local
+.env.test.local
+.env.staging
+
+# Private keys
+*.pem
+*.key
+*.crt
+*.p12
+*.pfx
+
+# Database
+*.sqlite
+*.sqlite3
+*.db
+
+# Backup files
+*.backup
+*.bak
+*.old
+
+# Archives
+*.zip
+*.tar.gz
+*.rar
+*.7z
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+ENV/
+
+# Ruby
+*.gem
+*.rbc
+/.config
+/coverage/
+/InstalledFiles
+/pkg/
+/spec/reports/
+/spec/tmp/
+/test/tmp/
+/test/version_tmp/
+/tmp/

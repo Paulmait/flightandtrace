@@ -59,15 +59,15 @@ const environmentConfig = {
     gaId: process.env.GA_MEASUREMENT_ID
   },
 
-  // Firebase (existing configuration)
+  // Firebase (environment variables only - no hardcoded values)
   firebase: {
-    apiKey: process.env.FIREBASE_API_KEY || 'AIzaSyDMJkPbOjp4oQNxb-EVK-Yh1pVSrOuDJgQ',
-    authDomain: process.env.FIREBASE_AUTH_DOMAIN || 'flighttrace-749f1.firebaseapp.com',
-    projectId: process.env.FIREBASE_PROJECT_ID || 'flighttrace-749f1',
-    storageBucket: process.env.FIREBASE_STORAGE_BUCKET || 'flighttrace-749f1.firebasestorage.app',
-    messagingSenderId: process.env.FIREBASE_MESSAGING_SENDER_ID || '994719406353',
-    appId: process.env.FIREBASE_APP_ID || '1:994719406353:web:01523b9811eeefad5094b0',
-    measurementId: process.env.FIREBASE_MEASUREMENT_ID || 'G-HS9H3GM0V1'
+    apiKey: process.env.FIREBASE_API_KEY,
+    authDomain: process.env.FIREBASE_AUTH_DOMAIN,
+    projectId: process.env.FIREBASE_PROJECT_ID,
+    storageBucket: process.env.FIREBASE_STORAGE_BUCKET,
+    messagingSenderId: process.env.FIREBASE_MESSAGING_SENDER_ID,
+    appId: process.env.FIREBASE_APP_ID,
+    measurementId: process.env.FIREBASE_MEASUREMENT_ID
   },
 
   // Supabase
