@@ -69,6 +69,22 @@ export default async function handler(req, res) {
     const username = process.env.OPENSKY_USERNAME;
     const password = process.env.OPENSKY_PASSWORD;
     
+    // Check if credentials are available
+    if (!username || !password) {
+      console.log('OpenSky credentials not found in environment variables');
+      return res.status(200).json({
+        success: true,
+        count: 0,
+        flights: [],
+        timestamp: new Date().toISOString(),
+        error: 'OpenSky credentials not configured. Please add OPENSKY_USERNAME and OPENSKY_PASSWORD to environment variables.',
+        debug: {
+          hasUsername: !!username,
+          hasPassword: !!password
+        }
+      });
+    }
+    
     const url = `https://opensky-network.org/api/states/all?lamin=${lamin}&lomin=${lomin}&lamax=${lamax}&lomax=${lomax}`;
     
     // Use authentication if credentials are provided and valid
