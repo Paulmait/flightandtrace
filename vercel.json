@@ -55,7 +55,7 @@
         },
         {
           "key": "Content-Security-Policy",
-          "value": "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://js.stripe.com https://www.googletagmanager.com https://www.google-analytics.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; img-src 'self' data: https: blob:; font-src 'self' data: https://fonts.gstatic.com; connect-src 'self' https://api.stripe.com https://opensky-network.org https://api.openweathermap.org https://tile.openweathermap.org https://adsbexchange-com1.p.rapidapi.com https://api.checkwx.com https://*.supabase.co wss://*.supabase.co https://vitals.vercel-insights.com https://www.google-analytics.com; frame-src https://js.stripe.com https://hooks.stripe.com; object-src 'none'; base-uri 'self';"
+          "value": "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://js.stripe.com https://www.googletagmanager.com https://www.google-analytics.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; img-src 'self' data: https: blob: http:; font-src 'self' data: https://fonts.gstatic.com; connect-src 'self' https://api.stripe.com https://opensky-network.org https://api.openweathermap.org https://tile.openweathermap.org https://adsbexchange-com1.p.rapidapi.com https://api.checkwx.com https://*.supabase.co wss://*.supabase.co https://vitals.vercel-insights.com https://www.google-analytics.com https://*.tile.openstreetmap.org https://*.basemaps.cartocdn.com https://tiles.stadiamaps.com; frame-src https://js.stripe.com https://hooks.stripe.com; object-src 'none'; base-uri 'self';"
         },
         {
           "key": "Strict-Transport-Security",
