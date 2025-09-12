@@ -32,7 +32,8 @@ export async function getOpenSkyToken() {
         grant_type: 'client_credentials',
         client_id: clientId,
         client_secret: clientSecret
-      })
+      }),
+      signal: AbortSignal.timeout(5000) // 5 second timeout
     });
 
     if (!response.ok) {
@@ -63,19 +64,27 @@ export async function fetchWithAuth(url) {
   }
   
   try {
-    const response = await fetch(url, { headers });
+    const response = await fetch(url, { 
+      headers,
+      signal: AbortSignal.timeout(8000) // 8 second timeout
+    });
     
     // If auth fails, try without auth (anonymous access)
     if (response.status === 401 && token) {
       console.log('OpenSky auth failed, falling back to anonymous access');
       tokenCache.token = null; // Clear invalid token
-      return await fetch(url);
+      return await fetch(url, { signal: AbortSignal.timeout(8000) });
     }
     
     return response;
   } catch (error) {
     console.error('OpenSky API request failed:', error);
     // Try anonymous access as fallback
-    return await fetch(url);
+    try {
+      return await fetch(url, { signal: AbortSignal.timeout(8000) });
+    } catch (fallbackError) {
+      console.error('Anonymous access also failed:', fallbackError);
+      throw fallbackError;
+    }
   }
 }

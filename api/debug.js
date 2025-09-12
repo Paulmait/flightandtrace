@@ -9,7 +9,11 @@ export default function handler(req, res) {
   
   // Check which environment variables are actually set
   const envCheck = {
-    // OpenSky
+    // OpenSky OAuth2 (new)
+    OPENSKY_CLIENT_ID: !!process.env.OPENSKY_CLIENT_ID,
+    OPENSKY_CLIENT_SECRET: !!process.env.OPENSKY_CLIENT_SECRET,
+    
+    // OpenSky Basic Auth (deprecated)
     OPENSKY_USERNAME: !!process.env.OPENSKY_USERNAME,
     OPENSKY_PASSWORD: !!process.env.OPENSKY_PASSWORD,
     
@@ -46,6 +50,9 @@ export default function handler(req, res) {
   
   // Get first few characters of critical vars (for debugging)
   const preview = {};
+  if (process.env.OPENSKY_CLIENT_ID) {
+    preview.OPENSKY_CLIENT_ID = process.env.OPENSKY_CLIENT_ID.substring(0, 4) + '***';
+  }
   if (process.env.OPENSKY_USERNAME) {
     preview.OPENSKY_USERNAME = process.env.OPENSKY_USERNAME.substring(0, 4) + '***';
   }
