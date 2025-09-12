@@ -2,7 +2,7 @@ import React, { useEffect, useRef } from 'react';
 import maplibregl from 'maplibre-gl';
 import 'maplibre-gl/dist/maplibre-gl.css';
 
-const FinalMap = ({ flights = [], center = [-2, 51], zoom = 5 }) => {
+const FinalMap = ({ flights = [], center = [-2, 51], zoom = 5, onMapReady }) => {
   const mapContainer = useRef(null);
   const map = useRef(null);
   const markers = useRef([]);
@@ -58,6 +58,11 @@ const FinalMap = ({ flights = [], center = [-2, 51], zoom = 5 }) => {
           maxWidth: 200,
           unit: 'metric'
         }), 'bottom-left');
+        
+        // Call onMapReady callback if provided
+        if (onMapReady) {
+          onMapReady(map.current);
+        }
       });
 
       // Handle errors gracefully

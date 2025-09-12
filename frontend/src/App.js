@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import EnhancedApp from './components/EnhancedApp.jsx';
+import EnhancedAppV2 from './components/EnhancedAppV2.jsx';
 import LoadingScreen from './components/LoadingScreen.jsx';
 import { AuthProvider } from './contexts/AuthContext';
 
@@ -20,7 +20,7 @@ function App() {
 
   return (
     <AuthProvider>
-      <EnhancedApp />
+      <EnhancedAppV2 />
     </AuthProvider>
   );
 }
