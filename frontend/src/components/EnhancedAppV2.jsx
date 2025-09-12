@@ -1,6 +1,15 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import FinalMap from './Map/FinalMap.jsx';
 import { getOptimalLocation } from '../utils/locationService';
+import { 
+  getAirlineInfo, 
+  AnimatedCounter, 
+  useKeyboardShortcuts, 
+  FlightPath, 
+  useSoundNotifications, 
+  HelpModal, 
+  EnhancedAircraftMarker 
+} from './EnhancedFeatures';
 import './EnhancedApp.css';
 
 // Regional configurations for different parts of the world
@@ -61,11 +70,11 @@ function EnhancedAppV2() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [lastUpdate, setLastUpdate] = useState(null);
-  const [mapCenter, setMapCenter] = useState([10, 50]);
-  const [mapZoom, setMapZoom] = useState(4);
+  const [mapCenter, setMapCenter] = useState([0, 30]); // Start with world center
+  const [mapZoom, setMapZoom] = useState(2); // Start zoomed out
   const [userLocation, setUserLocation] = useState(null);
-  const [currentRegion, setCurrentRegion] = useState(REGIONS.europe);
-  const [boundingBox, setBoundingBox] = useState(REGIONS.europe.bbox);
+  const [currentRegion, setCurrentRegion] = useState(null); // Don't default to Europe
+  const [boundingBox, setBoundingBox] = useState(null); // Let it be detected
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedFlight, setSelectedFlight] = useState(null);
   const [sidebarOpen, setSidebarOpen] = useState(true);
@@ -74,9 +83,12 @@ function EnhancedAppV2() {
   const [showWeather, setShowWeather] = useState(false);
   const [autoRefresh, setAutoRefresh] = useState(true);
   const [statsModal, setStatsModal] = useState(null);
+  const [showHelp, setShowHelp] = useState(false);
+  const [soundEnabled, setSoundEnabled] = useState(false);
   
   const mapRef = useRef(null);
   const isUserNavigating = useRef(false);
+  const searchInputRef = useRef(null);
 
   // Statistics
   const [stats, setStats] = useState({
@@ -210,6 +222,9 @@ function EnhancedAppV2() {
         if (location && location.coords) {
           // Detect region based on user location
           const detectedRegion = detectRegion(location.coords.latitude, location.coords.longitude);
+          console.log('User location detected:', location.city, location.country);
+          console.log('Setting region to:', detectedRegion.name);
+          
           setCurrentRegion(detectedRegion);
           setBoundingBox(detectedRegion.bbox);
           setMapCenter(detectedRegion.center);
@@ -218,21 +233,44 @@ function EnhancedAppV2() {
           // Fetch flights for user's region
           fetchFlights(detectedRegion.bbox);
         } else {
-          // Default to Europe if no location
-          setCurrentRegion(REGIONS.europe);
-          setBoundingBox(REGIONS.europe.bbox);
-          setMapCenter(REGIONS.europe.center);
-          setMapZoom(REGIONS.europe.zoom);
-          fetchFlights(REGIONS.europe.bbox);
+          // Try to detect based on timezone or IP
+          const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+          let defaultRegion = REGIONS.europe; // Final fallback
+          
+          if (timezone.includes('America')) {
+            defaultRegion = REGIONS.northAmerica;
+          } else if (timezone.includes('Asia')) {
+            defaultRegion = REGIONS.asia;
+          } else if (timezone.includes('Africa')) {
+            defaultRegion = REGIONS.africa;
+          } else if (timezone.includes('Australia')) {
+            defaultRegion = REGIONS.oceania;
+          }
+          
+          console.log('Using timezone-based region:', defaultRegion.name);
+          setCurrentRegion(defaultRegion);
+          setBoundingBox(defaultRegion.bbox);
+          setMapCenter(defaultRegion.center);
+          setMapZoom(defaultRegion.zoom);
+          fetchFlights(defaultRegion.bbox);
         }
       } catch (err) {
         console.error('Location error:', err);
-        // Default to Europe
-        setCurrentRegion(REGIONS.europe);
-        setBoundingBox(REGIONS.europe.bbox);
-        setMapCenter(REGIONS.europe.center);
-        setMapZoom(REGIONS.europe.zoom);
-        fetchFlights(REGIONS.europe.bbox);
+        // Use timezone as fallback
+        const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+        let fallbackRegion = REGIONS.europe;
+        
+        if (timezone.includes('America')) {
+          fallbackRegion = REGIONS.northAmerica;
+        } else if (timezone.includes('Asia')) {
+          fallbackRegion = REGIONS.asia;
+        }
+        
+        setCurrentRegion(fallbackRegion);
+        setBoundingBox(fallbackRegion.bbox);
+        setMapCenter(fallbackRegion.center);
+        setMapZoom(fallbackRegion.zoom);
+        fetchFlights(fallbackRegion.bbox);
       }
     }
     
@@ -253,6 +291,47 @@ function EnhancedAppV2() {
   useEffect(() => {
     document.body.classList.toggle('dark-mode', darkMode);
   }, [darkMode]);
+
+  // Initialize sound notifications
+  const { playSound } = useSoundNotifications(soundEnabled);
+
+  // Setup keyboard shortcuts
+  useKeyboardShortcuts({
+    toggleDarkMode: () => setDarkMode(prev => !prev),
+    toggleSidebar: () => setSidebarOpen(prev => !prev),
+    refresh: () => fetchFlights(),
+    focusSearch: () => searchInputRef.current?.focus(),
+    switchRegion: (index) => {
+      const regions = Object.values(REGIONS);
+      if (regions[index]) {
+        switchRegion(regions[index]);
+      }
+    },
+    showHelp: () => setShowHelp(true),
+    closeAll: () => {
+      setStatsModal(null);
+      setShowHelp(false);
+      setSelectedFlight(null);
+    }
+  });
+
+  // Check for nearby aircraft and play sound
+  useEffect(() => {
+    if (!soundEnabled || !userLocation) return;
+    
+    const nearbyFlights = flights.filter(flight => {
+      if (!flight.position) return false;
+      const distance = Math.sqrt(
+        Math.pow(flight.position.latitude - userLocation.coords.latitude, 2) +
+        Math.pow(flight.position.longitude - userLocation.coords.longitude, 2)
+      );
+      return distance < 0.5; // Within ~50km
+    });
+
+    if (nearbyFlights.length > 0) {
+      playSound('nearby');
+    }
+  }, [flights, soundEnabled, userLocation, playSound]);
 
   // Handle flight click
   const handleFlightClick = (flight) => {
@@ -302,6 +381,7 @@ function EnhancedAppV2() {
         <div className="header-center">
           <div className="search-container">
             <input
+              ref={searchInputRef}
               type="text"
               className="search-input"
               placeholder="Search flight, airline, or airport..."
@@ -344,10 +424,26 @@ function EnhancedAppV2() {
           
           <button 
             className="header-btn"
+            onClick={() => setSoundEnabled(!soundEnabled)}
+            title="Toggle sound notifications"
+          >
+            {soundEnabled ? '🔔' : '🔕'}
+          </button>
+          
+          <button 
+            className="header-btn"
             onClick={() => setDarkMode(!darkMode)}
             title="Toggle dark mode"
           >
             {darkMode ? '☀️' : '🌙'}
+          </button>
+          
+          <button 
+            className="header-btn"
+            onClick={() => setShowHelp(true)}
+            title="Show keyboard shortcuts"
+          >
+            ?
           </button>
         </div>
       </header>
@@ -359,27 +455,27 @@ function EnhancedAppV2() {
             <h3>Statistics</h3>
             <div className="stats-grid">
               <div className="stat-item clickable" onClick={() => handleStatsClick('total')}>
-                <div className="stat-value">{stats.totalFlights}</div>
+                <div className="stat-value"><AnimatedCounter value={stats.totalFlights} /></div>
                 <div className="stat-label">Total Aircraft</div>
               </div>
               <div className="stat-item clickable" onClick={() => handleStatsClick('inAir')}>
-                <div className="stat-value">{stats.inAir}</div>
+                <div className="stat-value"><AnimatedCounter value={stats.inAir} /></div>
                 <div className="stat-label">In Flight</div>
               </div>
               <div className="stat-item clickable" onClick={() => handleStatsClick('onGround')}>
-                <div className="stat-value">{stats.onGround}</div>
+                <div className="stat-value"><AnimatedCounter value={stats.onGround} /></div>
                 <div className="stat-label">On Ground</div>
               </div>
               <div className="stat-item clickable" onClick={() => handleStatsClick('altitude')}>
-                <div className="stat-value">{stats.avgAltitude.toLocaleString()} ft</div>
+                <div className="stat-value"><AnimatedCounter value={stats.avgAltitude} /> ft</div>
                 <div className="stat-label">Avg Altitude</div>
               </div>
               <div className="stat-item clickable" onClick={() => handleStatsClick('speed')}>
-                <div className="stat-value">{stats.avgSpeed} kts</div>
+                <div className="stat-value"><AnimatedCounter value={stats.avgSpeed} /> kts</div>
                 <div className="stat-label">Avg Speed</div>
               </div>
               <div className="stat-item clickable" onClick={() => handleStatsClick('airlines')}>
-                <div className="stat-value">{stats.airlines.size}</div>
+                <div className="stat-value"><AnimatedCounter value={stats.airlines.size} /></div>
                 <div className="stat-label">Airlines</div>
               </div>
             </div>
@@ -437,22 +533,33 @@ function EnhancedAppV2() {
           <div className="sidebar-section">
             <h3>Recent Flights</h3>
             <div className="flight-list">
-              {filteredFlights.slice(0, 10).map((flight) => (
-                <div
-                  key={flight.id}
-                  className={`flight-item ${selectedFlight?.id === flight.id ? 'selected' : ''}`}
-                  onClick={() => handleFlightClick(flight)}
-                >
-                  <div className="flight-item-header">
-                    <span className="flight-icon">{flight.onGround ? '🛬' : '✈️'}</span>
-                    <span className="flight-callsign">{flight.callsign || flight.icao24}</span>
+              {filteredFlights.slice(0, 10).map((flight) => {
+                const airline = getAirlineInfo(flight.callsign);
+                return (
+                  <div
+                    key={flight.id}
+                    className={`flight-item ${selectedFlight?.id === flight.id ? 'selected' : ''}`}
+                    onClick={() => handleFlightClick(flight)}
+                    style={{ borderLeft: `3px solid ${airline?.color || '#666'}` }}
+                  >
+                    <div className="flight-item-header">
+                      <span className="flight-icon">{airline?.icon || (flight.onGround ? '🛬' : '✈️')}</span>
+                      <div className="flight-info">
+                        <span className="flight-callsign">{flight.callsign || flight.icao24}</span>
+                        {airline && (
+                          <span className="airline-name" style={{ fontSize: '11px', opacity: 0.7 }}>
+                            {airline.name}
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                    <div className="flight-item-details">
+                      <span>{Math.round(flight.position?.altitude || 0).toLocaleString()} ft</span>
+                      <span>{Math.round(flight.position?.groundSpeed || 0)} kts</span>
+                    </div>
                   </div>
-                  <div className="flight-item-details">
-                    <span>{Math.round(flight.position?.altitude || 0).toLocaleString()} ft</span>
-                    <span>{Math.round(flight.position?.groundSpeed || 0)} kts</span>
-                  </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           </div>
 
@@ -752,6 +859,9 @@ function EnhancedAppV2() {
           color: #6a737d;
         }
       `}</style>
+      
+      {/* Help Modal */}
+      <HelpModal isOpen={showHelp} onClose={() => setShowHelp(false)} />
     </div>
   );
 }
