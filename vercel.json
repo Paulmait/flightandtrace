@@ -82,7 +82,7 @@
   "rewrites": [
     {
       "source": "/api/flights",
-      "destination": "/api/flights-mock.js"
+      "destination": "/api/flights-basic.js"
     }
   ],
   "redirects": [

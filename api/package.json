@@ -3,7 +3,6 @@
   "version": "1.0.0",
   "description": "Flight Tracker API Functions",
   "main": "index.js",
-  "type": "module",
   "scripts": {
     "test": "node ../test-backend.js"
   },
