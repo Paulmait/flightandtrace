@@ -46,7 +46,7 @@ const SimpleMap = ({ flights = [], center = [0, 40], zoom = 3 }) => {
         // Add flight markers
         flights.forEach(flight => {
           if (flight.position && flight.position.latitude && flight.position.longitude) {
-            const marker = new maplibregl.Marker({
+            new maplibregl.Marker({
               color: flight.onGround ? '#ff6b6b' : '#4ecdc4'
             })
               .setLngLat([flight.position.longitude, flight.position.latitude])
@@ -79,7 +79,8 @@ const SimpleMap = ({ flights = [], center = [0, 40], zoom = 3 }) => {
         map.current = null;
       }
     };
-  }, []); // Only run once
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // Only run once on mount
 
   // Update markers when flights change
   useEffect(() => {
