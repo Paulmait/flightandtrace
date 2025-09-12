@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import SimpleMapFixed from './components/Map/SimpleMapFixed.jsx';
+import WorkingMap from './components/Map/WorkingMap.jsx';
 import LoadingScreen from './components/LoadingScreen.jsx';
 import CookieConsent from './components/GDPR/CookieConsent.jsx';
 import { AuthProvider } from './contexts/AuthContext';
@@ -152,7 +152,7 @@ function App() {
         
       </div>
       
-      <SimpleMapFixed 
+      <WorkingMap 
         flights={flights}
         center={mapCenter}
         zoom={mapZoom}
