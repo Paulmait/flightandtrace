@@ -83,11 +83,7 @@ const FinalMap = ({ flights = [], center = [-2, 51], zoom = 5 }) => {
 
   // Update markers when flights change
   useEffect(() => {
-    console.log('Flights updated:', flights.length, 'flights');
-    if (!map.current) {
-      console.log('Map not initialized yet');
-      return;
-    }
+    if (!map.current) return;
 
     // Wait for map to load
     const updateMarkers = () => {
@@ -96,37 +92,87 @@ const FinalMap = ({ flights = [], center = [-2, 51], zoom = 5 }) => {
       markers.current = [];
 
       // Add new markers
-      console.log(`Adding markers for ${flights.length} flights`);
       flights.forEach((flight, index) => {
         if (flight.position && flight.position.latitude && flight.position.longitude) {
-          console.log(`Adding marker for flight ${index}:`, flight.callsign, flight.position);
           try {
-            // Create marker element
+            // Create marker element with airplane icon
             const el = document.createElement('div');
-            el.style.width = '8px';
-            el.style.height = '8px';
-            el.style.borderRadius = '50%';
-            el.style.backgroundColor = flight.onGround ? '#e74c3c' : '#3498db';
-            el.style.border = '2px solid white';
-            el.style.boxShadow = '0 1px 3px rgba(0,0,0,0.3)';
+            el.style.width = '24px';
+            el.style.height = '24px';
             el.style.cursor = 'pointer';
+            el.style.display = 'flex';
+            el.style.alignItems = 'center';
+            el.style.justifyContent = 'center';
+            el.style.fontSize = '16px';
+            el.style.transform = `rotate(${flight.position.heading || 0}deg)`;
+            el.style.transition = 'transform 0.3s ease';
+            el.innerHTML = flight.onGround ? '🛬' : '✈️';
+            el.title = flight.callsign || flight.icao24 || 'Aircraft';
             
-            // Create popup content
+            // Create detailed popup content
             const popupHTML = `
-              <div style="padding: 8px; font-size: 12px; line-height: 1.4;">
-                <strong style="font-size: 13px;">${flight.callsign || flight.icao24 || 'Aircraft'}</strong>
-                <hr style="margin: 4px 0; border: none; border-top: 1px solid #ddd;">
-                <div>Alt: ${Math.round(flight.position.altitude || 0).toLocaleString()} ft</div>
-                <div>Speed: ${Math.round(flight.position.groundSpeed || 0)} kts</div>
-                <div>Status: ${flight.onGround ? 'On Ground' : 'In Flight'}</div>
+              <div style="padding: 10px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; min-width: 200px;">
+                <div style="display: flex; align-items: center; margin-bottom: 8px;">
+                  <span style="font-size: 20px; margin-right: 8px;">${flight.onGround ? '🛬' : '✈️'}</span>
+                  <div>
+                    <strong style="font-size: 14px; color: #2c3e50;">${flight.callsign || 'Unknown'}</strong>
+                    <div style="font-size: 11px; color: #7f8c8d;">${flight.icao24}</div>
+                  </div>
+                </div>
+                <hr style="margin: 8px 0; border: none; border-top: 1px solid #ecf0f1;">
+                <div style="font-size: 12px; line-height: 1.6;">
+                  <div style="display: flex; justify-content: space-between; margin: 4px 0;">
+                    <span style="color: #7f8c8d;">Altitude:</span>
+                    <strong>${Math.round(flight.position.altitude || 0).toLocaleString()} ft</strong>
+                  </div>
+                  <div style="display: flex; justify-content: space-between; margin: 4px 0;">
+                    <span style="color: #7f8c8d;">Speed:</span>
+                    <strong>${Math.round(flight.position.groundSpeed || 0)} kts</strong>
+                  </div>
+                  <div style="display: flex; justify-content: space-between; margin: 4px 0;">
+                    <span style="color: #7f8c8d;">Heading:</span>
+                    <strong>${Math.round(flight.position.heading || 0)}°</strong>
+                  </div>
+                  <div style="display: flex; justify-content: space-between; margin: 4px 0;">
+                    <span style="color: #7f8c8d;">V/Rate:</span>
+                    <strong>${Math.round(flight.position.verticalRate || 0)} fpm</strong>
+                  </div>
+                  <div style="display: flex; justify-content: space-between; margin: 4px 0;">
+                    <span style="color: #7f8c8d;">Origin:</span>
+                    <strong>${flight.origin || 'Unknown'}</strong>
+                  </div>
+                  <div style="display: flex; justify-content: space-between; margin: 4px 0;">
+                    <span style="color: #7f8c8d;">Status:</span>
+                    <strong style="color: ${flight.onGround ? '#e74c3c' : '#27ae60'};">
+                      ${flight.onGround ? 'On Ground' : 'In Flight'}
+                    </strong>
+                  </div>
+                </div>
               </div>
             `;
 
-            // Add marker
-            const marker = new maplibregl.Marker({ element: el })
+            // Create popup
+            const popup = new maplibregl.Popup({ 
+              offset: 15,
+              closeButton: true,
+              closeOnClick: false,
+              maxWidth: '250px'
+            }).setHTML(popupHTML);
+            
+            // Add marker with popup
+            const marker = new maplibregl.Marker({ 
+              element: el,
+              anchor: 'center'
+            })
               .setLngLat([flight.position.longitude, flight.position.latitude])
-              .setPopup(new maplibregl.Popup({ offset: 10 }).setHTML(popupHTML))
+              .setPopup(popup)
               .addTo(map.current);
+            
+            // Add click event to show popup
+            el.addEventListener('click', (e) => {
+              e.stopPropagation();
+              marker.togglePopup();
+            });
 
             markers.current.push(marker);
           } catch (err) {
@@ -135,14 +181,11 @@ const FinalMap = ({ flights = [], center = [-2, 51], zoom = 5 }) => {
         }
       });
 
-      console.log(`Updated ${markers.current.length} markers`);
     };
 
     if (map.current.loaded()) {
-      console.log('Map already loaded, updating markers');
       updateMarkers();
     } else {
-      console.log('Map not loaded yet, waiting for load event');
       map.current.once('load', updateMarkers);
     }
   }, [flights]);
