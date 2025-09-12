@@ -10,6 +10,12 @@ export function initSentry() {
     return;
   }
   
+  // Validate DSN format
+  if (!dsn.startsWith('https://') || !dsn.includes('@')) {
+    console.warn('Invalid Sentry DSN format, skipping initialization');
+    return;
+  }
+  
   Sentry.init({
     dsn,
     environment: process.env.NODE_ENV || 'development',
