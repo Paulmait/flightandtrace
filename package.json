@@ -7,7 +7,7 @@
     "start": "echo 'Static deployment'"
   },
   "engines": {
-    "node": "22.x"
+    "node": ">=18.x"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.57.4"

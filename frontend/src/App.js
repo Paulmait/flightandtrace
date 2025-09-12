@@ -44,7 +44,6 @@ function App() {
     } catch (err) {
       console.error('Error fetching flights:', err);
       console.error('Full error details:', err);
-      console.error('API URL was:', apiUrl);
       setError(err.message);
       // Don't set mock data - keep flights empty on error
       setFlights([]);

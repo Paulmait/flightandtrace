@@ -3,10 +3,17 @@
   "buildCommand": "cd frontend && npm install && npm run build",
   "outputDirectory": "frontend/build",
   "framework": null,
+  "regions": ["iad1"],
   "functions": {
     "api/*.js": {
       "maxDuration": 10,
-      "memory": 512
+      "memory": 1024,
+      "runtime": "nodejs18.x"
+    },
+    "api/flights-v2.js": {
+      "maxDuration": 30,
+      "memory": 1024,
+      "runtime": "nodejs18.x"
     }
   },
   "headers": [
@@ -81,7 +88,7 @@
   "rewrites": [
     {
       "source": "/api/flights",
-      "destination": "/api/flights-v2.js"
+      "destination": "/api/flights-simple.js"
     }
   ],
   "redirects": [
