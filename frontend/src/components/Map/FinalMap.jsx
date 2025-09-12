@@ -76,6 +76,7 @@ const FinalMap = ({ flights = [], center = [-2, 51], zoom = 5 }) => {
         map.current = null;
       }
     };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []); // Only run once
 
   // Update markers when flights change
