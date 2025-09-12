@@ -10,7 +10,7 @@ function EnhancedApp() {
   const [lastUpdate, setLastUpdate] = useState(null);
   const [mapCenter, setMapCenter] = useState([10, 50]);
   const [mapZoom, setMapZoom] = useState(5);
-  const [userLocation, setUserLocation] = useState(null);
+  const [userLocation, setUserLocation] = useState(null); // eslint-disable-line no-unused-vars
   const [boundingBox, setBoundingBox] = useState('-20,35,30,65');
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedFlight, setSelectedFlight] = useState(null);
