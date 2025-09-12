@@ -9,9 +9,9 @@ function EnhancedApp() {
   const [error, setError] = useState(null);
   const [lastUpdate, setLastUpdate] = useState(null);
   const [mapCenter, setMapCenter] = useState([10, 50]);
-  const [mapZoom, setMapZoom] = useState(5);
+  const [mapZoom, setMapZoom] = useState(4); // Start zoomed out more to see more flights
   const [userLocation, setUserLocation] = useState(null); // eslint-disable-line no-unused-vars
-  const [boundingBox, setBoundingBox] = useState('-20,35,30,65');
+  const [boundingBox, setBoundingBox] = useState(null); // Let API use its large default
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedFlight, setSelectedFlight] = useState(null);
   const [sidebarOpen, setSidebarOpen] = useState(true);
@@ -33,8 +33,7 @@ function EnhancedApp() {
 
   // Fetch flights
   const fetchFlights = useCallback(async (bbox) => {
-    const bboxToUse = bbox || boundingBox;
-    if (!bboxToUse) return;
+    const bboxToUse = bbox || boundingBox || '';
     
     try {
       setLoading(true);
