@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import WorkingMap from './components/Map/WorkingMap.jsx';
+import FinalMap from './components/Map/FinalMap.jsx';
 import LoadingScreen from './components/LoadingScreen.jsx';
 import CookieConsent from './components/GDPR/CookieConsent.jsx';
 import { AuthProvider } from './contexts/AuthContext';
@@ -161,7 +161,7 @@ function App() {
         
       </div>
       
-      <WorkingMap 
+      <FinalMap 
         flights={flights}
         center={mapCenter}
         zoom={mapZoom}
