@@ -43,9 +43,6 @@
       "last 1 safari version"
     ]
   },
-  "engines": {
-    "node": ">=20.x"
-  },
   "devDependencies": {
     "node-fetch": "^2.7.0"
   }

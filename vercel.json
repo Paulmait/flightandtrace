@@ -7,13 +7,11 @@
   "functions": {
     "api/*.js": {
       "maxDuration": 10,
-      "memory": 1024,
-      "runtime": "nodejs20.x"
+      "memory": 1024
     },
     "api/flights-v2.js": {
       "maxDuration": 30,
-      "memory": 1024,
-      "runtime": "nodejs20.x"
+      "memory": 1024
     }
   },
   "headers": [
