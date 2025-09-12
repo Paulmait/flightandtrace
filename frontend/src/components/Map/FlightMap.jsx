@@ -14,11 +14,39 @@ const FlightMap = ({ flights, selectedFlight, onFlightSelect, showEstimatedSegme
   useEffect(() => {
     if (map.current) return;
 
-    // Use MapTiler if API key is available, otherwise use demo tiles
+    // Use MapTiler if API key is available, otherwise use OSM tiles
     const mapTilerKey = process.env.REACT_APP_MAPTILER_KEY;
-    const styleUrl = mapTilerKey 
-      ? `https://api.maptiler.com/maps/streets-v2/style.json?key=${mapTilerKey}`
-      : 'https://demotiles.maplibre.org/style.json';
+    let styleUrl;
+    
+    if (mapTilerKey && mapTilerKey !== 'undefined') {
+      styleUrl = `https://api.maptiler.com/maps/streets-v2/style.json?key=${mapTilerKey}`;
+    } else {
+      // Fallback to OpenStreetMap tiles
+      styleUrl = {
+        version: 8,
+        sources: {
+          'osm-tiles': {
+            type: 'raster',
+            tiles: [
+              'https://a.tile.openstreetmap.org/{z}/{x}/{y}.png',
+              'https://b.tile.openstreetmap.org/{z}/{x}/{y}.png',
+              'https://c.tile.openstreetmap.org/{z}/{x}/{y}.png'
+            ],
+            tileSize: 256,
+            attribution: '© OpenStreetMap contributors'
+          }
+        },
+        layers: [
+          {
+            id: 'osm-tiles-layer',
+            type: 'raster',
+            source: 'osm-tiles',
+            minzoom: 0,
+            maxzoom: 19
+          }
+        ]
+      };
+    }
     
     map.current = new maplibregl.Map({
       container: mapContainer.current,
