@@ -28,18 +28,27 @@ function App() {
         : `/api/flights?bbox=${bboxToUse}`;
       const response = await fetch(apiUrl);
       
-      if (!response.ok) {
+      // Try to parse JSON regardless of status
+      let data;
+      try {
+        data = await response.json();
+      } catch (jsonError) {
+        console.error('Failed to parse response:', jsonError);
         throw new Error(`HTTP error! status: ${response.status}`);
       }
       
-      const data = await response.json();
-      
-      if (data.success && data.flights) {
+      // Accept any response with flights array
+      if (data && data.flights && Array.isArray(data.flights)) {
         setFlights(data.flights);
         setLastUpdate(new Date());
         setError(null);
+      } else if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
       } else {
-        throw new Error(data.error || 'Failed to fetch flights');
+        // Empty flights but no error
+        setFlights([]);
+        setLastUpdate(new Date());
+        setError(null);
       }
     } catch (err) {
       console.error('Error fetching flights:', err);
