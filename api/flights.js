@@ -63,8 +63,29 @@ export default async function handler(req, res) {
       lomin = lon - lonDelta;
       lomax = lon + lonDelta;
     } else if (req.query.bbox) {
-      // Use provided bbox
-      [lamin, lomin, lamax, lomax] = req.query.bbox.split(',').map(Number);
+      // Use provided bbox - handle both formats
+      const bboxParts = req.query.bbox.split(',').map(Number);
+      if (bboxParts.length === 4) {
+        // Check if it's lon,lat,lon,lat format (common in mapping libraries)
+        // by checking if the first and third values are similar (longitudes)
+        // and second and fourth are similar (latitudes)
+        const [a, b, c, d] = bboxParts;
+        
+        // If looks like minLon,minLat,maxLon,maxLat format
+        if (Math.abs(a - c) > Math.abs(b - d)) {
+          // Frontend format: minLon,minLat,maxLon,maxLat
+          lomin = a;
+          lamin = b;
+          lomax = c;
+          lamax = d;
+        } else {
+          // OpenSky format: lamin,lomin,lamax,lomax
+          lamin = a;
+          lomin = b;
+          lamax = c;
+          lomax = d;
+        }
+      }
     } else {
       // Default to Europe
       [lamin, lomin, lamax, lomax] = [-10, 40, 10, 60];
