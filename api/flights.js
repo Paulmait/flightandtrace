@@ -1,12 +1,4 @@
 
-// Import Supabase functions if available
-let storeFlightHistory;
-try {
-  const dbModule = await import('./db/init.js');
-  storeFlightHistory = dbModule.storeFlightHistory;
-} catch (e) {
-  console.log('Supabase not configured, skipping history storage');
-}
 
 // Helper function to transform OpenSky data
 function transformFlights(states) {
@@ -106,12 +98,6 @@ export default async function handler(req, res) {
     // Transform OpenSky data to our format
     const flights = transformFlights(data.states || []);
     
-    // Store flight history in Supabase if configured
-    if (storeFlightHistory && flights.length > 0) {
-      storeFlightHistory(flights).catch(err => 
-        console.error('Failed to store flight history:', err)
-      );
-    }
     
     const result = {
       success: true,
