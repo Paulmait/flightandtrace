@@ -10,6 +10,13 @@ import {
   HelpModal, 
   EnhancedAircraftMarker 
 } from './EnhancedFeatures';
+import { 
+  calculateFuelConsumption, 
+  calculateEmissions, 
+  getEmissionRate,
+  formatEmissions,
+  getEmissionsContext 
+} from '../utils/emissionsCalculator';
 import './EnhancedApp.css';
 
 // Regional configurations for different parts of the world
@@ -100,7 +107,9 @@ function EnhancedAppV2() {
     airlines: new Set(),
     countries: new Set(),
     topAirlines: [],
-    topCountries: []
+    topCountries: [],
+    totalEmissions: 0,
+    emissionsRate: 0
   });
 
   // Fetch flights with dynamic bbox based on map view
@@ -148,6 +157,15 @@ function EnhancedAppV2() {
     const avgAlt = flightData.reduce((sum, f) => sum + (f.position?.altitude || 0), 0) / (flightData.length || 1);
     const avgSpd = flightData.reduce((sum, f) => sum + (f.position?.groundSpeed || 0), 0) / (flightData.length || 1);
     
+    // Calculate total emissions
+    let totalEmissionsPerHour = 0;
+    flightData.forEach(flight => {
+      const emissionRate = getEmissionRate(flight);
+      if (emissionRate) {
+        totalEmissionsPerHour += parseFloat(emissionRate.perHour);
+      }
+    });
+    
     // Count airlines and countries
     const airlineCount = {};
     const countryCount = {};
@@ -180,7 +198,9 @@ function EnhancedAppV2() {
       airlines: new Set(Object.keys(airlineCount)),
       countries: new Set(Object.keys(countryCount)),
       topAirlines,
-      topCountries
+      topCountries,
+      totalEmissions: Math.round(totalEmissionsPerHour),
+      emissionsRate: Math.round(totalEmissionsPerHour / 60)
     });
   };
 
@@ -481,6 +501,33 @@ function EnhancedAppV2() {
             </div>
           </div>
 
+          <div className="sidebar-section emissions-section">
+            <h3>🌍 Environmental Impact</h3>
+            <div className="emissions-display">
+              <div className="emissions-stat">
+                <div className="emissions-value">
+                  <AnimatedCounter value={stats.totalEmissions} />
+                  <span className="emissions-unit"> tons CO₂/hr</span>
+                </div>
+                <div className="emissions-label">Current Emissions Rate</div>
+              </div>
+              <div className="emissions-context">
+                <div className="context-item">
+                  🌳 {Math.round(stats.totalEmissions / 21)} trees needed/year
+                </div>
+                <div className="context-item">
+                  🚗 {(stats.totalEmissions / 0.12).toFixed(0)} km by car
+                </div>
+                <div className="context-item">
+                  ⚡ {(stats.totalEmissions / 20).toFixed(1)} days home energy
+                </div>
+              </div>
+              <div className="emissions-info">
+                <small>Based on ICAO methodology</small>
+              </div>
+            </div>
+          </div>
+
           <div className="sidebar-section">
             <h3>Quick Regions</h3>
             <div className="region-buttons">
@@ -597,16 +644,7 @@ function EnhancedAppV2() {
             }}
           />
 
-          {/* Map Controls Overlay - Only refresh button, zoom handled by MapLibre */}
-          <div className="map-controls">
-            <button 
-              className="map-control-btn"
-              onClick={() => fetchFlights()}
-              title="Refresh flights"
-            >
-              ⟳
-            </button>
-          </div>
+          {/* Map Controls Overlay - Removed duplicate refresh (already in header) */}
 
           {/* Selected Flight Panel */}
           {selectedFlight && (
@@ -649,6 +687,37 @@ function EnhancedAppV2() {
                     {selectedFlight.onGround ? 'On Ground' : 'In Flight'}
                   </span>
                 </div>
+                {(() => {
+                  const emissionRate = getEmissionRate(selectedFlight);
+                  const fuelData = calculateFuelConsumption(selectedFlight);
+                  if (emissionRate && fuelData) {
+                    return (
+                      <>
+                        <div className="emissions-divider"></div>
+                        <div className="detail-section">
+                          <h4>🌍 Environmental Impact</h4>
+                          <div className="detail-row">
+                            <span>Fuel Flow:</span>
+                            <span>{fuelData.instantaneous.toFixed(0)} kg/hr</span>
+                          </div>
+                          <div className="detail-row">
+                            <span>CO₂ Rate:</span>
+                            <span>{emissionRate.perHour} kg/hr</span>
+                          </div>
+                          <div className="detail-row">
+                            <span>Phase:</span>
+                            <span>{emissionRate.phase}</span>
+                          </div>
+                          <div className="detail-row">
+                            <span>Aircraft:</span>
+                            <span>{emissionRate.aircraftClass}</span>
+                          </div>
+                        </div>
+                      </>
+                    );
+                  }
+                  return null;
+                })()}
               </div>
             </div>
           )}

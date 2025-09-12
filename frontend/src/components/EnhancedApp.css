@@ -665,3 +665,133 @@
 .dark ::-webkit-scrollbar-thumb:hover {
   background: #6a7281;
 }
+
+/* Emissions Section Styles */
+.emissions-section {
+  background: linear-gradient(135deg, #e8f5e9 0%, #c8e6c9 100%);
+  border-radius: 12px;
+  padding: 16px;
+  margin-top: 20px;
+}
+
+.dark .emissions-section {
+  background: linear-gradient(135deg, #1b5e20 0%, #2e7d32 100%);
+}
+
+.emissions-section h3 {
+  color: #2e7d32;
+  margin-bottom: 16px;
+  font-size: 16px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.dark .emissions-section h3 {
+  color: #a5d6a7;
+}
+
+.emissions-display {
+  background: white;
+  border-radius: 8px;
+  padding: 16px;
+}
+
+.dark .emissions-display {
+  background: rgba(0, 0, 0, 0.3);
+}
+
+.emissions-stat {
+  text-align: center;
+  margin-bottom: 16px;
+}
+
+.emissions-value {
+  font-size: 28px;
+  font-weight: 700;
+  color: #2e7d32;
+  display: flex;
+  align-items: baseline;
+  justify-content: center;
+}
+
+.dark .emissions-value {
+  color: #81c784;
+}
+
+.emissions-unit {
+  font-size: 14px;
+  font-weight: 400;
+  opacity: 0.8;
+  margin-left: 4px;
+}
+
+.emissions-label {
+  font-size: 12px;
+  color: #666;
+  margin-top: 4px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.dark .emissions-label {
+  color: #b0bec5;
+}
+
+.emissions-context {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin: 16px 0;
+  padding: 12px;
+  background: rgba(46, 125, 50, 0.05);
+  border-radius: 6px;
+  font-size: 13px;
+}
+
+.dark .emissions-context {
+  background: rgba(129, 199, 132, 0.1);
+}
+
+.context-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #424242;
+}
+
+.dark .context-item {
+  color: #e0e0e0;
+}
+
+.emissions-info {
+  text-align: center;
+  margin-top: 12px;
+  opacity: 0.7;
+  font-size: 11px;
+  color: #666;
+}
+
+.dark .emissions-info {
+  color: #90a4ae;
+}
+
+/* Flight Detail Emissions */
+.emissions-divider {
+  height: 1px;
+  background: linear-gradient(to right, transparent, #4caf50, transparent);
+  margin: 16px 0;
+}
+
+.detail-section h4 {
+  font-size: 14px;
+  margin-bottom: 12px;
+  color: #2e7d32;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.dark .detail-section h4 {
+  color: #81c784;
+}
