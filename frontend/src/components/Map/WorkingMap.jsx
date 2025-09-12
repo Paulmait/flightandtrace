@@ -7,7 +7,9 @@ const WorkingMap = ({ flights = [], center = [0, 40], zoom = 3 }) => {
   const map = useRef(null);
   const markers = useRef([]);
   const [mapError, setMapError] = useState(null);
+  const [mapLoaded, setMapLoaded] = useState(false);
 
+  // Initialize map only once
   useEffect(() => {
     if (map.current) return;
 
@@ -129,6 +131,7 @@ const WorkingMap = ({ flights = [], center = [0, 40], zoom = 3 }) => {
           console.log(`Map loaded successfully with ${provider.name}`);
           mapInitialized = true;
           setMapError(null);
+          setMapLoaded(true);
           
           // Add controls
           map.current.addControl(new maplibregl.NavigationControl(), 'top-right');
@@ -178,7 +181,27 @@ const WorkingMap = ({ flights = [], center = [0, 40], zoom = 3 }) => {
       }
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, []); // Only run once on mount
+
+  // Handle center/zoom changes without re-initializing
+  useEffect(() => {
+    if (!map.current || !mapLoaded) return;
+    
+    // Only fly to new location if it's significantly different
+    const currentCenter = map.current.getCenter();
+    const distance = Math.sqrt(
+      Math.pow(currentCenter.lng - center[0], 2) + 
+      Math.pow(currentCenter.lat - center[1], 2)
+    );
+    
+    if (distance > 1) { // Only move if more than 1 degree difference
+      map.current.flyTo({
+        center: center,
+        zoom: zoom,
+        duration: 1500
+      });
+    }
+  }, [center, zoom, mapLoaded]);
 
   // Update markers when flights change
   useEffect(() => {
