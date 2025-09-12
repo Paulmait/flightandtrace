@@ -1,6 +1,8 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import FlightMap from './components/Map/FlightMap.jsx';
 import LoadingScreen from './components/LoadingScreen.jsx';
+import CookieConsent from './components/GDPR/CookieConsent.jsx';
+import { AuthProvider } from './contexts/AuthContext';
 import { getOptimalLocation, calculateBoundingBox, getRegionDefaults } from './utils/locationService';
 
 function App() {
@@ -91,7 +93,8 @@ function App() {
   }
 
   return (
-    <div style={{ width: '100%', height: '100vh', position: 'relative' }}>
+    <AuthProvider>
+      <div style={{ width: '100%', height: '100vh', position: 'relative' }}>
       <div style={{
         position: 'absolute',
         top: 20,
@@ -153,7 +156,10 @@ function App() {
         center={mapCenter}
         zoom={mapZoom}
       />
+      
+      <CookieConsent />
     </div>
+    </AuthProvider>
   );
 }
 
