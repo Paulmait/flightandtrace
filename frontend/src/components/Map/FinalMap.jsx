@@ -85,6 +85,29 @@ const FinalMap = ({ flights = [], center = [-2, 51], zoom = 5, onMapReady }) => 
     };
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []); // Only run once
+  
+  // Update map center and zoom when props change
+  useEffect(() => {
+    if (map.current && map.current.loaded()) {
+      // Update center if significantly different
+      const currentCenter = map.current.getCenter();
+      const distance = Math.sqrt(
+        Math.pow(currentCenter.lng - center[0], 2) + 
+        Math.pow(currentCenter.lat - center[1], 2)
+      );
+      
+      if (distance > 0.1) { // Only move if difference is significant
+        map.current.flyTo({
+          center: center,
+          zoom: zoom,
+          duration: 1500
+        });
+      } else if (Math.abs(map.current.getZoom() - zoom) > 0.5) {
+        // Just update zoom if center is close
+        map.current.setZoom(zoom);
+      }
+    }
+  }, [center, zoom]);
 
   // Update markers when flights change
   useEffect(() => {
