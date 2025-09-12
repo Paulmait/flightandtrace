@@ -432,12 +432,12 @@
 /* Map Controls */
 .map-controls {
   position: absolute;
-  top: 20px;
+  top: 80px; /* Moved down to avoid overlap with MapLibre controls */
   right: 20px;
   display: flex;
   flex-direction: column;
   gap: 8px;
-  z-index: 500;
+  z-index: 400; /* Lower than MapLibre controls (500) */
 }
 
 .map-control-btn {
