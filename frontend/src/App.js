@@ -107,9 +107,9 @@ function App() {
         maxWidth: '400px'
       }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '10px' }}>
-          <img src="/logo192.png" alt="Flight Tracker" style={{ width: '32px', height: '32px' }} />
+          <img src="/logo192.png" alt="Flight and Trace" style={{ width: '32px', height: '32px' }} />
           <h1 style={{ margin: 0, fontSize: '24px', color: '#333' }}>
-            Flight Tracker
+            Flight and Trace
           </h1>
         </div>
         

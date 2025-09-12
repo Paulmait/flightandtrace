@@ -67,7 +67,7 @@ const LoadingScreen = () => {
                       strokeWidth="1" className="radar-ring" opacity="0.3"/>
             </svg>
           </div>
-          <h1 className="loading-title">FlightTrace</h1>
+          <h1 className="loading-title">Flight and Trace</h1>
           <p className="loading-subtitle">Professional Aviation Intelligence</p>
         </div>
 
