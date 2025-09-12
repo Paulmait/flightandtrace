@@ -1,38 +1,6 @@
-// Import cache manager with fallback
-let cacheManager;
-try {
-  const cache = await import('./lib/cache.js');
-  cacheManager = cache.default;
-} catch (e) {
-  // Cache not available, will work without it
-  cacheManager = null;
-}
+// Import flight data aggregator with multiple sources
+import flightAggregator from './lib/flight-aggregator.js';
 
-// Import OpenSky OAuth2 authentication
-import { fetchWithAuth } from './lib/opensky-auth.js';
-
-// Helper function to transform OpenSky data
-function transformFlights(states) {
-  if (!states || !Array.isArray(states)) return [];
-  
-  return states.map(state => ({
-    id: state[0], // icao24
-    callsign: state[1]?.trim() || null,
-    icao24: state[0],
-    position: {
-      latitude: state[6],
-      longitude: state[5],
-      altitude: state[13] ? state[13] * 3.28084 : state[7], // Convert meters to feet
-      heading: state[10] || 0,
-      groundSpeed: state[9] ? state[9] * 1.94384 : 0, // m/s to knots
-      verticalRate: state[11] || 0
-    },
-    origin: state[2],
-    onGround: state[8],
-    lastUpdate: state[3] || state[4],
-    status: state[8] ? 'ON_GROUND' : 'EN_ROUTE'
-  })).filter(f => f.position.latitude && f.position.longitude);
-}
 
 export default async function handler(req, res) {
   // Enable CORS - keep backward compatibility
@@ -91,57 +59,14 @@ export default async function handler(req, res) {
       [lamin, lomin, lamax, lomax] = [-10, 40, 10, 60];
     }
     
-    // Try cache first if available
-    let cachedData = null;
-    const cacheKey = `flights:${lamin},${lomin},${lamax},${lomax}`;
+    // Use the flight aggregator to get data from multiple sources
+    const result = await flightAggregator.aggregateFlightData(lamin, lomin, lamax, lomax);
     
-    if (cacheManager) {
-      try {
-        cachedData = await cacheManager.get(cacheKey);
-        if (cachedData && cachedData.flights) {
-          return res.status(200).json({
-            ...cachedData,
-            cached: true,
-            timestamp: new Date().toISOString()
-          });
-        }
-      } catch (e) {
-        // Cache error, continue without cache
-      }
+    // Add system health information
+    if (req.query.includeHealth === 'true') {
+      result.health = flightAggregator.getSystemHealth();
     }
     
-    // OpenSky Network API endpoint
-    const url = `https://opensky-network.org/api/states/all?lamin=${lamin}&lomin=${lomin}&lamax=${lamax}&lomax=${lomax}`;
-    
-    // Use OAuth2 authentication or fall back to anonymous access
-    const response = await fetchWithAuth(url);
-
-    if (!response.ok) {
-      throw new Error(`OpenSky API error: ${response.status}`);
-    }
-
-    const data = await response.json();
-    
-    // Transform OpenSky data to our format
-    const flights = transformFlights(data.states || []);
-    
-    const result = {
-      success: true,
-      count: flights.length,
-      flights,
-      timestamp: new Date().toISOString(),
-      note: process.env.OPENSKY_CLIENT_ID ? 'Using OAuth2 authentication' : 'Using anonymous access'
-    };
-    
-    // Cache result if available
-    if (cacheManager && flights.length > 0) {
-      try {
-        await cacheManager.set(cacheKey, result, 30);
-      } catch (e) {
-        // Cache error, continue
-      }
-    }
-
     res.status(200).json(result);
   } catch (error) {
     console.error('Flight API error:', error);
