@@ -18,7 +18,8 @@ const FlightMap = ({ flights, selectedFlight, onFlightSelect, showEstimatedSegme
     const mapTilerKey = process.env.REACT_APP_MAPTILER_KEY;
     let styleUrl;
     
-    if (mapTilerKey && mapTilerKey !== 'undefined') {
+    // Force OSM for now to ensure map displays
+    if (false && mapTilerKey && mapTilerKey !== 'undefined') {
       styleUrl = `https://api.maptiler.com/maps/streets-v2/style.json?key=${mapTilerKey}`;
     } else {
       // Fallback to OpenStreetMap tiles

@@ -76,7 +76,7 @@
   "rewrites": [
     {
       "source": "/api/flights",
-      "destination": "/api/flights-test.js"
+      "destination": "/api/flights-live.js"
     }
   ],
   "redirects": [
