@@ -490,7 +490,7 @@ function EnhancedAppV2() {
             }}
           />
 
-          {/* Map Controls Overlay */}
+          {/* Map Controls Overlay - Only refresh button, zoom handled by MapLibre */}
           <div className="map-controls">
             <button 
               className="map-control-btn"
@@ -498,32 +498,6 @@ function EnhancedAppV2() {
               title="Refresh flights"
             >
               ⟳
-            </button>
-            <button 
-              className="map-control-btn"
-              onClick={() => {
-                const newZoom = mapZoom + 1;
-                setMapZoom(newZoom);
-                if (mapRef.current) {
-                  mapRef.current.setZoom(newZoom);
-                }
-              }}
-              title="Zoom in"
-            >
-              +
-            </button>
-            <button 
-              className="map-control-btn"
-              onClick={() => {
-                const newZoom = mapZoom - 1;
-                setMapZoom(newZoom);
-                if (mapRef.current) {
-                  mapRef.current.setZoom(newZoom);
-                }
-              }}
-              title="Zoom out"
-            >
-              −
             </button>
           </div>
 
