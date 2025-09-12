@@ -83,7 +83,11 @@ const FinalMap = ({ flights = [], center = [-2, 51], zoom = 5 }) => {
 
   // Update markers when flights change
   useEffect(() => {
-    if (!map.current) return;
+    console.log('Flights updated:', flights.length, 'flights');
+    if (!map.current) {
+      console.log('Map not initialized yet');
+      return;
+    }
 
     // Wait for map to load
     const updateMarkers = () => {
@@ -92,8 +96,10 @@ const FinalMap = ({ flights = [], center = [-2, 51], zoom = 5 }) => {
       markers.current = [];
 
       // Add new markers
+      console.log(`Adding markers for ${flights.length} flights`);
       flights.forEach((flight, index) => {
         if (flight.position && flight.position.latitude && flight.position.longitude) {
+          console.log(`Adding marker for flight ${index}:`, flight.callsign, flight.position);
           try {
             // Create marker element
             const el = document.createElement('div');
@@ -133,8 +139,10 @@ const FinalMap = ({ flights = [], center = [-2, 51], zoom = 5 }) => {
     };
 
     if (map.current.loaded()) {
+      console.log('Map already loaded, updating markers');
       updateMarkers();
     } else {
+      console.log('Map not loaded yet, waiting for load event');
       map.current.once('load', updateMarkers);
     }
   }, [flights]);
