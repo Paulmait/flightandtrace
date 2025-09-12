@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import FlightMap from './components/Map/FlightMap.jsx';
+import SimpleMap from './components/Map/SimpleMap.jsx';
 import LoadingScreen from './components/LoadingScreen.jsx';
 import CookieConsent from './components/GDPR/CookieConsent.jsx';
 import { AuthProvider } from './contexts/AuthContext';
@@ -152,7 +152,7 @@ function App() {
         
       </div>
       
-      <FlightMap 
+      <SimpleMap 
         flights={flights}
         center={mapCenter}
         zoom={mapZoom}
