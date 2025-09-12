@@ -4,12 +4,6 @@
   "outputDirectory": "frontend/build",
   "framework": null,
   "regions": ["iad1"],
-  "functions": {
-    "api/*.js": {
-      "maxDuration": 30,
-      "memory": 1024
-    }
-  },
   "headers": [
     {
       "source": "/api/(.*)",
@@ -82,7 +76,7 @@
   "rewrites": [
     {
       "source": "/api/flights",
-      "destination": "/api/flights-basic.js"
+      "destination": "/api/flights-test.js"
     }
   ],
   "redirects": [
