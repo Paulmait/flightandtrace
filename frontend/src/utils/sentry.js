@@ -90,19 +90,38 @@ export const SentryErrorBoundary = Sentry.ErrorBoundary;
 
 // Performance monitoring
 export function trackPerformance(name, callback) {
-  const transaction = Sentry.startTransaction({ name });
-  Sentry.getCurrentHub().configureScope(scope => scope.setSpan(transaction));
+  // Simple performance tracking without transaction
+  const startTime = Date.now();
   
   try {
     const result = callback();
     if (result instanceof Promise) {
-      return result.finally(() => transaction.finish());
+      return result.finally(() => {
+        const duration = Date.now() - startTime;
+        Sentry.addBreadcrumb({
+          category: 'performance',
+          message: name,
+          level: 'info',
+          data: { duration }
+        });
+      });
     }
-    transaction.finish();
+    const duration = Date.now() - startTime;
+    Sentry.addBreadcrumb({
+      category: 'performance',
+      message: name,
+      level: 'info',
+      data: { duration }
+    });
     return result;
   } catch (error) {
-    transaction.setStatus('internal_error');
-    transaction.finish();
+    const duration = Date.now() - startTime;
+    Sentry.addBreadcrumb({
+      category: 'performance',
+      message: `${name} (failed)`,
+      level: 'error',
+      data: { duration }
+    });
     throw error;
   }
 }
