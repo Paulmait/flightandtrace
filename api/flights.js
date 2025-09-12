@@ -1,5 +1,3 @@
-// Import OpenSky OAuth2 authentication
-import { fetchWithAuth } from './lib/opensky-auth.js';
 
 // Helper function to transform OpenSky data
 function transformFlights(states) {
@@ -85,8 +83,10 @@ export default async function handler(req, res) {
     // OpenSky Network API endpoint
     const url = `https://opensky-network.org/api/states/all?lamin=${lamin}&lomin=${lomin}&lamax=${lamax}&lomax=${lomax}`;
     
-    // Use OAuth2 authentication or fall back to anonymous access
-    const response = await fetchWithAuth(url);
+    // Use anonymous access for now (OAuth2 timing out)
+    const response = await fetch(url, {
+      signal: AbortSignal.timeout(8000) // 8 second timeout
+    });
 
     if (!response.ok) {
       throw new Error(`OpenSky API error: ${response.status}`);
@@ -102,7 +102,7 @@ export default async function handler(req, res) {
       count: flights.length,
       flights,
       timestamp: new Date().toISOString(),
-      note: process.env.OPENSKY_CLIENT_ID ? 'Using OAuth2 authentication' : 'Using anonymous access'
+      note: 'Using anonymous access'
     };
 
     res.status(200).json(result);
