@@ -102,7 +102,9 @@ function getAircraftData(icaoType) {
 
 /**
  * Calculate great circle distance between two points
+ * Currently unused but kept for future route calculations
  */
+// eslint-disable-next-line no-unused-vars
 function calculateDistance(lat1, lon1, lat2, lon2) {
   const R = 6371; // Earth's radius in km
   const dLat = (lat2 - lat1) * Math.PI / 180;
@@ -126,8 +128,8 @@ function estimateFlightDuration(distance, aircraftClass) {
     light: 350
   };
   
-  const speed = cruiseSpeeds[aircraftClass] || 800;
-  const cruiseTime = (distance / speed) * 60; // minutes
+  const cruiseSpeed = cruiseSpeeds[aircraftClass] || 800;
+  const cruiseTime = (distance / cruiseSpeed) * 60; // minutes
   
   // Add taxi, climb, descent times
   const totalTime = cruiseTime + PHASE_DURATIONS.TAXI + PHASE_DURATIONS.TAKEOFF +
@@ -153,7 +155,7 @@ export function calculateFuelConsumption(flight) {
   
   // Estimate flight parameters
   const altitude = flight.position.altitude || 0;
-  const speed = flight.position.groundSpeed || 0;
+  // const speed = flight.position.groundSpeed || 0; // Reserved for future speed-based calculations
   const onGround = flight.onGround || altitude < 1000;
   
   // Calculate instantaneous fuel flow based on phase
@@ -307,7 +309,7 @@ export function getEmissionRate(flight) {
 }
 
 // Export default object
-export default {
+const emissionsCalculator = {
   calculateFuelConsumption,
   calculateEmissions,
   estimateTripEmissions,
@@ -315,3 +317,5 @@ export default {
   getEmissionsContext,
   getEmissionRate
 };
+
+export default emissionsCalculator;

@@ -10,10 +10,7 @@ import {
 } from './EnhancedFeatures';
 import { 
   calculateFuelConsumption, 
-  calculateEmissions, 
-  getEmissionRate,
-  formatEmissions,
-  getEmissionsContext 
+  getEmissionRate
 } from '../utils/emissionsCalculator';
 import './EnhancedApp.css';
 
