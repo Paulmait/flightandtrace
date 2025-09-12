@@ -5,10 +5,8 @@ import {
   getAirlineInfo, 
   AnimatedCounter, 
   useKeyboardShortcuts, 
-  FlightPath, 
   useSoundNotifications, 
-  HelpModal, 
-  EnhancedAircraftMarker 
+  HelpModal
 } from './EnhancedFeatures';
 import { 
   calculateFuelConsumption, 

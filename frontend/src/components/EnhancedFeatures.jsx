@@ -171,6 +171,9 @@ export const useSoundNotifications = (enabled = false) => {
         audio.src = 'data:audio/wav;base64,UklGRl9uBABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbq2EcBj+a2/LDciUFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn';
         audio.volume = 0.5;
         break;
+      default:
+        audio.volume = 0.3;
+        break;
     }
     audio.play().catch(e => console.log('Audio play failed:', e));
   };
@@ -323,7 +326,7 @@ if (typeof document !== 'undefined') {
   document.head.appendChild(styleSheet);
 }
 
-export default {
+const EnhancedFeatures = {
   AIRLINE_DATA,
   getAirlineInfo,
   AnimatedCounter,
@@ -333,3 +336,5 @@ export default {
   HelpModal,
   EnhancedAircraftMarker
 };
+
+export default EnhancedFeatures;
