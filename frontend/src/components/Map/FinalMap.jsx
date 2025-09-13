@@ -2,7 +2,7 @@ import React, { useEffect, useRef } from 'react';
 import maplibregl from 'maplibre-gl';
 import 'maplibre-gl/dist/maplibre-gl.css';
 
-const FinalMap = ({ flights = [], center = [-2, 51], zoom = 5, onMapReady }) => {
+const FinalMap = ({ flights = [], center = [-2, 51], zoom = 5, onMapReady, onFlightClick }) => {
   const mapContainer = useRef(null);
   const map = useRef(null);
   const markers = useRef([]);
@@ -196,10 +196,13 @@ const FinalMap = ({ flights = [], center = [-2, 51], zoom = 5, onMapReady }) => 
               .setPopup(popup)
               .addTo(map.current);
             
-            // Add click event to show popup
+            // Add click event to show popup and trigger flight details
             el.addEventListener('click', (e) => {
               e.stopPropagation();
               marker.togglePopup();
+              if (onFlightClick) {
+                onFlightClick(flight);
+              }
             });
 
             markers.current.push(marker);
@@ -216,7 +219,7 @@ const FinalMap = ({ flights = [], center = [-2, 51], zoom = 5, onMapReady }) => 
     } else {
       map.current.once('load', updateMarkers);
     }
-  }, [flights]);
+  }, [flights]); // eslint-disable-line react-hooks/exhaustive-deps
 
   return (
     <div style={{ 

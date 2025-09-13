@@ -9,6 +9,8 @@ import {
   HelpModal
 } from './EnhancedFeatures';
 import Legal from './Legal';
+import FlightDetailsPanel from './FlightDetailsPanel';
+import { estimateRoute } from '../utils/airportDatabase';
 import { 
   calculateFuelConsumption, 
   getEmissionRate
@@ -89,6 +91,7 @@ function EnhancedAppV2() {
   const [showHelp, setShowHelp] = useState(false);
   const [soundEnabled, setSoundEnabled] = useState(false);
   const [showLegal, setShowLegal] = useState(false);
+  const [selectedFlightDetails, setSelectedFlightDetails] = useState(null);
   
   const mapRef = useRef(null);
   const isUserNavigating = useRef(false);
@@ -353,6 +356,26 @@ function EnhancedAppV2() {
   // Handle flight click
   const handleFlightClick = (flight) => {
     setSelectedFlight(flight);
+    
+    // Estimate route based on position and heading
+    const route = estimateRoute(
+      flight.latitude || flight.position?.latitude,
+      flight.longitude || flight.position?.longitude,
+      flight.true_track || flight.heading || 0,
+      flight.callsign
+    );
+    
+    // Add route information to flight object
+    const flightWithRoute = {
+      ...flight,
+      origin: route.origin,
+      destination: route.destination,
+      airline: getAirlineInfo(flight.callsign).name,
+      aircraft_type: flight.aircraft_type || 'A320' // Default to A320 if unknown
+    };
+    
+    setSelectedFlightDetails(flightWithRoute);
+    
     if (flight.position) {
       isUserNavigating.current = false; // Prevent fetch on programmatic move
       setMapCenter([flight.position.longitude, flight.position.latitude]);
@@ -642,6 +665,7 @@ function EnhancedAppV2() {
             flights={filteredFlights}
             center={mapCenter}
             zoom={mapZoom}
+            onFlightClick={handleFlightClick}
             onMapReady={(map) => {
               mapRef.current = map;
               isUserNavigating.current = true;
@@ -943,6 +967,16 @@ function EnhancedAppV2() {
       
       {/* Legal Modal */}
       <Legal isOpen={showLegal} onClose={() => setShowLegal(false)} />
+      
+      {selectedFlightDetails && (
+        <FlightDetailsPanel 
+          flight={selectedFlightDetails} 
+          onClose={() => {
+            setSelectedFlightDetails(null);
+            setSelectedFlight(null);
+          }}
+        />
+      )}
     </div>
   );
 }
