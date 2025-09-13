@@ -220,7 +220,7 @@ export function calculateFuelConsumption(flight) {
 /**
  * Calculate CO₂ emissions from fuel consumption
  */
-export function calculateEmissions(fuelKg, aircraftClass = 'narrow') {
+export function calculateEmissionsFromFuel(fuelKg, aircraftClass = 'narrow') {
   // Use jet fuel factor for jets, avgas for light aircraft
   const emissionFactor = aircraftClass === 'light' ? 
     EMISSION_FACTORS.AVGAS : EMISSION_FACTORS.JET_FUEL;
@@ -234,6 +234,43 @@ export function calculateEmissions(fuelKg, aircraftClass = 'narrow') {
     treesNeeded: Math.round(co2Kg / 21), // One tree absorbs ~21kg CO₂/year
     carEquivalent: (co2Kg / 0.12).toFixed(0) // Average car emits 0.12kg CO₂/km
   };
+}
+
+/**
+ * Calculate emissions for a flight object
+ */
+export function calculateEmissions(flight) {
+  try {
+    if (!flight) {
+      return { co2: 0, fuel: 0, perPassenger: 0 };
+    }
+    
+    // Try to calculate fuel consumption
+    const fuelData = calculateFuelConsumption(flight);
+    if (!fuelData) {
+      return { co2: 0, fuel: 0, perPassenger: 0 };
+    }
+    
+    // Estimate fuel for 1 hour of flight
+    const fuelKg = fuelData.instantaneous || 1000; // Default 1000 kg/hr
+    const emissionsData = calculateEmissionsFromFuel(fuelKg, fuelData.aircraft);
+    
+    // Estimate passengers based on aircraft class
+    const passengers = fuelData.aircraft === 'wide' ? 300 :
+                      fuelData.aircraft === 'narrow' ? 180 :
+                      fuelData.aircraft === 'regional' ? 70 :
+                      fuelData.aircraft === 'light' ? 4 : 150;
+    
+    return {
+      co2: emissionsData.co2Kg || 0,
+      fuel: fuelKg || 0,
+      perPassenger: (emissionsData.co2Kg || 0) / passengers,
+      treesNeeded: emissionsData.treesNeeded || 0
+    };
+  } catch (error) {
+    console.warn('Error calculating emissions:', error);
+    return { co2: 0, fuel: 0, perPassenger: 0 };
+  }
 }
 
 /**
@@ -258,7 +295,7 @@ export function estimateTripEmissions(origin, destination, aircraftType) {
   };
   
   const totalFuel = Object.values(fuelConsumption).reduce((a, b) => a + b, 0);
-  const emissions = calculateEmissions(totalFuel, aircraft.class);
+  const emissions = calculateEmissionsFromFuel(totalFuel, aircraft.class);
   
   // Per passenger calculations
   const perPassenger = {

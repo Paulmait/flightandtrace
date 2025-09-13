@@ -9,44 +9,83 @@ const FlightDetailsPanel = ({ flight, onClose }) => {
   
   useEffect(() => {
     if (flight) {
-      // Calculate emissions
-      const emissionsData = calculateEmissions(flight);
-      setEmissions(emissionsData);
-      
-      // Get airport information
-      const departure = getAirportInfo(flight.origin || 'UNKNOWN');
-      const arrival = getAirportInfo(flight.destination || 'UNKNOWN');
-      
-      // Calculate flight progress
-      const totalDistance = calculateDistance(
-        departure.lat, departure.lon,
-        arrival.lat, arrival.lon
-      );
-      const currentDistance = calculateDistance(
-        departure.lat, departure.lon,
-        flight.latitude, flight.longitude
-      );
-      const progress = Math.min(100, (currentDistance / totalDistance) * 100);
-      
-      // Format flight time
-      const flightTime = flight.time_position ? new Date(flight.time_position * 1000) : new Date();
-      
-      setFlightDetails({
-        departure,
-        arrival,
-        progress,
-        totalDistance,
-        currentDistance,
-        remainingDistance: totalDistance - currentDistance,
-        flightTime,
-        altitude: flight.altitude || flight.geo_altitude || 0,
-        speed: flight.velocity || 0,
-        heading: flight.true_track || 0,
-        verticalSpeed: flight.vertical_rate || 0,
-        aircraft: flight.aircraft_type || 'Unknown',
-        registration: flight.registration || flight.icao24,
-        airline: flight.airline || extractAirline(flight.callsign)
-      });
+      try {
+        // Calculate emissions safely
+        let emissionsData = null;
+        try {
+          emissionsData = calculateEmissions(flight);
+        } catch (e) {
+          console.warn('Could not calculate emissions:', e);
+          emissionsData = { co2: 0, fuel: 0, perPassenger: 0 };
+        }
+        setEmissions(emissionsData);
+        
+        // Get airport information
+        const departure = getAirportInfo(flight.origin || 'UNKNOWN');
+        const arrival = getAirportInfo(flight.destination || 'UNKNOWN');
+        
+        // Calculate flight progress safely
+        let totalDistance = 0;
+        let currentDistance = 0;
+        let progress = 0;
+        
+        if (departure.lat && departure.lon && arrival.lat && arrival.lon) {
+          totalDistance = calculateDistance(
+            departure.lat, departure.lon,
+            arrival.lat, arrival.lon
+          );
+        }
+        
+        if (departure.lat && departure.lon && flight.latitude && flight.longitude) {
+          currentDistance = calculateDistance(
+            departure.lat, departure.lon,
+            flight.latitude, flight.longitude
+          );
+        }
+        
+        if (totalDistance > 0) {
+          progress = Math.min(100, (currentDistance / totalDistance) * 100);
+        }
+        
+        // Format flight time
+        const flightTime = flight.time_position ? new Date(flight.time_position * 1000) : new Date();
+        
+        setFlightDetails({
+          departure,
+          arrival,
+          progress: isNaN(progress) ? 0 : progress,
+          totalDistance: isNaN(totalDistance) ? 0 : totalDistance,
+          currentDistance: isNaN(currentDistance) ? 0 : currentDistance,
+          remainingDistance: Math.max(0, totalDistance - currentDistance),
+          flightTime,
+          altitude: flight.altitude || flight.geo_altitude || 0,
+          speed: flight.velocity || 0,
+          heading: flight.true_track || 0,
+          verticalSpeed: flight.vertical_rate || 0,
+          aircraft: flight.aircraft_type || 'Unknown',
+          registration: flight.registration || flight.icao24 || 'N/A',
+          airline: flight.airline || extractAirline(flight.callsign)
+        });
+      } catch (error) {
+        console.error('Error setting flight details:', error);
+        // Set default values to prevent crash
+        setFlightDetails({
+          departure: getAirportInfo('UNKNOWN'),
+          arrival: getAirportInfo('UNKNOWN'),
+          progress: 0,
+          totalDistance: 0,
+          currentDistance: 0,
+          remainingDistance: 0,
+          flightTime: new Date(),
+          altitude: 0,
+          speed: 0,
+          heading: 0,
+          verticalSpeed: 0,
+          aircraft: 'Unknown',
+          registration: flight?.icao24 || 'N/A',
+          airline: 'Unknown'
+        });
+      }
     }
   }, [flight]);
   
@@ -149,19 +188,19 @@ const FlightDetailsPanel = ({ flight, onClose }) => {
         <div className="emissions-grid">
           <div className="emission-item">
             <span className="emission-label">CO₂ Emissions</span>
-            <span className="emission-value">{emissions?.co2.toFixed(1)} kg</span>
+            <span className="emission-value">{(emissions?.co2 || 0).toFixed(1)} kg</span>
           </div>
           <div className="emission-item">
             <span className="emission-label">Fuel Burn</span>
-            <span className="emission-value">{emissions?.fuel.toFixed(1)} kg</span>
+            <span className="emission-value">{(emissions?.fuel || 0).toFixed(1)} kg</span>
           </div>
           <div className="emission-item">
             <span className="emission-label">Per Passenger</span>
-            <span className="emission-value">{emissions?.perPassenger.toFixed(1)} kg CO₂</span>
+            <span className="emission-value">{(emissions?.perPassenger || 0).toFixed(1)} kg CO₂</span>
           </div>
           <div className="emission-item">
             <span className="emission-label">Trees to Offset</span>
-            <span className="emission-value">{Math.ceil(emissions?.co2 / 21.77)} trees/year</span>
+            <span className="emission-value">{Math.ceil((emissions?.co2 || 0) / 21.77)} trees/year</span>
           </div>
         </div>
       </div>
