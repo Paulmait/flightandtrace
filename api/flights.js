@@ -164,9 +164,95 @@ module.exports = async (req, res) => {
       }
     }
     
-    // No demo data - return empty array if no real flights available
-    flights = [];
-    dataSource = 'no-data';
+    // Try alternative data sources
+    try {
+      // First try ADS-B Exchange (free tier)
+      console.log('Trying ADS-B Exchange as backup...');
+      const adsbResponse = await fetch('https://globe.adsbexchange.com/data/globe_0000.json', {
+        headers: {
+          'Accept': 'application/json',
+          'User-Agent': 'FlightAndTrace/1.0'
+        }
+      });
+      
+      if (adsbResponse.ok) {
+        const adsbData = await adsbResponse.json();
+        if (adsbData && adsbData.aircraft && adsbData.aircraft.length > 0) {
+          flights = adsbData.aircraft
+            .filter(a => a.lat && a.lon)
+            .slice(0, 1000) // Limit to 1000 flights
+            .map(a => ({
+              id: a.hex || Math.random().toString(36),
+              icao24: a.hex || 'unknown',
+              callsign: a.flight ? a.flight.trim() : null,
+              position: {
+                latitude: a.lat,
+                longitude: a.lon,
+                altitude: (a.alt_baro || a.alt_geom || 0) * 3.28084,
+                heading: a.track || 0,
+                groundSpeed: (a.gs || 0) * 1.94384,
+                verticalRate: (a.baro_rate || 0) * 196.85
+              },
+              origin: null,
+              onGround: a.alt_baro === 'ground',
+              lastUpdate: a.seen_pos || Date.now() / 1000,
+              status: a.alt_baro === 'ground' ? 'ON_GROUND' : 'EN_ROUTE',
+              aircraft_type: a.t || null
+            }));
+          dataSource = 'adsb-exchange';
+          console.log(`ADS-B Exchange: ${flights.length} flights`);
+          flights = flights; // Use ADS-B data
+        }
+      }
+      
+      // If ADS-B fails, try OpenSky without filters
+      if (flights.length === 0) {
+        console.log('Attempting fallback fetch from OpenSky...');
+        const fallbackResponse = await fetch('https://opensky-network.org/api/states/all', {
+          headers: {
+            'Accept': 'application/json',
+            'User-Agent': 'FlightAndTrace/1.0'
+          }
+        });
+      
+      if (fallbackResponse.ok) {
+        const fallbackData = await fallbackResponse.json();
+        if (fallbackData && fallbackData.states && fallbackData.states.length > 0) {
+          flights = fallbackData.states
+            .filter(state => state[5] !== null && state[6] !== null)
+            .slice(0, 500) // Limit fallback to 500 flights
+            .map(state => ({
+              id: state[0],
+              icao24: state[0],
+              callsign: state[1] ? state[1].trim() : null,
+              position: {
+                latitude: state[6],
+                longitude: state[5],
+                altitude: state[13] ? state[13] * 3.28084 : (state[7] ? state[7] * 3.28084 : 0),
+                heading: state[10] || 0,
+                groundSpeed: state[9] ? state[9] * 1.94384 : 0,
+                verticalRate: state[11] ? state[11] * 196.85 : 0
+              },
+              origin: state[2] || null,
+              onGround: state[8] || false,
+              lastUpdate: state[3] || state[4],
+              status: state[8] ? 'ON_GROUND' : 'EN_ROUTE'
+            }));
+          dataSource = 'opensky-fallback';
+          console.log(`Fallback successful: ${flights.length} flights`);
+        } else {
+          flights = [];
+          dataSource = 'no-data';
+        }
+      } else {
+        flights = [];
+        dataSource = 'no-data';
+      }
+    } catch (fallbackError) {
+      console.error('Fallback fetch also failed:', fallbackError.message);
+      flights = [];
+      dataSource = 'no-data';
+    }
   }
   
   // Return response with performance metrics
