@@ -75,8 +75,8 @@ function EnhancedAppV2() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [lastUpdate, setLastUpdate] = useState(null);
-  const [mapCenter, setMapCenter] = useState([0, 30]); // Start with world center
-  const [mapZoom, setMapZoom] = useState(2); // Start zoomed out
+  const [mapCenter, setMapCenter] = useState(REGIONS.northAmerica.center); // Start with North America
+  const [mapZoom, setMapZoom] = useState(REGIONS.northAmerica.zoom); // Start with region zoom
   const [userLocation, setUserLocation] = useState(null);
   const [currentRegion, setCurrentRegion] = useState(REGIONS.northAmerica); // Default to North America
   const [boundingBox, setBoundingBox] = useState(REGIONS.northAmerica.bbox); // Default bbox

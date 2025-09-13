@@ -51,10 +51,11 @@ module.exports = async (req, res) => {
     }
     
     // Not in cache or cache expired, fetch fresh data
+    console.log('Fetching fresh data from OpenSky...');
     const globalUrl = 'https://opensky-network.org/api/states/all';
     
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 8000); // 8 second timeout
+    const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
     
     const response = await fetch(globalUrl, {
       headers: {
@@ -106,8 +107,8 @@ module.exports = async (req, res) => {
             dataSource = 'opensky-global';
           }
         } else {
-          // Global view - return ALL flights (no limit)
-          // allFlights = allFlights.slice(0, 1500); // REMOVED LIMIT
+          // Global view - return reasonable amount for performance
+          allFlights = allFlights.slice(0, 3000); // Limit to 3000 for browser performance
           dataSource = 'opensky-global';
         }
         
