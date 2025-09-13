@@ -20,30 +20,48 @@ export const AuthProvider = ({ children }) => {
 
   // Load user profile when auth state changes
   useEffect(() => {
-    const unsubscribe = authService.onAuthStateChange(async (user) => {
-      setCurrentUser(user);
-      
-      if (user) {
-        // Load user profile from Firestore
-        const profile = await authService.getUserProfile(user.uid);
-        setUserProfile(profile);
-        
-        // Store in localStorage for offline access
-        localStorage.setItem('user', JSON.stringify({
-          id: user.uid,
-          email: user.email,
-          displayName: user.displayName,
-          subscription: profile?.subscription || 'free'
-        }));
-      } else {
-        setUserProfile(null);
-        localStorage.removeItem('user');
+    try {
+      // Check if authService is available
+      if (!authService || !authService.onAuthStateChange) {
+        console.warn('Auth service not available, running in anonymous mode');
+        setLoading(false);
+        return;
       }
-      
-      setLoading(false);
-    });
 
-    return unsubscribe;
+      const unsubscribe = authService.onAuthStateChange(async (user) => {
+        try {
+          setCurrentUser(user);
+          
+          if (user) {
+            // Load user profile from Firestore
+            const profile = await authService.getUserProfile(user.uid);
+            setUserProfile(profile);
+            
+            // Store in localStorage for offline access
+            localStorage.setItem('user', JSON.stringify({
+              id: user.uid,
+              email: user.email,
+              displayName: user.displayName,
+              subscription: profile?.subscription || 'free'
+            }));
+          } else {
+            setUserProfile(null);
+            localStorage.removeItem('user');
+          }
+        } catch (err) {
+          console.error('Error handling auth state:', err);
+          setError(err.message);
+        } finally {
+          setLoading(false);
+        }
+      });
+
+      return unsubscribe;
+    } catch (err) {
+      console.error('Error setting up auth listener:', err);
+      setError(err.message);
+      setLoading(false);
+    }
   }, []);
 
   // Sign up function

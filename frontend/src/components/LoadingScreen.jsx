@@ -16,25 +16,37 @@ const LoadingScreen = () => {
       'Ready for departure'
     ];
     
-    let index = 0;
+    let textIndex = 0;
     const textInterval = setInterval(() => {
-      index = (index + 1) % texts.length;
-      setLoadingText(texts[index]);
-    }, 2000);
+      if (progress < 100) {
+        textIndex = Math.min(Math.floor(progress / 15), texts.length - 1);
+        setLoadingText(texts[textIndex]);
+      } else {
+        setLoadingText(texts[texts.length - 1]);
+      }
+    }, 500);
 
-    // Simulate progress
+    // Smooth progress animation
+    const startTime = Date.now();
+    const duration = 3000; // 3 seconds to reach 100%
+    
     const progressInterval = setInterval(() => {
-      setProgress(prev => {
-        if (prev >= 100) return 100;
-        return prev + Math.random() * 15;
-      });
-    }, 300);
+      const elapsed = Date.now() - startTime;
+      const newProgress = Math.min((elapsed / duration) * 100, 100);
+      
+      setProgress(newProgress);
+      
+      if (newProgress >= 100) {
+        clearInterval(progressInterval);
+        setLoadingText(texts[texts.length - 1]);
+      }
+    }, 50);
 
     return () => {
       clearInterval(textInterval);
       clearInterval(progressInterval);
     };
-  }, []);
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   return (
     <div className="loading-screen">
