@@ -224,8 +224,8 @@ const FinalMap = ({ flights = [], center = [-2, 51], zoom = 5, onMapReady, onFli
                     <strong>${Math.round(flight.position.verticalRate || 0)} fpm</strong>
                   </div>
                   <div style="display: flex; justify-content: space-between; margin: 4px 0;">
-                    <span style="color: #7f8c8d;">Origin:</span>
-                    <strong>${flight.origin || 'Unknown'}</strong>
+                    <span style="color: #7f8c8d;">Track:</span>
+                    <strong>${(flight.origin && flight.origin !== 'Demo') ? flight.origin : ''} ${(flight.destination && flight.destination !== 'Demo') ? '→ ' + flight.destination : ''}</strong>
                   </div>
                   <div style="display: flex; justify-content: space-between; margin: 4px 0;">
                     <span style="color: #7f8c8d;">Status:</span>

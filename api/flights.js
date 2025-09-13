@@ -106,8 +106,8 @@ module.exports = async (req, res) => {
             dataSource = 'opensky-global';
           }
         } else {
-          // Global view - return sample of flights
-          allFlights = allFlights.slice(0, 1500);
+          // Global view - return ALL flights (no limit)
+          // allFlights = allFlights.slice(0, 1500); // REMOVED LIMIT
           dataSource = 'opensky-global';
         }
         
@@ -164,38 +164,9 @@ module.exports = async (req, res) => {
       }
     }
     
-    // Last resort: Generate demo flights
-    const bbox = req.query.bbox || '-180,-90,180,90';
-    const [lomin, lamin, lomax, lamax] = bbox.split(',').map(Number);
-    
-    const demoFlights = [];
-    const airlines = ['AAL', 'UAL', 'DAL', 'SWA', 'BAW', 'DLH', 'AFR', 'KLM', 'ACA', 'RYR'];
-    
-    for (let i = 0; i < 100; i++) {
-      const lat = lamin + Math.random() * (lamax - lamin);
-      const lon = lomin + Math.random() * (lomax - lomin);
-      
-      demoFlights.push({
-        id: `demo${i}`,
-        icao24: `demo${i}`,
-        callsign: `${airlines[i % airlines.length]}${Math.floor(Math.random() * 900) + 100}`,
-        position: {
-          latitude: lat,
-          longitude: lon,
-          altitude: Math.random() < 0.15 ? 0 : 15000 + Math.random() * 30000,
-          heading: Math.random() * 360,
-          groundSpeed: Math.random() < 0.15 ? 0 : 300 + Math.random() * 250,
-          verticalRate: (Math.random() - 0.5) * 2000
-        },
-        origin: 'Demo',
-        onGround: Math.random() < 0.15,
-        lastUpdate: Date.now() / 1000,
-        status: Math.random() < 0.15 ? 'ON_GROUND' : 'EN_ROUTE'
-      });
-    }
-    
-    flights = demoFlights;
-    dataSource = 'demo-fallback';
+    // No demo data - return empty array if no real flights available
+    flights = [];
+    dataSource = 'no-data';
   }
   
   // Return response with performance metrics
