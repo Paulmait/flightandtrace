@@ -75,8 +75,8 @@ function EnhancedAppV2() {
   const [mapCenter, setMapCenter] = useState([0, 30]); // Start with world center
   const [mapZoom, setMapZoom] = useState(2); // Start zoomed out
   const [userLocation, setUserLocation] = useState(null);
-  const [currentRegion, setCurrentRegion] = useState(null); // Don't default to Europe
-  const [boundingBox, setBoundingBox] = useState(null); // Let it be detected
+  const [currentRegion, setCurrentRegion] = useState(REGIONS.northAmerica); // Default to North America
+  const [boundingBox, setBoundingBox] = useState(REGIONS.northAmerica.bbox); // Default bbox
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedFlight, setSelectedFlight] = useState(null);
   const [sidebarOpen, setSidebarOpen] = useState(true);
@@ -410,10 +410,12 @@ function EnhancedAppV2() {
         <div className="header-right">
           <div className="region-selector">
             <select 
-              value={currentRegion.name} 
+              value={currentRegion?.name || 'Loading...'} 
               onChange={(e) => switchRegion(Object.values(REGIONS).find(r => r.name === e.target.value))}
               className="region-dropdown"
+              disabled={!currentRegion}
             >
+              {!currentRegion && <option>Loading...</option>}
               {Object.values(REGIONS).map(region => (
                 <option key={region.name} value={region.name}>
                   {region.name}
@@ -529,7 +531,7 @@ function EnhancedAppV2() {
               {Object.values(REGIONS).map(region => (
                 <button
                   key={region.name}
-                  className={`region-btn ${currentRegion.name === region.name ? 'active' : ''}`}
+                  className={`region-btn ${currentRegion?.name === region.name ? 'active' : ''}`}
                   onClick={() => switchRegion(region)}
                 >
                   {region.name}
@@ -747,7 +749,7 @@ function EnhancedAppV2() {
                   {statsModal === 'total' && (
                     <div>
                       <p>Total aircraft tracked: {stats.totalFlights}</p>
-                      <p>Coverage area: {currentRegion.name}</p>
+                      <p>Coverage area: {currentRegion?.name || 'Global'}</p>
                       <p>Last update: {lastUpdate?.toLocaleTimeString()}</p>
                       <h4>By Origin Country:</h4>
                       {stats.topCountries.map(([country, count]) => (
