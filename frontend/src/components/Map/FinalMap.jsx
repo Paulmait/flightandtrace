@@ -1,8 +1,6 @@
 import React, { useEffect, useRef } from 'react';
 import maplibregl from 'maplibre-gl';
 import 'maplibre-gl/dist/maplibre-gl.css';
-import './MapEnhancements.css';
-import { createModernAircraftIcon, createHelicopterIcon } from '../../utils/aircraftIcons';
 
 const FinalMap = ({ flights = [], center = [-2, 51], zoom = 5, onMapReady, onFlightClick }) => {
   const mapContainer = useRef(null);
@@ -46,18 +44,7 @@ const FinalMap = ({ flights = [], center = [-2, 51], zoom = 5, onMapReady, onFli
         center: center,
         zoom: zoom,
         maxZoom: 18,
-        minZoom: 2,
-        pitch: 0,
-        bearing: 0,
-        antialias: true,
-        refreshExpiredTiles: true,
-        maxBounds: [[-180, -85], [180, 85]],
-        renderWorldCopies: true,
-        trackResize: true,
-        crossSourceCollisions: false,
-        collectResourceTiming: false,
-        fadeDuration: 300,
-        optimizeForTerrain: true
+        minZoom: 2
       });
 
       map.current.on('load', () => {
@@ -136,89 +123,57 @@ const FinalMap = ({ flights = [], center = [-2, 51], zoom = 5, onMapReady, onFli
       flights.forEach((flight, index) => {
         if (flight.position && flight.position.latitude && flight.position.longitude) {
           try {
-            // Create modern aircraft icon
-            const el = document.createElement('img');
-            el.className = 'aircraft-marker';
-            
-            // Use helicopter icon if detected, otherwise use aircraft
-            const isHelicopter = flight.aircraft_type && 
-              (flight.aircraft_type.includes('H') || 
-               flight.aircraft_type.includes('EC') || 
-               flight.aircraft_type.includes('AS'));
-            
-            if (isHelicopter) {
-              el.src = createHelicopterIcon(flight.position?.heading || flight.true_track || 0);
-            } else {
-              el.src = createModernAircraftIcon({
-                ...flight,
-                true_track: flight.position?.heading || flight.true_track || 0,
-                altitude: flight.position?.altitude || flight.altitude || 0,
-                aircraft_type: flight.aircraft_type || 'A320'
-              });
-            }
-            
-            el.style.width = 'auto';
-            el.style.height = 'auto';
+            // Create marker element with airplane icon
+            const el = document.createElement('div');
+            el.style.width = '24px';
+            el.style.height = '24px';
             el.style.cursor = 'pointer';
-            el.style.transition = 'transform 0.5s ease';
-            el.style.pointerEvents = 'auto';
-            el.style.userSelect = 'none';
-            el.style.webkitUserSelect = 'none';
-            el.style.filter = flight.onGround ? 'brightness(0.7)' : 'none';
+            el.style.display = 'flex';
+            el.style.alignItems = 'center';
+            el.style.justifyContent = 'center';
+            el.style.fontSize = '16px';
+            el.style.transform = `rotate(${flight.position.heading || 0}deg)`;
+            el.style.transition = 'transform 0.3s ease';
+            el.innerHTML = flight.onGround ? '🛬' : '✈️';
             el.title = flight.callsign || flight.icao24 || 'Aircraft';
             
-            // Create modern popup content like FlightRadar24
-            const aircraftType = flight.aircraft_type || 'N/A';
-            
+            // Create detailed popup content
             const popupHTML = `
-              <div style="padding: 8px 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; min-width: 220px;">
-                <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 10px; margin: -8px -8px 8px -8px; border-radius: 8px 8px 0 0;">
-                  <div style="font-size: 16px; font-weight: bold; margin-bottom: 2px;">
-                    ${flight.callsign || 'Unknown Flight'}
-                  </div>
-                  <div style="font-size: 11px; opacity: 0.9;">
-                    ${aircraftType} · ${flight.icao24.toUpperCase()}
+              <div style="padding: 10px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; min-width: 200px;">
+                <div style="display: flex; align-items: center; margin-bottom: 8px;">
+                  <span style="font-size: 20px; margin-right: 8px;">${flight.onGround ? '🛬' : '✈️'}</span>
+                  <div>
+                    <strong style="font-size: 14px; color: #2c3e50;">${flight.callsign || 'Unknown'}</strong>
+                    <div style="font-size: 11px; color: #7f8c8d;">${flight.icao24}</div>
                   </div>
                 </div>
-                
-                <div style="padding: 0 10px; font-size: 12px;">
-                  <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 8px;">
-                    <div style="text-align: center; padding: 8px; background: #f8f9fa; border-radius: 6px;">
-                      <div style="color: #6c757d; font-size: 10px; margin-bottom: 2px;">ALTITUDE</div>
-                      <div style="font-weight: bold; color: #2c3e50; font-size: 14px;">
-                        ${Math.round(flight.position.altitude || 0).toLocaleString()}
-                      </div>
-                      <div style="color: #6c757d; font-size: 10px;">feet</div>
-                    </div>
-                    <div style="text-align: center; padding: 8px; background: #f8f9fa; border-radius: 6px;">
-                      <div style="color: #6c757d; font-size: 10px; margin-bottom: 2px;">SPEED</div>
-                      <div style="font-weight: bold; color: #2c3e50; font-size: 14px;">
-                        ${Math.round(flight.position.groundSpeed || 0)}
-                      </div>
-                      <div style="color: #6c757d; font-size: 10px;">knots</div>
-                    </div>
+                <hr style="margin: 8px 0; border: none; border-top: 1px solid #ecf0f1;">
+                <div style="font-size: 12px; line-height: 1.6;">
+                  <div style="display: flex; justify-content: space-between; margin: 4px 0;">
+                    <span style="color: #7f8c8d;">Altitude:</span>
+                    <strong>${Math.round(flight.position.altitude || 0).toLocaleString()} ft</strong>
                   </div>
-                  
-                  <div style="border-top: 1px solid #e9ecef; padding-top: 8px; margin-top: 8px;">
-                    <div style="display: flex; justify-content: space-between; margin: 6px 0;">
-                      <span style="color: #6c757d;">Heading:</span>
-                      <strong style="color: #2c3e50;">${Math.round(flight.position.heading || 0)}°</strong>
-                    </div>
-                    <div style="display: flex; justify-content: space-between; margin: 6px 0;">
-                      <span style="color: #6c757d;">Vertical:</span>
-                      <strong style="color: ${(flight.position.verticalRate || 0) > 0 ? '#28a745' : (flight.position.verticalRate || 0) < 0 ? '#dc3545' : '#6c757d'};">
-                        ${(flight.position.verticalRate || 0) > 0 ? '↑' : (flight.position.verticalRate || 0) < 0 ? '↓' : '→'} 
-                        ${Math.abs(Math.round(flight.position.verticalRate || 0))} fpm
-                      </strong>
-                    </div>
-                    <div style="display: flex; justify-content: space-between; margin: 6px 0;">
-                      <span style="color: #6c757d;">Track:</span>
-                      <strong style="color: #2c3e50;">${flight.origin || 'N/A'} → ${flight.destination || 'N/A'}</strong>
-                    </div>
+                  <div style="display: flex; justify-content: space-between; margin: 4px 0;">
+                    <span style="color: #7f8c8d;">Speed:</span>
+                    <strong>${Math.round(flight.position.groundSpeed || 0)} kts</strong>
                   </div>
-                  
-                  <div style="text-align: center; margin-top: 10px; padding: 6px; background: ${flight.onGround ? '#fff3cd' : '#d4edda'}; border-radius: 6px; color: ${flight.onGround ? '#856404' : '#155724'};">
-                    <strong>${flight.onGround ? '🛬 On Ground' : '✈️ In Flight'}</strong>
+                  <div style="display: flex; justify-content: space-between; margin: 4px 0;">
+                    <span style="color: #7f8c8d;">Heading:</span>
+                    <strong>${Math.round(flight.position.heading || 0)}°</strong>
+                  </div>
+                  <div style="display: flex; justify-content: space-between; margin: 4px 0;">
+                    <span style="color: #7f8c8d;">V/Rate:</span>
+                    <strong>${Math.round(flight.position.verticalRate || 0)} fpm</strong>
+                  </div>
+                  <div style="display: flex; justify-content: space-between; margin: 4px 0;">
+                    <span style="color: #7f8c8d;">Origin:</span>
+                    <strong>${flight.origin || 'Unknown'}</strong>
+                  </div>
+                  <div style="display: flex; justify-content: space-between; margin: 4px 0;">
+                    <span style="color: #7f8c8d;">Status:</span>
+                    <strong style="color: ${flight.onGround ? '#e74c3c' : '#27ae60'};">
+                      ${flight.onGround ? 'On Ground' : 'In Flight'}
+                    </strong>
                   </div>
                 </div>
               </div>
