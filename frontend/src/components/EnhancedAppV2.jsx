@@ -8,6 +8,7 @@ import {
   useSoundNotifications, 
   HelpModal
 } from './EnhancedFeatures';
+import Legal from './Legal';
 import { 
   calculateFuelConsumption, 
   getEmissionRate
@@ -87,6 +88,7 @@ function EnhancedAppV2() {
   const [statsModal, setStatsModal] = useState(null);
   const [showHelp, setShowHelp] = useState(false);
   const [soundEnabled, setSoundEnabled] = useState(false);
+  const [showLegal, setShowLegal] = useState(false);
   
   const mapRef = useRef(null);
   const isUserNavigating = useRef(false);
@@ -621,6 +623,16 @@ function EnhancedAppV2() {
                 📍 {userLocation.city}, {userLocation.country}
               </div>
             )}
+            <div className="legal-links">
+              <button 
+                className="legal-link" 
+                onClick={() => setShowLegal(true)}
+              >
+                Legal & Privacy
+              </button>
+              <span className="separator">•</span>
+              <span className="company">© 2025 Cien Rios LLC</span>
+            </div>
           </div>
         </aside>
 
@@ -928,6 +940,9 @@ function EnhancedAppV2() {
       
       {/* Help Modal */}
       <HelpModal isOpen={showHelp} onClose={() => setShowHelp(false)} />
+      
+      {/* Legal Modal */}
+      <Legal isOpen={showLegal} onClose={() => setShowLegal(false)} />
     </div>
   );
 }
