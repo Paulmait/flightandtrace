@@ -125,17 +125,75 @@ const FinalMap = ({ flights = [], center = [-2, 51], zoom = 5, onMapReady, onFli
           try {
             // Create marker element with airplane icon
             const el = document.createElement('div');
-            el.style.width = '24px';
-            el.style.height = '24px';
+            
+            // Determine aircraft type and styling
+            let size = '20px';
+            let fontSize = '16px';
+            let bgColor = 'rgba(255, 184, 0, 0.2)';
+            let borderColor = '#FFB800';
+            
+            if (flight.aircraft_type) {
+              const type = (flight.aircraft_type || '').toUpperCase();
+              
+              // Heavy wide-body aircraft (A380, B747)
+              if (type.includes('A380') || type.includes('B747') || type.includes('A35') || type.includes('B777')) {
+                size = '32px';
+                fontSize = '24px';
+                bgColor = 'rgba(255, 107, 107, 0.2)';
+                borderColor = '#FF6B6B';
+              }
+              // Large aircraft (A330, B767)
+              else if (type.includes('A33') || type.includes('A34') || type.includes('B76') || type.includes('B787')) {
+                size = '28px';
+                fontSize = '20px';
+                bgColor = 'rgba(78, 205, 196, 0.2)';
+                borderColor = '#4ECDC4';
+              }
+              // Standard narrow-body (A320, B737)
+              else if (type.includes('A32') || type.includes('B73') || type.includes('B757')) {
+                size = '24px';
+                fontSize = '18px';
+                bgColor = 'rgba(255, 184, 0, 0.2)';
+                borderColor = '#FFB800';
+              }
+              // Regional jets
+              else if (type.includes('E') || type.includes('CRJ') || type.includes('ATR') || type.includes('DH')) {
+                size = '20px';
+                fontSize = '14px';
+                bgColor = 'rgba(149, 231, 126, 0.2)';
+                borderColor = '#95E77E';
+              }
+              // Helicopters
+              else if (type.includes('H') || type.includes('EC') || type.includes('AS')) {
+                size = '24px';
+                fontSize = '18px';
+                bgColor = 'rgba(74, 144, 226, 0.2)';
+                borderColor = '#4A90E2';
+              }
+            }
+            
+            el.style.width = size;
+            el.style.height = size;
             el.style.cursor = 'pointer';
             el.style.display = 'flex';
             el.style.alignItems = 'center';
             el.style.justifyContent = 'center';
-            el.style.fontSize = '16px';
+            el.style.fontSize = fontSize;
             el.style.transform = `rotate(${flight.position.heading || 0}deg)`;
             el.style.transition = 'transform 0.3s ease';
-            el.innerHTML = flight.onGround ? '🛬' : '✈️';
-            el.title = flight.callsign || flight.icao24 || 'Aircraft';
+            el.style.background = bgColor;
+            el.style.border = `2px solid ${borderColor}`;
+            el.style.borderRadius = '50%';
+            el.style.boxShadow = '0 2px 4px rgba(0,0,0,0.2)';
+            
+            // Use helicopter emoji for helicopters
+            const isHelicopter = flight.aircraft_type && 
+              (flight.aircraft_type.toUpperCase().includes('H') || 
+               flight.aircraft_type.toUpperCase().includes('EC') || 
+               flight.aircraft_type.toUpperCase().includes('AS'));
+            
+            el.innerHTML = isHelicopter ? '🚁' : (flight.onGround ? '🛬' : '✈️');
+            el.title = `${flight.callsign || flight.icao24 || 'Aircraft'} - ${flight.aircraft_type || 'Unknown type'}`;
             
             // Create detailed popup content
             const popupHTML = `

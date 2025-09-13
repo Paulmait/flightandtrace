@@ -355,34 +355,45 @@ function EnhancedAppV2() {
 
   // Handle flight click
   const handleFlightClick = (flight) => {
-    setSelectedFlight(flight);
-    
-    // Estimate route based on position and heading
-    const route = estimateRoute(
-      flight.latitude || flight.position?.latitude,
-      flight.longitude || flight.position?.longitude,
-      flight.true_track || flight.heading || 0,
-      flight.callsign
-    );
-    
-    // Add route information to flight object
-    const flightWithRoute = {
-      ...flight,
-      origin: route.origin,
-      destination: route.destination,
-      airline: getAirlineInfo(flight.callsign).name,
-      aircraft_type: flight.aircraft_type || 'A320' // Default to A320 if unknown
-    };
-    
-    setSelectedFlightDetails(flightWithRoute);
-    
-    if (flight.position) {
-      isUserNavigating.current = false; // Prevent fetch on programmatic move
-      setMapCenter([flight.position.longitude, flight.position.latitude]);
-      setMapZoom(10);
-      setTimeout(() => {
-        isUserNavigating.current = true;
-      }, 1000);
+    try {
+      if (!flight) return;
+      
+      setSelectedFlight(flight);
+      
+      // Safely get position data
+      const lat = flight.latitude || flight.position?.latitude || 0;
+      const lon = flight.longitude || flight.position?.longitude || 0;
+      const heading = flight.true_track || flight.heading || flight.position?.heading || 0;
+      
+      // Estimate route based on position and heading
+      const route = estimateRoute(lat, lon, heading, flight.callsign);
+      
+      // Add route information to flight object
+      const flightWithRoute = {
+        ...flight,
+        origin: route?.origin || 'UNKNOWN',
+        destination: route?.destination || 'UNKNOWN',
+        airline: getAirlineInfo(flight.callsign)?.name || 'Unknown Airline',
+        aircraft_type: flight.aircraft_type || 'A320', // Default to A320 if unknown
+        latitude: lat,
+        longitude: lon,
+        altitude: flight.altitude || flight.position?.altitude || 0,
+        velocity: flight.velocity || flight.position?.groundSpeed || 0
+      };
+      
+      setSelectedFlightDetails(flightWithRoute);
+      
+      if (flight.position && flight.position.longitude && flight.position.latitude) {
+        isUserNavigating.current = false; // Prevent fetch on programmatic move
+        setMapCenter([flight.position.longitude, flight.position.latitude]);
+        setMapZoom(10);
+        setTimeout(() => {
+          isUserNavigating.current = true;
+        }, 1000);
+      }
+    } catch (error) {
+      console.error('Error handling flight click:', error);
+      // Don't crash the app, just log the error
     }
   };
 
