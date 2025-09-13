@@ -215,7 +215,7 @@ module.exports = async (req, res) => {
           }
         });
       
-      if (fallbackResponse.ok) {
+        if (fallbackResponse.ok) {
         const fallbackData = await fallbackResponse.json();
         if (fallbackData && fallbackData.states && fallbackData.states.length > 0) {
           flights = fallbackData.states
@@ -244,9 +244,10 @@ module.exports = async (req, res) => {
           flights = [];
           dataSource = 'no-data';
         }
-      } else {
-        flights = [];
-        dataSource = 'no-data';
+        } else {
+          flights = [];
+          dataSource = 'no-data';
+        }
       }
     } catch (fallbackError) {
       console.error('Fallback fetch also failed:', fallbackError.message);
