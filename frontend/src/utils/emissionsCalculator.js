@@ -155,7 +155,7 @@ export function calculateFuelConsumption(flight) {
   
   // Estimate flight parameters
   const altitude = flight.position.altitude || 0;
-  // const speed = flight.position.groundSpeed || 0; // Reserved for future speed-based calculations
+  const speed = flight.position.groundSpeed || 0;
   const onGround = flight.onGround || altitude < 1000;
   
   // Calculate instantaneous fuel flow based on phase
@@ -182,6 +182,26 @@ export function calculateFuelConsumption(flight) {
       fuelFlow *= 0.95;
     } else if (altitude > 40000) {
       fuelFlow *= 0.92;
+    }
+    
+    // Speed-based correction (optimal cruise speed varies by aircraft)
+    const optimalSpeed = aircraft.class === 'wide' ? 480 : 
+                        aircraft.class === 'narrow' ? 450 : 
+                        aircraft.class === 'regional' ? 380 : 280;
+    
+    if (speed > 0) {
+      const speedRatio = speed / optimalSpeed;
+      if (speedRatio < 0.8) {
+        // Too slow - less efficient
+        fuelFlow *= 1.15;
+      } else if (speedRatio > 1.2) {
+        // Too fast - much less efficient (drag increases with square of speed)
+        fuelFlow *= 1.25;
+      } else if (speedRatio > 1.1) {
+        // Slightly fast
+        fuelFlow *= 1.1;
+      }
+      // Optimal speed range (0.8-1.1) uses baseline fuel flow
     }
   }
   
