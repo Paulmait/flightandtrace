@@ -52,6 +52,7 @@ from src.core.alerting import router as alerting_router
 from src.core.analytics import router as analytics_router
 from src.core.analytics_extra import router as analytics_extra_router
 from src.core.analytics_enhanced import router as analytics_enhanced_router
+from src.core.gdpr import router as gdpr_router
 
 # Configure logging
 logging.basicConfig(
@@ -251,6 +252,7 @@ app.include_router(alerting_router, prefix="/api", tags=["alerting"])
 app.include_router(analytics_router, prefix="/api", tags=["analytics"])
 app.include_router(analytics_extra_router, prefix="/api", tags=["analytics-extra"])
 app.include_router(analytics_enhanced_router, prefix="/api", tags=["analytics-enhanced"])
+app.include_router(gdpr_router, prefix="/api", tags=["gdpr"])
 
 # Request/Response Models
 class UserCreate(BaseModel):

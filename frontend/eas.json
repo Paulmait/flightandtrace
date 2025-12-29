@@ -1,32 +1,52 @@
 {
   "cli": {
-    "version": ">= 7.0.0"
+    "version": ">= 7.0.0",
+    "appVersionSource": "remote"
   },
   "build": {
+    "base": {
+      "node": "18.18.0",
+      "env": {
+        "EXPO_PUBLIC_API_URL": "https://flightandtrace.com/api"
+      }
+    },
     "development": {
+      "extends": "base",
       "developmentClient": true,
       "distribution": "internal",
+      "channel": "development",
       "ios": {
         "simulator": true
       },
       "android": {
-        "buildType": "apk"
+        "buildType": "apk",
+        "gradleCommand": ":app:assembleDebug"
+      },
+      "env": {
+        "APP_ENV": "development",
+        "EXPO_PUBLIC_API_URL": "http://localhost:8000/api"
       }
     },
     "preview": {
+      "extends": "base",
       "distribution": "internal",
+      "channel": "preview",
       "ios": {
-        "simulator": false
+        "simulator": false,
+        "resourceClass": "m-medium"
       },
       "android": {
         "buildType": "apk"
       },
       "env": {
-        "APP_ENV": "preview"
+        "APP_ENV": "preview",
+        "EXPO_PUBLIC_API_URL": "https://preview.flightandtrace.com/api"
       }
     },
-    "production": {
-      "distribution": "store",
+    "staging": {
+      "extends": "base",
+      "distribution": "internal",
+      "channel": "staging",
       "ios": {
         "resourceClass": "m-medium"
       },
@@ -34,11 +54,38 @@
         "buildType": "app-bundle"
       },
       "env": {
-        "APP_ENV": "production"
+        "APP_ENV": "staging",
+        "EXPO_PUBLIC_API_URL": "https://staging.flightandtrace.com/api"
+      }
+    },
+    "production": {
+      "extends": "base",
+      "distribution": "store",
+      "channel": "production",
+      "autoIncrement": true,
+      "ios": {
+        "resourceClass": "m-medium",
+        "image": "latest"
+      },
+      "android": {
+        "buildType": "app-bundle",
+        "image": "latest"
+      },
+      "env": {
+        "APP_ENV": "production",
+        "EXPO_PUBLIC_API_URL": "https://flightandtrace.com/api"
       }
     }
   },
   "submit": {
+    "base": {},
+    "preview": {
+      "ios": {
+        "appleId": "your-apple-id@email.com",
+        "ascAppId": "your-app-store-connect-app-id",
+        "appleTeamId": "your-team-id"
+      }
+    },
     "production": {
       "ios": {
         "appleId": "your-apple-id@email.com",
@@ -47,7 +94,8 @@
       },
       "android": {
         "serviceAccountKeyPath": "./play-store-credentials.json",
-        "track": "internal"
+        "track": "internal",
+        "releaseStatus": "draft"
       }
     }
   }
