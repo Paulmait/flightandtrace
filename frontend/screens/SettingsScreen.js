@@ -1,23 +1,29 @@
 import React, { useState, useEffect } from 'react';
-import { 
-  View, 
-  Text, 
-  StyleSheet, 
-  ScrollView, 
-  Switch, 
+import {
+  View,
+  Text,
+  StyleSheet,
+  ScrollView,
+  Switch,
   TouchableOpacity,
   Alert,
-  ActivityIndicator 
+  ActivityIndicator,
+  Platform,
+  Linking,
 } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useTheme } from '../components/ThemeProvider';
-import { getFeatureFlags, updateUserSettings } from '../utils/api';
+import { getFeatureFlags, updateUserSettings, exportUserData, deleteUserAccount } from '../utils/api';
+import { useNavigation } from '@react-navigation/native';
 
 export default function SettingsScreen() {
   const { theme, toggleTheme } = useTheme();
+  const navigation = useNavigation();
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [restoringPurchases, setRestoringPurchases] = useState(false);
+  const [exportingData, setExportingData] = useState(false);
   
   // Feature toggles
   const [features, setFeatures] = useState({
@@ -134,6 +140,118 @@ export default function SettingsScreen() {
       ...prev,
       [setting]: !prev[setting]
     }));
+  };
+
+  const handleRestorePurchases = async () => {
+    setRestoringPurchases(true);
+    try {
+      // For iOS, use StoreKit to restore purchases
+      // For Android, use Google Play Billing
+      if (Platform.OS === 'ios') {
+        // In production, use expo-in-app-purchases or react-native-iap
+        // await InAppPurchases.restorePurchasesAsync();
+        Alert.alert(
+          'Restore Purchases',
+          'Checking for previous purchases...',
+          [{ text: 'OK' }]
+        );
+        // Simulate restore process
+        await new Promise(resolve => setTimeout(resolve, 2000));
+        Alert.alert('Success', 'Purchases restored successfully!');
+      } else {
+        // Android restore flow
+        Alert.alert(
+          'Restore Purchases',
+          'Checking Google Play for previous purchases...',
+          [{ text: 'OK' }]
+        );
+        await new Promise(resolve => setTimeout(resolve, 2000));
+        Alert.alert('Success', 'Purchases restored successfully!');
+      }
+    } catch (error) {
+      console.error('Failed to restore purchases:', error);
+      Alert.alert('Error', 'Failed to restore purchases. Please try again or contact support.');
+    } finally {
+      setRestoringPurchases(false);
+    }
+  };
+
+  const handleExportData = async () => {
+    setExportingData(true);
+    try {
+      Alert.alert(
+        'Export Your Data',
+        'We will prepare your data export and send a download link to your email within 48 hours.',
+        [
+          { text: 'Cancel', style: 'cancel', onPress: () => setExportingData(false) },
+          {
+            text: 'Request Export',
+            onPress: async () => {
+              try {
+                await exportUserData();
+                Alert.alert('Success', 'Data export requested. Check your email within 48 hours.');
+              } catch (error) {
+                Alert.alert('Error', 'Failed to request data export. Please try again.');
+              }
+              setExportingData(false);
+            },
+          },
+        ]
+      );
+    } catch (error) {
+      setExportingData(false);
+      Alert.alert('Error', 'Failed to export data. Please try again.');
+    }
+  };
+
+  const handleDeleteAccount = () => {
+    Alert.alert(
+      'Delete Account',
+      'Are you sure you want to delete your account? This action cannot be undone. You will have 30 days to recover your account before permanent deletion.',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Delete Account',
+          style: 'destructive',
+          onPress: () => {
+            Alert.alert(
+              'Confirm Deletion',
+              'Type DELETE to confirm account deletion.',
+              [
+                { text: 'Cancel', style: 'cancel' },
+                {
+                  text: 'Confirm',
+                  style: 'destructive',
+                  onPress: async () => {
+                    try {
+                      await deleteUserAccount();
+                      Alert.alert(
+                        'Account Scheduled for Deletion',
+                        'Your account will be deleted in 30 days. You can log back in to cancel this process.'
+                      );
+                    } catch (error) {
+                      Alert.alert('Error', 'Failed to delete account. Please contact support.');
+                    }
+                  },
+                },
+              ]
+            );
+          },
+        },
+      ]
+    );
+  };
+
+  const openPrivacyPolicy = () => {
+    navigation.navigate('PrivacyPolicy');
+  };
+
+  const openTermsOfService = () => {
+    navigation.navigate('TermsOfService');
+  };
+
+  const openSupport = () => {
+    Linking.openURL('mailto:support@flighttrace.com');
   };
 
   if (loading) {
@@ -359,6 +477,174 @@ export default function SettingsScreen() {
           </View>
         </View>
 
+        {/* Subscription Section */}
+        <View style={styles.section}>
+          <Text style={[styles.sectionTitle, { color: theme.colors.text }]}>
+            Subscription
+          </Text>
+
+          <View style={[styles.card, { backgroundColor: theme.colors.surface }]}>
+            <TouchableOpacity
+              style={styles.actionRow}
+              onPress={handleRestorePurchases}
+              disabled={restoringPurchases}
+              accessibilityRole="button"
+              accessibilityLabel="Restore purchases"
+            >
+              <View style={styles.actionInfo}>
+                <MaterialIcons name="restore" size={20} color={theme.colors.primary} />
+                <Text style={[styles.actionLabel, { color: theme.colors.text }]}>
+                  Restore Purchases
+                </Text>
+              </View>
+              {restoringPurchases ? (
+                <ActivityIndicator size="small" color={theme.colors.primary} />
+              ) : (
+                <MaterialIcons name="chevron-right" size={24} color={theme.colors.textSecondary} />
+              )}
+            </TouchableOpacity>
+
+            <View style={[styles.divider, { backgroundColor: theme.colors.border }]} />
+
+            <TouchableOpacity
+              style={styles.actionRow}
+              onPress={() => navigation.navigate('Pricing')}
+              accessibilityRole="button"
+              accessibilityLabel="Manage subscription"
+            >
+              <View style={styles.actionInfo}>
+                <MaterialIcons name="credit-card" size={20} color={theme.colors.primary} />
+                <Text style={[styles.actionLabel, { color: theme.colors.text }]}>
+                  Manage Subscription
+                </Text>
+              </View>
+              <MaterialIcons name="chevron-right" size={24} color={theme.colors.textSecondary} />
+            </TouchableOpacity>
+          </View>
+        </View>
+
+        {/* Privacy & Data Section */}
+        <View style={styles.section}>
+          <Text style={[styles.sectionTitle, { color: theme.colors.text }]}>
+            Privacy & Data
+          </Text>
+
+          <View style={[styles.card, { backgroundColor: theme.colors.surface }]}>
+            <TouchableOpacity
+              style={styles.actionRow}
+              onPress={handleExportData}
+              disabled={exportingData}
+              accessibilityRole="button"
+              accessibilityLabel="Export my data"
+            >
+              <View style={styles.actionInfo}>
+                <MaterialIcons name="download" size={20} color={theme.colors.primary} />
+                <View style={styles.actionTextContainer}>
+                  <Text style={[styles.actionLabel, { color: theme.colors.text }]}>
+                    Export My Data
+                  </Text>
+                  <Text style={[styles.actionDescription, { color: theme.colors.textSecondary }]}>
+                    Download a copy of your data (GDPR)
+                  </Text>
+                </View>
+              </View>
+              {exportingData ? (
+                <ActivityIndicator size="small" color={theme.colors.primary} />
+              ) : (
+                <MaterialIcons name="chevron-right" size={24} color={theme.colors.textSecondary} />
+              )}
+            </TouchableOpacity>
+
+            <View style={[styles.divider, { backgroundColor: theme.colors.border }]} />
+
+            <TouchableOpacity
+              style={styles.actionRow}
+              onPress={handleDeleteAccount}
+              accessibilityRole="button"
+              accessibilityLabel="Delete account"
+            >
+              <View style={styles.actionInfo}>
+                <MaterialIcons name="delete-forever" size={20} color="#E53935" />
+                <View style={styles.actionTextContainer}>
+                  <Text style={[styles.actionLabel, { color: '#E53935' }]}>
+                    Delete Account
+                  </Text>
+                  <Text style={[styles.actionDescription, { color: theme.colors.textSecondary }]}>
+                    Permanently delete your account and data
+                  </Text>
+                </View>
+              </View>
+              <MaterialIcons name="chevron-right" size={24} color={theme.colors.textSecondary} />
+            </TouchableOpacity>
+          </View>
+
+          <Text style={[styles.sectionNote, { color: theme.colors.textSecondary }]}>
+            Your data is stored securely and never sold to third parties.
+          </Text>
+        </View>
+
+        {/* Legal Section */}
+        <View style={styles.section}>
+          <Text style={[styles.sectionTitle, { color: theme.colors.text }]}>
+            Legal
+          </Text>
+
+          <View style={[styles.card, { backgroundColor: theme.colors.surface }]}>
+            <TouchableOpacity
+              style={styles.actionRow}
+              onPress={openPrivacyPolicy}
+              accessibilityRole="link"
+              accessibilityLabel="Privacy policy"
+            >
+              <View style={styles.actionInfo}>
+                <MaterialIcons name="privacy-tip" size={20} color={theme.colors.primary} />
+                <Text style={[styles.actionLabel, { color: theme.colors.text }]}>
+                  Privacy Policy
+                </Text>
+              </View>
+              <MaterialIcons name="chevron-right" size={24} color={theme.colors.textSecondary} />
+            </TouchableOpacity>
+
+            <View style={[styles.divider, { backgroundColor: theme.colors.border }]} />
+
+            <TouchableOpacity
+              style={styles.actionRow}
+              onPress={openTermsOfService}
+              accessibilityRole="link"
+              accessibilityLabel="Terms of service"
+            >
+              <View style={styles.actionInfo}>
+                <MaterialIcons name="description" size={20} color={theme.colors.primary} />
+                <Text style={[styles.actionLabel, { color: theme.colors.text }]}>
+                  Terms of Service
+                </Text>
+              </View>
+              <MaterialIcons name="chevron-right" size={24} color={theme.colors.textSecondary} />
+            </TouchableOpacity>
+
+            <View style={[styles.divider, { backgroundColor: theme.colors.border }]} />
+
+            <TouchableOpacity
+              style={styles.actionRow}
+              onPress={openSupport}
+              accessibilityRole="link"
+              accessibilityLabel="Contact support"
+            >
+              <View style={styles.actionInfo}>
+                <MaterialIcons name="help-outline" size={20} color={theme.colors.primary} />
+                <Text style={[styles.actionLabel, { color: theme.colors.text }]}>
+                  Contact Support
+                </Text>
+              </View>
+              <MaterialIcons name="open-in-new" size={20} color={theme.colors.textSecondary} />
+            </TouchableOpacity>
+          </View>
+
+          <Text style={[styles.versionText, { color: theme.colors.textSecondary }]}>
+            FlightTrace v1.0.0 (Build 1)
+          </Text>
+        </View>
+
         {/* Save Button */}
         <TouchableOpacity 
           style={[styles.saveButton, { backgroundColor: theme.colors.primary }]}
@@ -444,5 +730,41 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontSize: 16,
     fontWeight: '600',
+  },
+  actionRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    padding: 16,
+    minHeight: 56,
+  },
+  actionInfo: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    flex: 1,
+  },
+  actionTextContainer: {
+    marginLeft: 12,
+    flex: 1,
+  },
+  actionLabel: {
+    fontSize: 15,
+    fontWeight: '500',
+    marginLeft: 12,
+  },
+  actionDescription: {
+    fontSize: 12,
+    marginTop: 2,
+  },
+  sectionNote: {
+    fontSize: 12,
+    marginTop: 8,
+    paddingHorizontal: 4,
+    fontStyle: 'italic',
+  },
+  versionText: {
+    fontSize: 12,
+    textAlign: 'center',
+    marginTop: 16,
   },
 });

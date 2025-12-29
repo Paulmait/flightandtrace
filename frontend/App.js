@@ -26,6 +26,8 @@ import { fetchAnalytics } from './utils/api';
 import { fetchUserProfile } from './utils/api';
 import FlightReplayScreen from './screens/FlightReplayScreen';
 import AdminDashboard from './screens/AdminDashboard';
+import PrivacyPolicyScreen from './screens/PrivacyPolicyScreen';
+import TermsOfServiceScreen from './screens/TermsOfServiceScreen';
 import { isDesktop, isTablet } from './styles/responsive';
 import FlightStatusWidget from './components/FlightStatusWidget';
 import NotificationCenterWidget from './components/NotificationCenterWidget';
@@ -202,6 +204,8 @@ export default function App() {
                   )}
                 </Stack.Screen>
                 <Stack.Screen name="StripeCheckout" component={require('./screens/StripeCheckoutScreen').default} />
+                <Stack.Screen name="PrivacyPolicy" component={PrivacyPolicyScreen} />
+                <Stack.Screen name="TermsOfService" component={TermsOfServiceScreen} />
               </>
             ) : (
               <Stack.Screen name="MainDrawer">

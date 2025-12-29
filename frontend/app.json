@@ -17,9 +17,76 @@
       "supportsTablet": true,
       "bundleIdentifier": "com.flighttrace.app",
       "buildNumber": "1",
+      "config": {
+        "usesNonExemptEncryption": false
+      },
       "infoPlist": {
-        "NSLocationWhenInUseUsageDescription": "FlightTrace needs your location to show nearby airports and flights.",
-        "NSLocationAlwaysUsageDescription": "FlightTrace needs your location to track flights near you."
+        "NSLocationWhenInUseUsageDescription": "FlightTrace uses your location to show nearby airports and aircraft. Your location data is processed locally and not shared with third parties without your consent.",
+        "NSLocationAlwaysAndWhenInUseUsageDescription": "FlightTrace uses background location for flight proximity alerts when the app is not in use. You can disable this anytime in Settings. Location data is processed locally.",
+        "NSLocationAlwaysUsageDescription": "FlightTrace needs background location access to send you alerts when tracked flights are approaching your location.",
+        "NSUserTrackingUsageDescription": "FlightTrace requests permission to measure app performance and improve your experience. You can decline without affecting app functionality.",
+        "ITSAppUsesNonExemptEncryption": false,
+        "UIBackgroundModes": ["location", "fetch", "remote-notification"],
+        "BGTaskSchedulerPermittedIdentifiers": ["com.flighttrace.refresh", "com.flighttrace.alerts"],
+        "NSAppTransportSecurity": {
+          "NSAllowsArbitraryLoads": false
+        },
+        "LSApplicationQueriesSchemes": ["mailto", "tel"],
+        "CFBundleLocalizations": ["en", "es", "de", "fr", "ja", "zh-Hans", "zh-Hant", "pt", "it", "ko"],
+        "CFBundleDevelopmentRegion": "en"
+      },
+      "associatedDomains": ["applinks:flightandtrace.com", "applinks:www.flightandtrace.com"],
+      "usesAppleSignIn": true,
+      "entitlements": {
+        "aps-environment": "production",
+        "com.apple.developer.applesignin": ["Default"]
+      },
+      "privacyManifests": {
+        "NSPrivacyAccessedAPITypes": [
+          {
+            "NSPrivacyAccessedAPIType": "NSPrivacyAccessedAPICategoryUserDefaults",
+            "NSPrivacyAccessedAPITypeReasons": ["CA92.1"]
+          }
+        ],
+        "NSPrivacyCollectedDataTypes": [
+          {
+            "NSPrivacyCollectedDataType": "NSPrivacyCollectedDataTypeEmailAddress",
+            "NSPrivacyCollectedDataTypeLinked": true,
+            "NSPrivacyCollectedDataTypeTracking": false,
+            "NSPrivacyCollectedDataTypePurposes": ["NSPrivacyCollectedDataTypePurposeAppFunctionality"]
+          },
+          {
+            "NSPrivacyCollectedDataType": "NSPrivacyCollectedDataTypeName",
+            "NSPrivacyCollectedDataTypeLinked": true,
+            "NSPrivacyCollectedDataTypeTracking": false,
+            "NSPrivacyCollectedDataTypePurposes": ["NSPrivacyCollectedDataTypePurposeAppFunctionality"]
+          },
+          {
+            "NSPrivacyCollectedDataType": "NSPrivacyCollectedDataTypePreciseLocation",
+            "NSPrivacyCollectedDataTypeLinked": true,
+            "NSPrivacyCollectedDataTypeTracking": false,
+            "NSPrivacyCollectedDataTypePurposes": ["NSPrivacyCollectedDataTypePurposeAppFunctionality"]
+          },
+          {
+            "NSPrivacyCollectedDataType": "NSPrivacyCollectedDataTypeDeviceID",
+            "NSPrivacyCollectedDataTypeLinked": true,
+            "NSPrivacyCollectedDataTypeTracking": false,
+            "NSPrivacyCollectedDataTypePurposes": ["NSPrivacyCollectedDataTypePurposeAnalytics"]
+          },
+          {
+            "NSPrivacyCollectedDataType": "NSPrivacyCollectedDataTypeCrashData",
+            "NSPrivacyCollectedDataTypeLinked": false,
+            "NSPrivacyCollectedDataTypeTracking": false,
+            "NSPrivacyCollectedDataTypePurposes": ["NSPrivacyCollectedDataTypePurposeAnalytics"]
+          },
+          {
+            "NSPrivacyCollectedDataType": "NSPrivacyCollectedDataTypePerformanceData",
+            "NSPrivacyCollectedDataTypeLinked": false,
+            "NSPrivacyCollectedDataTypeTracking": false,
+            "NSPrivacyCollectedDataTypePurposes": ["NSPrivacyCollectedDataTypePurposeAnalytics"]
+          }
+        ],
+        "NSPrivacyTracking": false
       }
     },
     "android": {
@@ -29,18 +96,117 @@
       },
       "package": "com.flighttrace.app",
       "versionCode": 1,
-      "permissions": ["ACCESS_COARSE_LOCATION", "ACCESS_FINE_LOCATION"]
+      "permissions": [
+        "ACCESS_COARSE_LOCATION",
+        "ACCESS_FINE_LOCATION",
+        "ACCESS_BACKGROUND_LOCATION",
+        "INTERNET",
+        "ACCESS_NETWORK_STATE",
+        "RECEIVE_BOOT_COMPLETED",
+        "VIBRATE",
+        "WAKE_LOCK",
+        "FOREGROUND_SERVICE",
+        "POST_NOTIFICATIONS"
+      ],
+      "blockedPermissions": [
+        "READ_CONTACTS",
+        "WRITE_CONTACTS",
+        "CAMERA",
+        "RECORD_AUDIO",
+        "READ_EXTERNAL_STORAGE",
+        "WRITE_EXTERNAL_STORAGE"
+      ],
+      "googleServicesFile": "./google-services.json",
+      "intentFilters": [
+        {
+          "action": "VIEW",
+          "autoVerify": true,
+          "data": [
+            {
+              "scheme": "https",
+              "host": "flightandtrace.com",
+              "pathPrefix": "/flight"
+            },
+            {
+              "scheme": "https",
+              "host": "www.flightandtrace.com",
+              "pathPrefix": "/flight"
+            }
+          ],
+          "category": ["BROWSABLE", "DEFAULT"]
+        },
+        {
+          "action": "VIEW",
+          "data": [
+            {
+              "scheme": "flighttrace"
+            }
+          ],
+          "category": ["BROWSABLE", "DEFAULT"]
+        }
+      ],
+      "softwareKeyboardLayoutMode": "pan"
     },
     "web": {
-      "favicon": "./assets/flighttrace-logo.png"
+      "favicon": "./assets/flighttrace-logo.png",
+      "bundler": "metro",
+      "output": "single",
+      "name": "FlightTrace",
+      "shortName": "FlightTrace",
+      "description": "Track flights in real-time with FlightTrace",
+      "lang": "en",
+      "themeColor": "#0066CC",
+      "backgroundColor": "#ffffff"
+    },
+    "notification": {
+      "icon": "./assets/notification-icon.png",
+      "color": "#0066CC",
+      "iosDisplayInForeground": true,
+      "androidMode": "default",
+      "androidCollapsedTitle": "FlightTrace"
+    },
+    "updates": {
+      "enabled": true,
+      "checkAutomatically": "ON_LOAD",
+      "fallbackToCacheTimeout": 30000
+    },
+    "runtimeVersion": {
+      "policy": "appVersion"
     },
     "extra": {
       "eas": {
-        "projectId": "your-project-id"
-      }
+        "projectId": "flighttrace-production"
+      },
+      "privacyPolicyUrl": "https://flightandtrace.com/privacy",
+      "termsOfServiceUrl": "https://flightandtrace.com/terms",
+      "supportEmail": "support@flighttrace.com"
     },
+    "owner": "flighttrace",
     "plugins": [
-      "expo-location"
-    ]
+      "expo-location",
+      "expo-notifications",
+      [
+        "expo-tracking-transparency",
+        {
+          "userTrackingPermission": "FlightTrace requests permission to measure app performance and improve your experience."
+        }
+      ],
+      [
+        "expo-build-properties",
+        {
+          "ios": {
+            "deploymentTarget": "14.0"
+          },
+          "android": {
+            "compileSdkVersion": 34,
+            "targetSdkVersion": 34,
+            "minSdkVersion": 24
+          }
+        }
+      ]
+    ],
+    "experiments": {
+      "typedRoutes": true
+    }
   }
 }

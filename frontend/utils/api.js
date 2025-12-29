@@ -215,3 +215,59 @@ export async function fetchUserProfile(token) {
     return { plan: 'Free' };
   }
 }
+
+// GDPR/CCPA Compliance Functions
+
+export async function exportUserData() {
+  const token = await getAuthToken();
+
+  const res = await fetch(`${BASE_API_URL}/api/user/export`, {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${token}`,
+      'Content-Type': 'application/json'
+    }
+  });
+
+  if (!res.ok) {
+    throw new Error('Failed to request data export');
+  }
+
+  return res.json();
+}
+
+export async function deleteUserAccount() {
+  const token = await getAuthToken();
+
+  const res = await fetch(`${BASE_API_URL}/api/user/delete`, {
+    method: 'DELETE',
+    headers: {
+      'Authorization': `Bearer ${token}`,
+      'Content-Type': 'application/json'
+    }
+  });
+
+  if (!res.ok) {
+    throw new Error('Failed to delete account');
+  }
+
+  return res.json();
+}
+
+export async function cancelDataDeletion() {
+  const token = await getAuthToken();
+
+  const res = await fetch(`${BASE_API_URL}/api/user/cancel-deletion`, {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${token}`,
+      'Content-Type': 'application/json'
+    }
+  });
+
+  if (!res.ok) {
+    throw new Error('Failed to cancel deletion');
+  }
+
+  return res.json();
+}
