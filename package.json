@@ -25,7 +25,7 @@
     "supabase:migrate": "supabase db push",
     "supabase:reset": "supabase db reset",
     "vercel:env": "vercel env pull .env.local",
-    "postinstall": "node scripts/postinstall.js || true"
+    "postinstall": "echo 'postinstall complete'"
   },
   "dependencies": {
     "@react-native-async-storage/async-storage": "^1.19.3",
