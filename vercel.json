@@ -41,10 +41,6 @@
       "dest": "/api/weather.py"
     },
     {
-      "src": "/api/admin/(.*)",
-      "dest": "/api/admin.py"
-    },
-    {
       "src": "/api/health",
       "dest": "/api/health.py"
     },
@@ -59,7 +55,7 @@
   ],
   "headers": [
     {
-      "source": "/(.*)\.(svg|ico|png|jpg|jpeg|webp)",
+      "source": "/(.*)\\.(svg|ico|png|jpg|jpeg|webp)",
       "headers": [
         {
           "key": "Cache-Control",
