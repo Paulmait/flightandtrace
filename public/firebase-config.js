@@ -13,7 +13,7 @@ function getFirebaseConfig() {
     // Default configuration with domain-restricted API key
     // IMPORTANT: This key is restricted to only work on flightandtrace.com
     return {
-        apiKey: process.env.FIREBASE_API_KEY || window.__FIREBASE_API_KEY__, // Set via environment variable
+        apiKey: window.__FIREBASE_API_KEY__ || "CONFIGURE_VIA_WINDOW.__FIREBASE_API_KEY__", // Inject via server or script tag
         authDomain: "flighttrace-749f1.firebaseapp.com",
         projectId: "flighttrace-749f1",
         storageBucket: "flighttrace-749f1.firebasestorage.app",
