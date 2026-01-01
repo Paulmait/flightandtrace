@@ -13,6 +13,10 @@
   ],
   "routes": [
     {
+      "src": "/api/firebase-config",
+      "dest": "/api/firebase_config.py"
+    },
+    {
       "src": "/api/fuel/estimate",
       "dest": "/api/fuel/estimate.py"
     },
