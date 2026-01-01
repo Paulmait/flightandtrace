@@ -6,17 +6,27 @@ export default function AdminLogin({ onLogin }) {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
 
-  const handleLogin = () => {
+  const handleLogin = async () => {
     if (!username || !password) {
       setError('Username and password required');
       return;
     }
-    // In real app, call backend for admin auth
-    if (username === 'admin' && password === 'adminpass') {
-      setError('');
-      onLogin && onLogin({ username });
-    } else {
-      setError('Invalid credentials');
+    // Authenticate via backend API
+    try {
+      const response = await fetch('/api/admin/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username, password })
+      });
+      const data = await response.json();
+      if (response.ok && data.success) {
+        setError('');
+        onLogin && onLogin({ username, token: data.token });
+      } else {
+        setError(data.error || 'Invalid credentials');
+      }
+    } catch (err) {
+      setError('Login failed. Please try again.');
     }
   };
 
