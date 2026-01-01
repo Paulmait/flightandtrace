@@ -31,7 +31,7 @@ import {
 
 // Your Firebase config (already have this)
 const firebaseConfig = {
-    apiKey: "AIzaSyDKGFoRgBHoUGvtfxdfvBxDad9Y6hXPvBU",
+    apiKey: "YOUR_FIREBASE_API_KEY",
     authDomain: "flighttrace-3c5d7.firebaseapp.com",
     projectId: "flighttrace-3c5d7",
     storageBucket: "flighttrace-3c5d7.appspot.com",

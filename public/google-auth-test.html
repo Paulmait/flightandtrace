@@ -209,7 +209,7 @@
         
         // Firebase configuration
         const firebaseConfig = {
-            apiKey: "AIzaSyDMJkPbOjp4oQNxb-EVK-Yh1pVSrOuDJgQ",
+            apiKey: window.__FIREBASE_API_KEY__ || "CONFIGURE_IN_ENV",
             authDomain: "flighttrace-749f1.firebaseapp.com",
             projectId: "flighttrace-749f1",
             storageBucket: "flighttrace-749f1.firebasestorage.app",

@@ -57,6 +57,16 @@ Thumbs.db
 # Secrets
 secrets/
 *.secret
+credentials.json
+service-account*.json
+*-credentials.json
+
+# Firebase
+firebase-debug.log
+firebase-debug.*.log
+.firebaserc
+**/firebase-adminsdk*.json
+firebaseServiceAccountKey.json
 
 # Backups
 *.backup
@@ -66,6 +76,7 @@ secrets/
 .coverage
 .pytest_cache/
 htmlcov/
+test-results/
 
 # Monitoring data
 prometheus_data/

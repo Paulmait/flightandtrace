@@ -14,7 +14,7 @@ Click on `flightandtrace`
 
 **Update this variable:**
 ```
-FIREBASE_API_KEY = AIzaSyDMJkPbOjp4oQNxb-EVK-Yh1pVSrOuDJgQ
+FIREBASE_API_KEY = YOUR_FIREBASE_API_KEY
 ```
 
 ### Step 5: Ensure All Firebase Variables Are Set
@@ -23,7 +23,7 @@ Make sure you have all these environment variables:
 
 ```env
 # Firebase Configuration (Updated)
-FIREBASE_API_KEY=AIzaSyDMJkPbOjp4oQNxb-EVK-Yh1pVSrOuDJgQ
+FIREBASE_API_KEY=YOUR_FIREBASE_API_KEY
 FIREBASE_AUTH_DOMAIN=flighttrace-749f1.firebaseapp.com
 FIREBASE_PROJECT_ID=flighttrace-749f1
 FIREBASE_STORAGE_BUCKET=flighttrace-749f1.firebasestorage.app

@@ -7,7 +7,7 @@
 1. **Go to Google Cloud Console:**
    https://console.cloud.google.com/apis/credentials?project=flighttrace-749f1
 
-2. **Find your API key:** `AIzaSyAzOLlHRbCDRHEDOqS2rHrgjN5ETAaRA-4`
+2. **Find your API key:** `YOUR_FIREBASE_API_KEY`
 
 3. **Click on the API key name** to edit it
 
